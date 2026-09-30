@@ -79,6 +79,31 @@ jobs:
           if [[ "$WITH_MODELS" == "true" ]]; then args+=(--with-models); fi
           node scripts/build-msi.mjs "${args[@]}"
 
+      - name: Smoke test MSI install
+        shell: pwsh
+        run: |
+          $msi = (Resolve-Path 'dist-offline/kordoc-*-win-x64.msi').Path
+          $log = Join-Path $env:RUNNER_TEMP 'kordoc-msi-install.log'
+          $process = Start-Process msiexec.exe -ArgumentList @('/i', "`"$msi`"", '/qn', '/norestart', '/l*v', "`"$log`"") -Wait -PassThru
+          if ($process.ExitCode -notin @(0, 3010)) {
+            Get-Content $log -Tail 80
+            throw "MSI installation failed: $($process.ExitCode)"
+          }
+          $installDir = Join-Path $env:ProgramFiles 'kordoc'
+          & (Join-Path $installDir 'bin/kordoc.cmd') --version
+          if ($LASTEXITCODE -ne 0) { throw 'Installed kordoc launcher failed' }
+          $machineEnv = Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+          if ($machineEnv.KORDOC_OFFLINE -ne '1') { throw 'MSI did not set KORDOC_OFFLINE' }
+          if ($env:WITH_MODELS -eq 'true') {
+            $modelDir = Join-Path $installDir 'models'
+            if ($machineEnv.KORDOC_MODEL_CACHE -ne $modelDir) { throw 'MSI did not set KORDOC_MODEL_CACHE' }
+            $env:KORDOC_MODEL_CACHE = $modelDir
+            $status = & (Join-Path $installDir 'bin/kordoc.cmd') check-ocr-models --status-only | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0 -or -not $status.allReady) { throw 'Installed OCR models are not ready' }
+          }
+        env:
+          WITH_MODELS: ${{ github.event_name == 'push' || inputs.with_models }}
+
       - name: Show artifacts
         shell: bash
         run: ls -lh dist-offline
