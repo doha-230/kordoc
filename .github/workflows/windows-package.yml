@@ -1,0 +1,99 @@
+name: Windows package (portable ZIP + MSI)
+
+# 폐쇄망 반입용 Windows 산출물.
+# 네이티브 모듈이 없는 기본 번들은 OS 중립이지만, MSI(WiX)·실제 배포본은 Windows 에서
+# 만드는 것이 안전하다 — 이 워크플로가 그 경로다.
+#
+# - 수동 실행(workflow_dispatch): 산출물을 아티팩트로 올린다
+# - 태그 푸시(v*): 같은 산출물을 GitHub Release 에 첨부한다
+
+on:
+  workflow_dispatch:
+    inputs:
+      with_ocr:
+        description: "OCR/수식 엔진(optional deps)까지 포함 (수백MB)"
+        type: boolean
+        default: true
+      with_models:
+        description: "OCR 모델까지 동봉 (--with-ocr 필요)"
+        type: boolean
+        default: true
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          # onnxruntime-node 설치 스크립트의 CUDA 바이너리(api.nuget.org)는 CPU 추론에 필요 없다
+          ONNXRUNTIME_NODE_INSTALL: skip
+
+      - run: npm run typecheck
+      - name: Verify PPTX parsing and format surfaces
+        run: node --import tsx --test --test-concurrency=2 tests/pptx-parser.test.ts tests/pptx-surfaces.test.ts tests/zip-format.test.ts
+      - run: npm run build
+
+      - name: Prepare OCR models
+        if: github.event_name == 'push' || inputs.with_models
+        run: node dist/cli.js check-ocr-models
+
+      - name: Build portable ZIP (offline bundle)
+        shell: bash
+        env:
+          WITH_OCR: ${{ github.event_name == 'push' || inputs.with_ocr }}
+          WITH_MODELS: ${{ github.event_name == 'push' || inputs.with_models }}
+        run: |
+          args=(--target win32-x64 --format zip --keep-stage)
+          if [[ "$WITH_OCR" == "true" ]]; then args+=(--with-ocr); fi
+          if [[ "$WITH_MODELS" == "true" ]]; then args+=(--with-models); fi
+          node scripts/pack-offline.mjs "${args[@]}"
+
+      - name: Install WiX Toolset v5
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.0
+          "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build MSI
+        shell: bash
+        env:
+          WITH_OCR: ${{ github.event_name == 'push' || inputs.with_ocr }}
+          WITH_MODELS: ${{ github.event_name == 'push' || inputs.with_models }}
+        run: |
+          args=(--target win32-x64 --from-stage)
+          if [[ "$WITH_OCR" == "true" ]]; then args+=(--with-ocr); fi
+          if [[ "$WITH_MODELS" == "true" ]]; then args+=(--with-models); fi
+          node scripts/build-msi.mjs "${args[@]}"
+
+      - name: Show artifacts
+        shell: bash
+        run: ls -lh dist-offline
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kordoc-windows-${{ github.sha }}
+          path: |
+            dist-offline/*.zip
+            dist-offline/*.msi
+          if-no-files-found: error
+
+      - name: Attach artifacts to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${GITHUB_REF_NAME}" dist-offline/*.zip dist-offline/*.msi --clobber

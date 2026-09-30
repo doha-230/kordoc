@@ -7,7 +7,7 @@
 
 > *Korea's document hell is second to none. Built by a civil servant who survived seven years in it.*
 
-HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, images (PNG/JPG/WebP) — parse, compare, analyze, and generate every document format Korean government offices throw at you.
+HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, PPTX, images (PNG/JPG/WebP) — parse, compare, analyze, and generate every document format Korean government offices throw at you.
 
 [한국어](./README.md)
 
@@ -65,7 +65,7 @@ The kordoc skill auto-activates on `.hwp`/`.hwpx` mentions and Korean official-d
 
 Beyond plain text extraction, kordoc automates the **entire lifecycle of Korean official documents**.
 
-*   **📄 Any document to Markdown**: Convert `HWP3` (legacy), `HWP` (5.x), `HWPX`, `HWPML`, `PDF`, `XLS`, `XLSX`, `DOCX` — and `PNG`/`JPG`/`WebP` images (automatic OCR) — to `Markdown` instantly — the ideal shape for LLMs to read and reason about.
+*   **📄 Any document to Markdown**: Convert `HWP3` (legacy), `HWP` (5.x), `HWPX`, `HWPML`, `PDF`, `XLS`, `XLSX`, `DOCX`, `PPTX` — and `PNG`/`JPG`/`WebP` images (automatic OCR) — to `Markdown` instantly — the ideal shape for LLMs to read and reason about.
 *   **📊 Faithful table reconstruction**: Borderless PDF tables and heavily merged HWP tables are analyzed structurally and restored as accurate markdown tables. Old-vs-new clause comparison tables in legislative amendment PDFs survive intact (v3.16.2).
 *   **🔍 Automatic redline (diff)**: Compare two documents and see exactly what changed — including cross-format comparison (HWP vs HWPX).
 *   **📝 Markdown back to HWPX**: Turn AI-written content back into report-form `HWPX`. No more copy-paste drudgery.
@@ -142,6 +142,14 @@ The same corpus converted to Markdown by [HwpForge](https://github.com/ai-scream
 HwpForge focuses on generation and editing; its Markdown uses pipe tables only, so merged cells cannot be expressed, which accounts for most of the table gap. Single-column tables (1,288 in the corpus) are decorative frames: 43% title or body boxes, 28% blank spacer frames, 3% lists. Whether to emit them as a table or as lines is a presentation choice, and their text is still scored by text recall. With single-column tables included: HWPX 10,392 tables, kordoc 90.6% vs HwpForge 36.0%; HWP 3,500 tables, 92.8% vs 32.1%. The HWP count excludes one pair whose HWPX is distribution-encrypted (no ground truth). Reproduce: `bench/hwpforge-bench.py`, then `node bench/compare-md-parsers.mjs <output dir>` (add `--include-single-col` to score single-column tables).
 
 ---
+
+## What's New in v4.17.0
+
+**PPTX (PowerPoint) is now parsed.** Slides are read in `sldIdLst` order: `a:p` text becomes paragraphs and lists (title placeholders become `##`), tables keep their merges (`gridSpan`/`rowSpan` plus `hMerge`/`vMerge` continuation cells), and charts are read from their **cached** series names, categories and values (`c:tx`/`c:cat`/`c:val`) into a category × series table — the numbers survive without the source workbook or PowerPoint. SmartArt (`dgm:data`) becomes an ordered list of node texts and speaker notes are appended per slide under `## 발표자 노트` (Speaker notes). Slide images are exported to `images` (with the original part path as `source`) and, with `ocr: true`, read by the **same built-in engine** as image input (PP-OCRv5, including raster table reconstruction); the model is used automatically when already cached and never downloaded otherwise (`ocr: false` turns it off). Reading order follows the shape tree, so tables interleaved with text stay in place. `pages`/`pageCount` are slide-based and `--pages 2-4` narrows the parse.
+
+**Closed-network Windows artifacts — portable ZIP and MSI.** `node scripts/pack-offline.mjs --target win32-x64 --format zip` produces a tree that runs straight after extraction (with Windows `bin\kordoc.cmd` / `bin\kordoc-mcp.cmd` launchers and a PowerShell `INSTALL.md`), and `npm run build:msi` bakes the **same staging** with WiX v5 into an OCR engine and model bundled `kordoc-<version>-win-x64.msi` (installs to `%ProgramFiles%\kordoc`, sets system `KORDOC_OFFLINE=1`, appends `bin` to PATH, points to the bundled models, replaces older versions via `MajorUpgrade`). The MSI needs WiX, so it is built on Windows/CI — [`.github/workflows/windows-package.yml`](.github/workflows/windows-package.yml) produces both and attaches OCR bundled artifacts to a GitHub Release on `v*` tags. See [docs/offline-deployment.md](docs/offline-deployment.md).
+
+PPTX support ends the #80 behaviour where PPTX reported an unsupported format — `parse()` now parses it. Tools that edit the original file in place (`fill_form` with `hwpx-preserve`, `patch_document`) still refuse by name with `감지된 포맷: pptx`.
 
 ## What's New in v4.16.0
 
@@ -776,7 +784,7 @@ codex mcp add kordoc -- npx -y kordoc mcp
 
 | Tool | Description |
 |------|-------------|
-| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX → markdown (with metadata) |
+| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX/PPTX → markdown (with metadata) |
 | `detect_format` | Format detection via magic bytes |
 | `parse_metadata` | Fast metadata-only extraction |
 | `parse_pages` | Parse a specific page range |
@@ -808,14 +816,15 @@ codex mcp add kordoc -- npx -y kordoc mcp
 | `parseXlsx(buffer, options?)` | XLSX only |
 | `parseXls(buffer, options?)` | XLS (Excel 97–2003, BIFF8) only |
 | `parseDocx(buffer, options?)` | DOCX only |
+| `parsePptx(buffer, options?)` | PPTX only — slides, tables, charts, SmartArt, notes, images (OCR) |
 | `parseHwpml(buffer, options?)` | HWPML (XML-based HWP) only |
 | `detectFormat(buffer)` | Synchronous magic-byte detection — returns `hwpx` for ZIP and `hwp` for OLE2 for backward compatibility |
 | `await detectZipFormat(buffer)` | Inspects ZIP entries to distinguish `hwpx`, `xlsx`, `docx`, `pptx`, and `unknown` |
 | `detectOle2Format(buffer)` | Inspects OLE2 streams to distinguish `hwp`, `xls`, and `unknown` |
 
-PPTX is detected but cannot be parsed. `parse()` returns `success: false`, `fileType: "pptx"`,
-and `code: "UNSUPPORTED_FORMAT"` for PPTX input. Wrappers/APIs that route ZIP formats should
-call `await detectZipFormat(buffer)` when `detectFormat()` returns `hwpx`.
+PPTX is parsed using the `sldIdLst` order in `ppt/presentation.xml` as slide numbers.
+Wrappers/APIs that route ZIP formats should call `await detectZipFormat(buffer)` when
+`detectFormat()` returns `hwpx`.
 
 ### Advanced functions
 
@@ -872,6 +881,7 @@ import type {
 | **XLSX** (Excel) | ZIP + XML DOM | Shared strings, merged cells, multiple sheets, formula display |
 | **XLS** (Excel 97–2003) | OLE2 + BIFF8 | Workbook stream, SST shared strings, cell/sheet extraction |
 | **DOCX** (Word) | ZIP + XML DOM | Style-based headings, numbering, footnotes, image extraction |
+| **PPTX** (PowerPoint) | ZIP + XML DOM | Slide text, tables (merged cells), chart data cache, SmartArt, speaker notes, image extraction + OCR |
 
 ## Security
 

@@ -13,9 +13,9 @@ export function registerParseTools(server: McpServer): void {
 
   server.tool(
     "parse_document",
-    "한국 문서 파일(HWP, HWPX, PDF, XLSX, DOCX)과 이미지(PNG/JPG/WebP)를 마크다운으로 변환합니다. 파일 경로를 입력하면 포맷을 자동 감지하여 텍스트를 추출합니다. 이미지는 OCR(내장 PP-OCRv5)이 자동 적용되고 표 괘선도 복원됩니다.",
+    "한국 문서 파일(HWP, HWPX, PDF, XLSX, DOCX, PPTX)과 이미지(PNG/JPG/WebP)를 마크다운으로 변환합니다. 파일 경로를 입력하면 포맷을 자동 감지하여 텍스트를 추출합니다. 이미지는 OCR(내장 PP-OCRv5)이 자동 적용되고 표 괘선도 복원됩니다. PPTX는 슬라이드 텍스트·표·차트 데이터 캐시·SmartArt·발표자 노트까지 뽑습니다.",
     {
-      file_path: z.string().min(1).describe("파싱할 문서 파일의 절대 경로 (HWP, HWPX, PDF, XLSX, DOCX, PNG/JPG/WebP)"),
+      file_path: z.string().min(1).describe("파싱할 문서 파일의 절대 경로 (HWP, HWPX, PDF, XLSX, DOCX, PPTX, PNG/JPG/WebP)"),
       ocr: z.union([z.boolean(), z.literal("force")]).optional()
         .describe("스캔/이미지 PDF 텍스트 OCR (내장 PP-OCRv5 korean, 첫 사용 시 ~18MB 자동 다운로드). true=텍스트층이 없거나 깨진 페이지만 인식하고 정상 페이지는 그대로 둡니다. \"force\"=텍스트층이 있어도 무시하고 전 페이지 강제 재인식. parse 결과에 NEEDS_OCR 경고가 있으면 이 옵션으로 재시도하세요"),
       remove_header_footer: z.boolean().optional()
@@ -121,7 +121,7 @@ export function registerParseTools(server: McpServer): void {
 
   server.tool(
     "detect_format",
-    "파일의 포맷을 매직 바이트와 컨테이너 내부 구조로 감지합니다 (hwpx, hwp, hwp3, hwpml, pdf, xls, xlsx, docx, pptx, image, unknown). PPTX는 감지만 지원합니다.",
+    "파일의 포맷을 매직 바이트와 컨테이너 내부 구조로 감지합니다 (hwpx, hwp, hwp3, hwpml, pdf, xls, xlsx, docx, pptx, image, unknown).",
     {
       file_path: z.string().min(1).describe("감지할 파일의 절대 경로"),
     },
@@ -186,8 +186,6 @@ export function registerParseTools(server: McpServer): void {
           if (detectOle2Format(buffer) === "xls") effectiveFormat = "xls"
         }
         switch (effectiveFormat) {
-          case "pptx":
-            throw new KordocError("PPTX 파일은 지원하지 않는 파일 형식입니다.")
           case "hwp":
             metadata = extractHwp5MetadataOnly(Buffer.from(buffer))
             break
@@ -206,7 +204,8 @@ export function registerParseTools(server: McpServer): void {
           case "hwpml":
           case "xls":
           case "xlsx":
-          case "docx": {
+          case "docx":
+          case "pptx": {
             // 전용 metadata 추출기가 없는 포맷은 전체 파싱 후 metadata 반환
             const result = await parse(buffer)
             metadata = result.success ? result.metadata : undefined

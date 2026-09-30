@@ -10,7 +10,7 @@ import { toArrayBuffer } from "./utils.js"
 import { assertNetworkAllowed } from "./shared/offline.js"
 import type { WatchOptions, ParseOptions } from "./types.js"
 
-export const SUPPORTED_EXTENSIONS = new Set([".hwp", ".hwpx", ".hml", ".pdf", ".xls", ".xlsx", ".docx"])
+export const SUPPORTED_EXTENSIONS = new Set([".hwp", ".hwpx", ".hml", ".pdf", ".xls", ".xlsx", ".docx", ".pptx"])
 const DEBOUNCE_MS = 1000
 /** 파일 쓰기 완료 판정: 연속 2회 동일 크기 확인 간격 */
 const STABLE_CHECK_MS = 300

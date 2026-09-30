@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.17.0] - 2026-10-01
+
+PPTX(PowerPoint) 파싱을 추가하고, 폐쇄망 Windows 반입용 **포터블 ZIP·MSI** 산출물 경로를 만들었다. #80 이 "PPTX 는 지원하지 않는 형식"으로 고정했던 동작은 이 버전에서 끝난다 — `parse()` 가 PPTX 를 파싱한다(원본 서식을 직접 고치는 `fill_form` hwpx-preserve·`patch_document` 는 종전대로 `감지된 포맷: pptx` 로 거부).
+
+### Added
+
+- **PPTX 파서 (`src/pptx/parser.ts`)**: `ppt/presentation.xml` 의 `sldIdLst` 순서를 슬라이드 번호로 삼아 `ppt/slides/slideN.xml` 을 읽는다. `a:p` 글은 문단·목록(`lvl`)으로, 제목 자리표시자(`p:ph type="title"`)는 `##` 로 낸다. 표(`a:tbl`)는 `gridSpan`·`rowSpan` 과 `hMerge`·`vMerge` 이어짐 칸을 반영해 격자를 재구성한다(`buildTable` 2-pass). 차트(`c:chartSpace`)는 계열 이름(`c:tx`)·항목(`c:cat`)·값(`c:val`)의 **캐시**만 읽어 항목×계열 표로 낸다 — 엑셀 원본이나 PowerPoint 없이 숫자가 남는다. 캐시가 없으면 값 문단으로 폴백한다. SmartArt(`dgm:data`)는 `dgm:pt` 노드 글을 문서 순서대로 목록으로 낸다. 발표자 노트(`notesSlide`)는 슬라이드 본문 뒤 `## 발표자 노트` 로 붙인다. `docProps/core.xml` 에서 제목·작성자·설명·생성/수정일·키워드를 읽고 `pageCount` 는 슬라이드 수다. `parsePptx` 로도 직접 부를 수 있다.
+- **읽기 순서 보존**: `p:spTree` 를 문서 순서대로 재귀 순회한다(그룹 도형 안까지). 도형 글을 전부 먼저 내고 표를 나중에 붙이면 표와 텍스트가 번갈아 놓인 슬라이드에서 순서가 뒤집힌다 — 테스트로 고정했다.
+- **슬라이드 그림 추출 + OCR**: `a:blip`(r:embed) 관계를 따라 `ppt/media/*` 를 `images` 로 내보내고(원본 파트 경로가 `source`), `bin/`·`cxnSp` 도형 채우기 그림처럼 본문에서 참조되지 않은 그림은 슬라이드 끝에 붙인다. `ocr: true`/`"force"`/함수면 이미지 입력과 **같은 내장 엔진**(`parseImageDocument` — PP-OCRv5, 래스터 괘선 표 복원 포함)으로 읽는다. OCR 모델이 이미 캐시에 있으면 자동, 없으면 다운로드하지 않고 추출만 한다(PDF 경로와 같은 정책). OCR 실패(sharp 미설치 등)는 `NEEDS_OCR` 경고만 남기고 본문 추출은 계속한다.
+- **`pages`·`pageCount`**: 슬라이드 단위. `--pages 2-4` 로 일부만 읽는다. 슬라이드 상한 2000장(초과 시 `PARTIAL_PARSE` 경고), ZIP 비압축 100MB 상한(`precheckZipSize`), OCR 은 래스터 확장자(png/jpg/jpeg/webp)만 시도한다.
+- **포터블 ZIP**: `scripts/pack-offline.mjs --target win32-x64 --format zip` 이 Windows 반입용 ZIP 을 만든다. 압축 안에 `bin\kordoc.cmd`·`bin\kordoc-mcp.cmd` 실행기와 PowerShell 기준 `INSTALL.md` 가 들어간다. `--target`/`--format`/`--keep-stage` 를 추가하고, staging 로직을 함수로 분리해 MSI 빌더와 공유한다(`pack:offline`·`pack:windows` npm 스크립트).
+- **MSI (`scripts/build-msi.mjs`, WiX Toolset v5)**: pack-offline 과 **같은 staging** 을 `%ProgramFiles%\kordoc` 에 설치하는 MSI 로 굽는다. 시스템 `KORDOC_OFFLINE=1`, `bin` 을 PATH 뒤에 추가, OCR 모델을 동봉했으면 `KORDOC_MODEL_CACHE` 를 설치 폴더로 설정, `MajorUpgrade`(고정 `UpgradeCode`)로 이전 버전을 대체한다. `build:msi` 는 OCR 엔진·모델을 포함한다. WiX 는 Windows/CI 에서 필요하며, 없으면 staging 을 남긴 채 안내 메시지와 함께 종료한다.
+- **`.github/workflows/windows-package.yml`**: windows-latest 에서 `typecheck → test → build → 포터블 ZIP → MSI` 를 돌려 아티팩트로 올리고, 태그(`v*`) 푸시면 두 파일을 GitHub Release 에 첨부한다.
+- **`docs/offline-deployment.md`**: Windows 포터블 ZIP·MSI 절차와 둘의 차이(설치 위치·실행기·환경변수·업그레이드·권한) 표, 검토 체크리스트 2항목.
+
+### Changed
+
+- **PPTX 를 지원 포맷으로 배선**: `mcp/shared.ts` `ALLOWED_EXTENSIONS`·`watch.ts` `SUPPORTED_EXTENSIONS` 에 `.pptx`, MCP `parse_document`·`detect_format` 설명과 `parse_metadata` 의 pptx 분기(전체 파싱 후 metadata)에서 "지원하지 않음" 제거, CLI·README·README-EN 지원 포맷 표에 PPTX 추가.
+- **테스트**: `tests/pptx-parser.test.ts` 신설(슬라이드 텍스트·병합 표·차트 데이터 표·SmartArt·그림·노트·메타데이터·페이지 사영, 읽기 순서, `pages` 옵션, 파트 없음 오류). `tests/zip-format.test.ts`·`tests/pptx-surfaces.test.ts` 는 #80 계약을 새 동작으로 다시 고정했다 — CLI·MCP 가 pptx 를 pptx 로 인식해 내용을 뽑고, 원본 보존 도구만 `감지된 포맷: pptx` 로 명시 거부한다.
+
+### Fixed
+
+- **`c:chart` 제목을 못 읽던 것**: `parseChart` 가 `Document` 를 받는데 직속 자식 탐색을 문서 노드에서 시작해 루트 요소(`c:chartSpace`)를 건너뛰었다 — 루트에서 `c:chart` 를 찾도록 고쳤다.
+- **노트·차트·SmartArt 파트를 그림으로 내보내던 것**: 미링크 미디어 폴백이 관계 종류를 보지 않아 `notesSlide`·`chart`·`diagramData` 를 `image_00N.xml` 로 내보냈다 — `image` 관계만 보게 고쳤다.
+
 ## [4.16.0] - 2026-09-28
 
 PDF 글·표 복원을 채점 기준 정비와 함께 한 단계 더 올리고, 텍스트층 없는 쪽은 OCR 모델이 캐시에 있으면 자동으로 읽는다. PDF 글 정답(744쌍, 새 채점기 기준 v4.15.7 → 4.16.0): recall 0.99619 → 0.99814 · precision 0.98867 → 0.99527 · order 0.98787 → 0.99124 · 어절 F1 0.98466 → 0.98713 (5문서 혼합 변화 — 아래 항목에 문서명). 한국 PDF 표 정답 708쌍 2,632표 exact 96.69%·매칭 99.51%. ODL 200 기본 0.937 → 0.940(모델 캐시 있을 때), `ocr+plain+htmlTables` 0.9711 → 0.9728. DOCX 번호 매기기 실제 라벨, 쪽 아래 각주·문서 끝 미주를 참조 자리로, 보도자료 연락처 표 6열. 이슈 #97~#99 와 보안 보강 PR #100(@LimePencil)·미주 목차 오인 PR #96(@LimePencil)을 반영한다.

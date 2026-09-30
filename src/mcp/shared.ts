@@ -8,7 +8,7 @@ import { toArrayBuffer, sanitizeError, classifyError, KordocError } from "../uti
 import { assertWithinRoot } from "../shared/offline.js"
 
 /** 허용 파일 확장자 */
-export const ALLOWED_EXTENSIONS = new Set([".hwp", ".hwpx", ".hml", ".pdf", ".xls", ".xlsx", ".docx"])
+export const ALLOWED_EXTENSIONS = new Set([".hwp", ".hwpx", ".hml", ".pdf", ".xls", ".xlsx", ".docx", ".pptx"])
 /** 파싱 계열 도구(parse_*·detect_format) 입력 확장자 — 문서 + 이미지(자동 OCR).
  *  이미지 3종은 detect.ts 매직바이트 지원 범위와 동일. 쓰기·패치 계열은 ALLOWED_EXTENSIONS 유지 */
 export const PARSE_EXTENSIONS = new Set([...ALLOWED_EXTENSIONS, ".png", ".jpg", ".jpeg", ".webp"])

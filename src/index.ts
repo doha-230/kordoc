@@ -18,6 +18,7 @@ import { isDistributionSentinel } from "./hwp5/sentinel.js"
 import { parseXlsxDocument } from "./xlsx/parser.js"
 import { parseXlsDocument } from "./xls/parser.js"
 import { parseDocxDocument } from "./docx/parser.js"
+import { parsePptxDocument } from "./pptx/parser.js"
 import { parseHwpmlDocument } from "./hwpml/parser.js"
 import type { ParseResult, ParseOptions, IRBlock } from "./types.js"
 import { classifyError, sanitizeError, toArrayBuffer } from "./utils.js"
@@ -123,9 +124,7 @@ async function dispatch(
       const zipFormat = await detectZipFormat(buffer)
       if (zipFormat === "xlsx") return parseXlsx(buffer, opts)
       if (zipFormat === "docx") return parseDocx(buffer, opts)
-      if (zipFormat === "pptx") {
-        return { success: false, fileType: "pptx", error: "PPTX 파일은 지원하지 않는 파일 형식입니다.", code: "UNSUPPORTED_FORMAT" }
-      }
+      if (zipFormat === "pptx") return parsePptx(buffer, opts)
       // unknown은 손상 ZIP·비표준 섹션 경로의 HWPX 복구를 위해 기존 파서로 전달
       return parseHwpx(buffer, opts)
     }
@@ -271,6 +270,19 @@ export async function parseDocx(buffer: ArrayBuffer, options?: ParseOptions): Pr
     return { success: true, fileType: "docx", markdown, blocks, metadata, outline, warnings, images: images?.length ? images : undefined, pageCount: metadata?.pageCount }
   } catch (err) {
     return { success: false, fileType: "docx", error: sanitizeError(err), code: classifyError(err) }
+  }
+}
+
+/** PPTX 슬라이드·표·차트·SmartArt·이미지를 Markdown으로 변환 */
+export async function parsePptx(buffer: ArrayBuffer, options?: ParseOptions): Promise<ParseResult> {
+  try {
+    const { markdown, blocks, metadata, outline, warnings, images } = await parsePptxDocument(buffer, options)
+    return {
+      success: true, fileType: "pptx", markdown, blocks, metadata, outline,
+      warnings, images: images?.length ? images : undefined, pageCount: metadata?.pageCount,
+    }
+  } catch (err) {
+    return { success: false, fileType: "pptx", error: sanitizeError(err), code: classifyError(err) }
   }
 }
 

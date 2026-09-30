@@ -174,7 +174,7 @@ async function printBanner(): Promise<void> {
     await sleep(60)
   }
   console.log()
-  await typewrite(`${c.dim}  모두 파싱해버리겠다  ━━  HWP · HWPX · PDF · XLSX · DOCX → Markdown${c.reset}`, 10)
+  await typewrite(`${c.dim}  모두 파싱해버리겠다  ━━  HWP · HWPX · PDF · XLSX · DOCX · PPTX → Markdown${c.reset}`, 10)
   console.log()
   console.log(`${c.cyan}  ${"━".repeat(60)}${c.reset}`)
   console.log()

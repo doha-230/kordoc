@@ -13,7 +13,7 @@
 | 파일 접근 제한 | `KORDOC_ROOT=<디렉토리>` — MCP 읽기·쓰기를 해당 하위로 한정 |
 | 계정·API 키 | 없음 (인증 요소를 사용하지 않음) |
 | 텔레메트리·사용 통계 | 없음 |
-| 설치 방식 | 오프라인 tarball (npm 레지스트리 불필요) |
+| 설치 방식 | 오프라인 tarball · 포터블 ZIP · MSI (npm 레지스트리 불필요) |
 
 ## 2. 반입 번들 만들기 (인터넷 되는 PC)
 
@@ -36,12 +36,60 @@ node scripts/pack-offline.mjs --with-ocr --with-models
 
 산출물은 `dist-offline/` 에 생기고, 압축 안에 `INSTALL.md` 가 함께 들어간다.
 
+### Windows — 포터블 ZIP 과 MSI
+
+Windows 반입은 압축 형식만 다르고 내용은 같은 두 산출물을 쓴다. 어느 쪽이든 **압축을 풀거나
+설치한 뒤 그 자리에서 바로 실행**되며 npm 레지스트리를 찾지 않는다.
+
+```powershell
+# 1) 포터블 ZIP — 압축을 풀면 끝 (관리자 권한·설치 흔적 없음)
+node scripts/pack-offline.mjs --target win32-x64 --format zip
+#    → dist-offline/kordoc-offline-<버전>-win32-x64.zip
+
+# 2) MSI — OCR 엔진·모델 포함 (WiX Toolset v5 필요)
+node dist/cli.js check-ocr-models
+node scripts/build-msi.mjs --target win32-x64 --with-ocr --with-models
+#    → dist-offline/kordoc-<버전>-win-x64.msi
+```
+
+두 스크립트는 **같은 staging 트리**를 쓰므로 ZIP 과 MSI 의 내용이 갈라지지 않는다.
+
+| | 포터블 ZIP | MSI |
+|---|---|---|
+| 설치 위치 | 푼 디렉토리 그대로 | `%ProgramFiles%\kordoc` |
+| 실행기 | 압축 안 `bin\kordoc.cmd`·`bin\kordoc-mcp.cmd` (PATH 추가는 사용자가) | 같은 실행기를 PATH 에 자동 추가 |
+| 환경변수 | 사용자가 설정 | `KORDOC_OFFLINE=1` 을 시스템 변수로 설정 |
+| OCR 모델 | `--with-models` 로 넣었다면 `models --import` 실행 | `--with-models` 로 넣었다면 설치 폴더의 모델을 `KORDOC_MODEL_CACHE` 로 자동 연결 |
+| 이전 버전 | 폴더를 지우면 끝 | `MajorUpgrade` 로 자동 대체 (같은 `UpgradeCode`) |
+| 관리자 권한 | 불필요 | 필요 |
+
+둘 다 Node.js 20 이상이 설치되어 있고 `node` 가 PATH 에 있어야 한다(실행기가 `node` 를 부른다).
+
+MSI 는 WiX Toolset 이 필요하므로 Windows 또는 CI 에서 만든다.
+[`.github/workflows/windows-package.yml`](../.github/workflows/windows-package.yml) 이
+windows-latest 러너에서 `typecheck → test → build → 포터블 ZIP → MSI` 를 한 번에 돌리고,
+태그(`v*`) 푸시면 OCR 엔진·모델을 포함한 두 파일을 GitHub Release 에 첨부한다.
+
+```bash
+# 태그 없이 산출물만 받기
+gh workflow run "Windows package (portable ZIP + MSI)"
+gh run download -n kordoc-windows-<sha>
+```
+
 ## 3. 설치 (내부망 PC)
 
 ```bash
 tar -xzf kordoc-offline-<버전>-<플랫폼>.tar.gz
 cd kordoc-offline-<버전>-<플랫폼>
 node node_modules/kordoc/dist/cli.js --version
+```
+
+Windows 는 압축 안 `INSTALL.md` 의 PowerShell 절차를 따르거나 MSI 를 설치한다.
+
+```powershell
+Expand-Archive -Path kordoc-offline-<버전>-win32-x64.zip -DestinationPath .
+cd kordoc-offline-<버전>-win32-x64
+node node_modules\kordoc\dist\cli.js --version
 ```
 
 npm 레지스트리 접근이 일어나지 않는다. 모델을 별도로 반입했다면:
@@ -127,6 +175,8 @@ optional dependency 로 분리되어, 쓰지 않으면 설치할 필요가 없�
 ## 8. 검토 체크리스트
 
 - [ ] 반입 번들이 대상과 동일한 OS/CPU 에서 생성되었는가
+- [ ] Windows 라면 포터블 ZIP 또는 MSI 중 반입 절차에 맞는 쪽을 골랐는가
+- [ ] (MSI) 설치 후 `KORDOC_OFFLINE` 시스템 변수와 PATH 의 `bin` 이 의도대로 들어갔는가
 - [ ] `KORDOC_OFFLINE=1` 이 시스템 환경변수로 고정되었는가
 - [ ] `KORDOC_ROOT` 이 업무 디렉토리로 고정되었는가 (MCP 사용 시)
 - [ ] 모델을 반입했다면 `models --status` 가 전 항목 `verified: true` 인가

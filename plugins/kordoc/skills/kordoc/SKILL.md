@@ -1,12 +1,12 @@
 ---
 name: kordoc
-description: Use this skill whenever the user wants to read, create, fill, edit, compare, validate, or preview Korean Hangul/official documents — .hwp (HWP 3.x/5.x), .hwpx, .hml (HWPML) — or convert Korean-office PDF/DOCX/XLS/XLSX to Markdown. Triggers include any mention of 'hwp', 'hwpx', 'hml', '한글 문서', '아래한글', '한컴', '공문서', '기안문', '보고서를 hwpx로', '서식 채우기', '양식 자동 작성', '신청서 채워줘', '신구대조표', '문서 비교', or uploading/attaching .hwp/.hwpx/.hml files. Also use when generating official Korean documents from Markdown (기안문·보고서·계획서·통지·회의록 presets) or when a HWPX layout preview/verification is needed. Do NOT use for authoring plain Word .docx files (kordoc reads DOCX but generates only HWPX) or for general Korean text with no document file involved.
+description: Use this skill whenever the user wants to read, create, fill, edit, compare, validate, or preview Korean Hangul/official documents — .hwp (HWP 3.x/5.x), .hwpx, .hml (HWPML) — or convert Korean-office PDF/DOCX/PPTX/XLS/XLSX to Markdown. Triggers include any mention of 'hwp', 'hwpx', 'hml', '한글 문서', '아래한글', '한컴', '공문서', '기안문', '보고서를 hwpx로', '서식 채우기', '양식 자동 작성', '신청서 채워줘', '신구대조표', '문서 비교', or uploading/attaching .hwp/.hwpx/.hml files. Also use when generating official Korean documents from Markdown (기안문·보고서·계획서·통지·회의록 presets) or when a HWPX layout preview/verification is needed. Do NOT use for authoring plain Word .docx files (kordoc reads DOCX but generates only HWPX) or for general Korean text with no document file involved.
 license: MIT
 ---
 
 # kordoc — 한국 공문서 툴킷
 
-kordoc(npm)은 관공서 문서 파이프라인 도구다. HWP 3.x/5.x·HWPX·HWPML·PDF·DOCX·XLS/XLSX → Markdown
+kordoc(npm)은 관공서 문서 파이프라인 도구다. HWP 3.x/5.x·HWPX·HWPML·PDF·DOCX·PPTX·XLS/XLSX → Markdown
 파싱, Markdown → 공문서 HWPX 생성, 서식 빈칸 채우기(원본 스타일 보존), 서식 보존 라운드트립 패치,
 문서 비교, HWPX 구조 검증, 조판 SVG 렌더를 제공한다. 한컴오피스·Windows COM 불필요, Node.js 18+만
 있으면 된다.

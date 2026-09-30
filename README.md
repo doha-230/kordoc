@@ -7,7 +7,7 @@
 
 > *대한민국에서 둘째가라면 서러울 문서지옥. 거기서 7년 버틴 공무원이 만들었습니다.*
 
-HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, 이미지(PNG/JPG/WebP) — 관공서에서 쏟아지는 모든 문서를 파싱하고, 비교하고, 분석하고, 생성합니다.
+HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, PPTX, 이미지(PNG/JPG/WebP) — 관공서에서 쏟아지는 모든 문서를 파싱하고, 비교하고, 분석하고, 생성합니다.
 
 [English](./README-EN.md)
 
@@ -79,7 +79,7 @@ MCP 등록 대신 스킬(SKILL.md) 형태로 쓰려면:
 
 단순한 텍스트 추출을 넘어, **공문서 처리를 위한 모든 과정**을 자동화합니다.
 
-*   **📄 어떤 문서든 마크다운으로**: `HWP3` (구버전), `HWP`(5.x), `HWPX`, `HWPML`, `PDF`, `XLS`, `XLSX`, `DOCX` 파일은 물론 `PNG`/`JPG`/`WebP` 이미지(자동 OCR)까지 즉시 `Markdown`으로 변환합니다. AI(LLM)가 문서를 읽고 분석하기 가장 좋은 상태로 만들어줍니다.
+*   **📄 어떤 문서든 마크다운으로**: `HWP3` (구버전), `HWP`(5.x), `HWPX`, `HWPML`, `PDF`, `XLS`, `XLSX`, `DOCX`, `PPTX` 파일은 물론 `PNG`/`JPG`/`WebP` 이미지(자동 OCR)까지 즉시 `Markdown`으로 변환합니다. AI(LLM)가 문서를 읽고 분석하기 가장 좋은 상태로 만들어줍니다.
 *   **📊 복잡한 표(Table) 복원 — 숫자로 잠금**: 병합·중첩 표를 구조 그대로 살립니다. HWPX 코퍼스 2,286문서 **표 13,041/13,041 칸까지 무손실**(독립 추출기 대조 게이트 1.0), 같은 문서를 PDF로 내보내 원본 HWPX와 대조하면(716쌍 2,692표) **표 찾기 98.9%·칸까지 완전 일치 94.2%**. 선 없는 PDF 표도 감지해 복원하고, 법령 개정안 PDF의 신구조문대비표도 통째로 살립니다 (v3.16.2).
 *   **🔍 신구대조표 자동 생성**: 두 문서의 차이점을 분석하여 무엇이 바뀌었는지 한눈에 보여줍니다. (HWP와 HWPX 간의 비교도 가능!)
 *   **📝 마크다운을 다시 HWPX로**: AI가 작성한 내용을 다시 보고서 양식(`HWPX`)으로 되돌려줍니다. 이제 복사-붙여넣기 노가다에서 해방되세요.
@@ -166,6 +166,16 @@ MCP 등록 대신 스킬(SKILL.md) 형태로 쓰려면:
 HwpForge는 생성·편집 중심 라이브러리이고, Markdown 표가 파이프 표뿐이라 병합 칸을 표현하지 못하는 점이 표 점수 차이의 대부분입니다. 1열 표(코퍼스 1,288개)는 제목·본문 상자 43%, 빈 여백 행 틀 28%, 목록형 3%인 꾸밈 틀이라 표로 낼지 줄 글로 낼지는 표현 선택이고, 그 글은 글 재현율이 채점합니다. 1열 표를 넣으면 HWPX 10,392표 kordoc 90.6%·HwpForge 36.0%, HWP 3,500표 92.8%·32.1%입니다. HWP 문서 수는 짝 HWPX가 배포용 암호라 정답이 없는 1건을 뺀 값입니다. 재현: `bench/hwpforge-bench.py` → `node bench/compare-md-parsers.mjs <출력 폴더>` (1열 표 포함은 `--include-single-col`).
 
 ---
+
+## v4.17.0 변경사항
+
+**PPTX(PowerPoint)를 파싱합니다.** 슬라이드 순서(`sldIdLst`)대로 읽어 슬라이드마다 `a:p` 글을 문단·목록으로 내고(제목 자리표시자는 `##`), 표는 `gridSpan`·`rowSpan` 과 `hMerge`·`vMerge` 이어짐 칸을 반영해 병합 그대로 복원합니다. 차트는 계열 이름·항목·값의 **캐시**(`c:tx`/`c:cat`/`c:val`)를 읽어 항목×계열 표로 내므로 엑셀 원본이나 PowerPoint 없이도 숫자가 남습니다. SmartArt(`dgm:data`)는 노드 글을 흐름 순서대로 목록으로, 발표자 노트는 슬라이드 본문 뒤 `## 발표자 노트` 로 붙입니다. 슬라이드 그림은 `images` 로 추출하고(원본 파트 경로가 `source`), `ocr: true` 면 이미지 입력과 **같은 내장 엔진**(PP-OCRv5, 괘선 표 복원 포함)으로 글자를 읽습니다 — OCR 모델이 이미 캐시에 있으면 자동, 없으면 다운로드하지 않고 추출만 합니다(`ocr: false` 로 끔).
+
+**읽기 순서를 도형 트리 순서 그대로** 지킵니다. 종전처럼 도형 글을 모두 먼저 내고 표를 나중에 붙이면 표와 텍스트가 번갈아 놓인 슬라이드에서 순서가 뒤집힙니다. `pages`/`pageCount` 는 슬라이드 단위이고, `--pages 2-4` 로 일부 슬라이드만 읽습니다.
+
+**폐쇄망 Windows 반입 산출물 — 포터블 ZIP 과 MSI.** `node scripts/pack-offline.mjs --target win32-x64 --format zip` 이 압축만 풀면 바로 쓰는 트리를(압축 안에 Windows용 `bin\kordoc.cmd`·`bin\kordoc-mcp.cmd` 실행기와 PowerShell 기준 `INSTALL.md` 포함), `npm run build:msi` 가 **같은 staging** 을 WiX v5 로 구워 OCR 엔진·모델을 포함한 `kordoc-<버전>-win-x64.msi` 를 만듭니다(설치 위치 `%ProgramFiles%\kordoc`, 시스템 `KORDOC_OFFLINE=1`, `bin` 을 PATH 에 추가, 동봉 모델 경로 설정, `MajorUpgrade` 로 이전 버전 대체). MSI 는 WiX 가 필요한 Windows/CI 에서 만들어지며 [`.github/workflows/windows-package.yml`](.github/workflows/windows-package.yml) 이 두 산출물을 한 번에 올립니다(태그 푸시면 OCR 포함 산출물을 릴리스에 첨부). 절차는 [docs/offline-deployment.md](docs/offline-deployment.md).
+
+PPTX 지원으로 #80 의 "PPTX 는 지원하지 않는 형식" 동작은 끝납니다 — 이제 `parse()` 는 PPTX 를 파싱합니다. 원본 서식을 그대로 고치는 도구(`fill_form` hwpx-preserve·`patch_document`)는 종전대로 `감지된 포맷: pptx` 로 명시 거부합니다.
 
 ## v4.16.0 변경사항
 
@@ -1258,7 +1268,7 @@ codex mcp add kordoc -- npx -y kordoc mcp
 
 | 도구 | 설명 |
 |------|------|
-| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX → 마크다운 (메타데이터 포함) |
+| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX/PPTX → 마크다운 (메타데이터 포함) |
 | `detect_format` | 매직 바이트로 포맷 감지 |
 | `parse_metadata` | 메타데이터만 빠르게 추출 |
 | `parse_pages` | 특정 페이지 범위만 파싱 |
@@ -1290,15 +1300,16 @@ codex mcp add kordoc -- npx -y kordoc mcp
 | `parseXlsx(buffer, options?)` | XLSX 전용 |
 | `parseXls(buffer, options?)` | XLS (Excel 97~2003, BIFF8) 전용 |
 | `parseDocx(buffer, options?)` | DOCX 전용 |
+| `parsePptx(buffer, options?)` | PPTX 전용 — 슬라이드·표·차트·SmartArt·노트·그림(OCR) |
 | `parseHwpml(buffer, options?)` | HWPML (XML 기반 HWP) 전용 |
 | `parseImage(buffer, options?)` | 이미지(PNG/JPG/WebP) 전용 — 내장 OCR 상시 적용 (v4.2.1) |
 | `detectFormat(buffer)` | 동기 매직 바이트 감지 — 하위 호환을 위해 ZIP은 `hwpx`, OLE2는 `hwp` 반환 |
 | `await detectZipFormat(buffer)` | ZIP 내부 구조로 `hwpx`, `xlsx`, `docx`, `pptx`, `unknown` 구분 |
 | `detectOle2Format(buffer)` | OLE2 내부 스트림으로 `hwp`, `xls`, `unknown` 구분 |
 
-PPTX는 감지만 지원합니다. `parse()`는 PPTX 입력에 `success: false`, `fileType: "pptx"`,
-`code: "UNSUPPORTED_FORMAT"`을 반환합니다. ZIP을 구분해 라우팅하는 래퍼/API는
-`detectFormat()` 결과가 `hwpx`일 때 `await detectZipFormat(buffer)`로 세분화하세요.
+PPTX 는 `ppt/presentation.xml` 의 `sldIdLst` 순서를 슬라이드 번호로 삼아 파싱합니다. ZIP을
+구분해 라우팅하는 래퍼/API는 `detectFormat()` 결과가 `hwpx`일 때
+`await detectZipFormat(buffer)`로 세분화하세요.
 
 ### 고급 함수
 
@@ -1368,6 +1379,7 @@ import type {
 | **XLSX** (Excel) | ZIP + XML DOM | 공유 문자열, 병합 셀, 다중 시트, 수식 표시, 날짜 셀 ISO 변환 |
 | **XLS** (Excel 97~2003) | OLE2 + BIFF8 | Workbook 스트림, SST 공유 문자열, 셀/시트 추출 |
 | **DOCX** (Word) | ZIP + XML DOM | 스타일 heading, 번호 매기기, 각주, 하이퍼링크, 이미지 추출 |
+| **PPTX** (PowerPoint) | ZIP + XML DOM | 슬라이드 텍스트·표(병합 칸), 차트 데이터 캐시, SmartArt, 발표자 노트, 그림 추출 + OCR |
 | **이미지** (PNG/JPG/WebP) | sharp + 내장 OCR | 스크린샷·스캔 이미지 직접 입력, 래스터 괘선 감지로 표 복원 |
 
 ## 보안

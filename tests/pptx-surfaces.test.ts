@@ -1,9 +1,15 @@
-/** #80: unsupported PPTX must remain an explicit failure across CLI and MCP. */
+/**
+ * PPTX 표면 계약 (#80 · v4.17).
+ *
+ * #80 은 "PPTX 를 HWPX 파서로 흘려보내지 않는다"를 고정했다. v4.17 부터 PPTX 는 실제로
+ * 파싱되므로, 같은 계약을 **새 동작**으로 다시 고정한다: CLI·MCP 가 pptx 를 pptx 로 인식해
+ * 내용을 뽑고, 원본 보존(hwpx-preserve) 계열 도구만 "감지된 포맷: pptx" 로 명시 거부한다.
+ */
 import { test } from "node:test"
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
 import { createRequire } from "node:module"
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -16,6 +22,7 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url))
 const CLI = fileURLToPath(new URL("../src/cli.ts", import.meta.url))
 const MCP = fileURLToPath(new URL("../src/mcp.ts", import.meta.url))
 const TITLE = "ZIP metadata regression"
+const SLIDE_TEXT = "슬라이드 본문 확인용 문장"
 const CORE_PROPERTIES = `<?xml version="1.0" encoding="UTF-8"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
   xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -29,47 +36,56 @@ async function makeZip(parts: Record<string, string>): Promise<Buffer> {
   return zip.generateAsync({ type: "nodebuffer" })
 }
 
+/** 최소 덱 (슬라이드 1장 + 본문 텍스트) — 실제 PowerPoint 산출물과 같은 파트 배치 */
 function makePptx(): Promise<Buffer> {
+  const P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+  const A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+  const R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  const REL = "http://schemas.openxmlformats.org/package/2006/relationships"
   return makeZip({
     "[Content_Types].xml": `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
       <Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
     </Types>`,
-    "ppt/presentation.xml": `<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:sldIdLst/></p:presentation>`,
+    "ppt/presentation.xml": `<p:presentation xmlns:p="${P}" xmlns:r="${R}"><p:sldIdLst><p:sldId id="256" r:id="rId1"/></p:sldIdLst></p:presentation>`,
+    "ppt/_rels/presentation.xml.rels": `<Relationships xmlns="${REL}"><Relationship Id="rId1" Type="${R}/slide" Target="slides/slide1.xml"/></Relationships>`,
+    "ppt/slides/slide1.xml": `<p:sld xmlns:p="${P}" xmlns:a="${A}"><p:cSld><p:spTree>
+      <p:sp><p:nvSpPr><p:cNvPr id="1" name="Title"/><p:nvPr><p:ph type="title"/></p:nvPr></p:nvSpPr>
+        <p:txBody><a:bodyPr/><a:p><a:r><a:t>${SLIDE_TEXT}</a:t></a:r></a:p></p:txBody></p:sp>
+    </p:spTree></p:cSld></p:sld>`,
   })
 }
 
 for (const format of ["markdown", "json", "chunks"]) {
-  test(`#80 CLI ${format}: PPTX returns failure JSON and leaves output untouched`, { timeout: 30000 }, async () => {
+  test(`CLI ${format}: pptx 를 파싱해 슬라이드 글을 출력한다`, { timeout: 30000 }, async () => {
     const dir = mkdtempSync(join(tmpdir(), "kordoc-pptx-cli-"))
     try {
       const input = join(dir, "presentation.pptx")
       const output = join(dir, "output.txt")
       writeFileSync(input, await makePptx())
-      // Exercise both no output creation and no overwrite of an existing file.
-      if (format === "json") writeFileSync(output, "existing output")
+      // 기존 내용을 덮어쓰는지도 함께 본다 (실패 시 종전에는 손대지 않았다)
+      writeFileSync(output, "existing output")
 
       const result = spawnSync(process.execPath, [
         "--import", "tsx", CLI, input, "--format", format, "--output", output, "--silent",
       ], { cwd: ROOT, encoding: "utf-8", timeout: 20000, env: { ...process.env, KORDOC_OFFLINE: "1" } })
 
       assert.ifError(result.error)
-      assert.equal(result.status, 1, result.stderr)
-      const failure = JSON.parse(result.stdout)
-      assert.equal(failure.success, false)
-      assert.equal(failure.fileType, "pptx")
-      assert.equal(failure.code, "UNSUPPORTED_FORMAT")
-      assert.match(failure.error, /PPTX/)
-      assert.match(failure.error, /지원하지 않/)
-      assert.match(result.stderr, /PPTX/)
-      if (format === "json") assert.equal(readFileSync(output, "utf-8"), "existing output")
-      else assert.equal(existsSync(output), false)
+      assert.equal(result.status, 0, result.stderr)
+      const written = readFileSync(output, "utf-8")
+      assert.notEqual(written, "existing output")
+      if (format === "markdown") {
+        assert.match(written, new RegExp(SLIDE_TEXT))
+        assert.match(written, /# 슬라이드 1/)
+      } else {
+        assert.match(written, new RegExp(SLIDE_TEXT))
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
   })
 }
 
-test("#80 MCP: unsupported PPTX and supported ZIP metadata stay distinct", { timeout: 60000 }, async (t) => {
+test("MCP: pptx 를 pptx 로 파싱하고 원본 보존 도구만 명시 거부한다", { timeout: 60000 }, async (t) => {
   const dir = mkdtempSync(join(tmpdir(), "kordoc-pptx-mcp-"))
   const client = new Client({ name: "pptx-regression", version: "1.0.0" })
   const transport = new StdioClientTransport({
@@ -100,22 +116,30 @@ test("#80 MCP: unsupported PPTX and supported ZIP metadata stay distinct", { tim
       throw new Error(`MCP connection failed: ${stderr}`, { cause: error })
     }
 
-    await t.test("detect_format identifies PPTX content behind a .hwpx extension", async () => {
-      const result = await callTool("detect_format", renamed)
-      assert.notEqual(result.isError, true, result.text)
-      assert.equal(result.text, `${renamed}: pptx`)
-    })
+    for (const [label, path] of [["확장자가 .hwpx 로 바뀐 pptx", renamed], [".pptx", original]] as const) {
+      await t.test(`detect_format identifies ${label}`, async () => {
+        const result = await callTool("detect_format", path)
+        assert.notEqual(result.isError, true, result.text)
+        assert.equal(result.text, `${path}: pptx`)
+      })
 
-    for (const tool of ["parse_document", "parse_metadata"]) {
-      await t.test(`${tool} rejects PPTX content behind a .hwpx extension`, async () => {
-        const result = await callTool(tool, renamed)
-        assert.equal(result.isError, true, result.text)
-        assert.match(result.text, /PPTX/)
-        assert.match(result.text, /지원하지 않/)
+      await t.test(`parse_document extracts ${label} content`, async () => {
+        const result = await callTool("parse_document", path)
+        assert.notEqual(result.isError, true, result.text)
+        assert.match(result.text, /포맷: PPTX/)
+        assert.match(result.text, new RegExp(SLIDE_TEXT))
+      })
+
+      await t.test(`parse_metadata reports pptx metadata for ${label}`, async () => {
+        const result = await callTool("parse_metadata", path)
+        assert.notEqual(result.isError, true, result.text)
+        const metadata = JSON.parse(result.text)
+        assert.equal(metadata.format, "pptx")
+        assert.equal(metadata.title, TITLE)
       })
     }
 
-    // 원본 보존 채우기·패치도 "감지된 포맷: hwpx" 가 아니라 실제 포맷을 안내한다
+    // 원본 보존 채우기·패치는 HWPX 전용 — "감지된 포맷: hwpx" 가 아니라 실제 포맷을 안내한다
     for (const [tool, args] of [
       ["fill_form", { file_path: renamed, fields: { 성명: "홍길동" }, output_format: "hwpx-preserve" }],
       ["patch_document", { file_path: renamed, edited_markdown: "본문", output_path: join(dir, "patched.hwpx") }],
@@ -143,15 +167,6 @@ test("#80 MCP: unsupported PPTX and supported ZIP metadata stay distinct", { tim
         const text = (result.content as { type: string; text?: string }[]).map(item => item.text ?? "").join("\n")
         assert.equal(result.isError, true, text)
         assert.doesNotMatch(text, /감지된 포맷/)
-      })
-    }
-
-    for (const tool of ["detect_format", "parse_document", "parse_metadata"]) {
-      await t.test(`${tool} continues to reject the unsupported .pptx extension`, async () => {
-        const result = await callTool(tool, original)
-        assert.equal(result.isError, true, result.text)
-        assert.match(result.text, /지원하지 않는 확장자/)
-        assert.match(result.text, /\.pptx/)
       })
     }
 
