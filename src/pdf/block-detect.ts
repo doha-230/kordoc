@@ -10,6 +10,7 @@ import type { IRBlock, IRTable, ParseWarning } from "../types.js"
 import { HEADING_RATIO_H1, HEADING_RATIO_H2, HEADING_RATIO_H3 } from "../types.js"
 import { collapseEvenSpacing } from "./text-line.js"
 import { FACE_CHARS } from "./paragraph-lines.js"
+import type { PageNotes } from "./footnotes.js"
 
 // ═══════════════════════════════════════════════════════
 // 헤딩 감지 (폰트 크기 기반)
@@ -130,8 +131,11 @@ export function detectTypographyHeadings(blocks: IRBlock[]): void {
     const faceWeight = new Map<string, number>()
     for (const block of page) {
       if (block.type !== "paragraph" || !block.text || !block.style?.fontName) continue
-      const face = block.style.fontName
-      faceWeight.set(face, (faceWeight.get(face) ?? 0) + block.text.length)
+      // 서체별 실제 글자 수로 센다 — 블록 대표 서체는 첫 조각 서체라, 굵은 머리말로 시작한 긴 문단("Alignment tuning. In …")이
+      // 문단 전체를 굵은 서체 몫으로 넘겨 본문 서체를 뒤집는다
+      const faces = FACE_CHARS.get(block)
+      if (faces) for (const [face, n] of faces) faceWeight.set(face, (faceWeight.get(face) ?? 0) + n)
+      else faceWeight.set(block.style.fontName, (faceWeight.get(block.style.fontName) ?? 0) + block.text.length)
     }
     const bodyFace = [...faceWeight].sort((a, b) => b[1] - a[1])[0]?.[0]
     if (!bodyFace || (faceWeight.get(bodyFace) ?? 0) < 250) continue
@@ -139,8 +143,11 @@ export function detectTypographyHeadings(blocks: IRBlock[]): void {
     // smaller distinct faces are running heads, bylines, captions and notes.
     const sizeWeight = new Map<number, number>()
     for (const block of page) {
-      if (block.type !== "paragraph" || block.style?.fontName !== bodyFace || !block.style.fontSize) continue
-      sizeWeight.set(block.style.fontSize, (sizeWeight.get(block.style.fontSize) ?? 0) + block.text!.length)
+      if (block.type !== "paragraph" || !block.style?.fontSize) continue
+      // 본문 서체 글자 수로 크기도 센다 — 굵은 머리말로 시작한 본문만 있어도 작은 캡션을 제목으로 올리지 않는다.
+      const faces = FACE_CHARS.get(block)
+      const chars = faces ? (faces.get(bodyFace) ?? 0) : block.style.fontName === bodyFace ? (block.text?.length ?? 0) : 0
+      if (chars) sizeWeight.set(block.style.fontSize, (sizeWeight.get(block.style.fontSize) ?? 0) + chars)
     }
     const bodySize = [...sizeWeight].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 0
 
@@ -283,7 +290,9 @@ export function detectRepeatedPageLabels(blocks: IRBlock[]): void {
   for (const page of byPage.values()) {
     const bodyChars = new Map<string, number>()
     for (const b of page) if (b.type === "paragraph" && b.text && b.style?.fontName) {
-      bodyChars.set(b.style.fontName, (bodyChars.get(b.style.fontName) ?? 0) + b.text.length)
+      const faces = FACE_CHARS.get(b)
+      if (faces) for (const [face, n] of faces) bodyChars.set(face, (bodyChars.get(face) ?? 0) + n)
+      else bodyChars.set(b.style.fontName, (bodyChars.get(b.style.fontName) ?? 0) + b.text.length)
     }
     const bodyFace = [...bodyChars].sort((a, b) => b[1] - a[1])[0]?.[0]
     const candidates = page.filter(b => b.type === "paragraph" && b.text && b.bbox && b.style?.fontName &&
@@ -865,6 +874,8 @@ export function removeHeaderFooterBlocks(
   blocks: IRBlock[],
   pageHeights: Map<number, number>,
   warnings: ParseWarning[],
+  notes?: Map<number, PageNotes>,
+  tables = false,
 ): number[] {
   const ZONE_RATIO = 0.12   // 상하 12% (10% 초과 여백 대응)
   const MIN_REPEAT = 3       // 최소 3페이지 반복
@@ -875,18 +886,24 @@ export function removeHeaderFooterBlocks(
 
   for (let bi = 0; bi < blocks.length; bi++) {
     const b = blocks[bi]
-    if (!b.bbox || !b.pageNumber || !b.text?.trim()) continue
+    // tables: 괘선 상자로 찍은 머리말(시험지 "2 | 홀수형", 교재 짝수 쪽 장 제목)만 — 빈 칸을 뺀 칸 글로 같은 반복 규칙을 탄다.
+    // 띠 안에 통째로 들어야 하므로(아래 영역 판정) 쪽을 넘는 본문 표·표 머리 행은 걸리지 않는다. 쪽 넘김 표 병합 뒤에 따로 부른다 —
+    // 먼저 지우면 상자 쪽번호("- | 1 -")가 갈라 두던 이웃 쪽 카드뉴스 표 둘이 한 표로 이어진다(의료방사선 보도자료)
+    const text = !tables ? b.text?.trim() : b.type === "table" && b.table ? b.table.cells.flat().map(c => c.text.trim()).filter(Boolean).join(" | ") : undefined
+    if (!b.bbox || !b.pageNumber || !text) continue
     const ph = pageHeights.get(b.bbox.page) || pageHeights.get(b.pageNumber)
     if (!ph) continue
 
     const blockTop = ph - (b.bbox.y + b.bbox.height)
     const blockBottom = ph - b.bbox.y
-    const entry: ZoneEntry = { blockIdx: bi, page: b.pageNumber, text: b.text.trim() }
+    const entry: ZoneEntry = { blockIdx: bi, page: b.pageNumber, text }
 
     // blockTop/blockBottom은 페이지 상단 기준 거리 — 하단 경계가 상단 12% 안이면
-    // 머리글 영역(top), 상단 경계가 하단 12% 안이면 바닥글 영역(bottom)
-    if (blockBottom <= ph * ZONE_RATIO) topEntries.push(entry)
-    else if (blockTop >= ph * (1 - ZONE_RATIO)) bottomEntries.push(entry)
+    // 머리글 영역(top), 상단 경계가 하단 12% 안이면 바닥글 영역(bottom).
+    // 머리말 상자 표는 괘선·안 여백만큼 띠 경계를 조금 넘는다(exam_kor 상자 아래끝 12.4%) — 쪽 높이 5% 이하 표는 세로 중심으로 본다
+    const boxMid = b.type === "table" && b.bbox.height <= ph * 0.05 ? (blockTop + blockBottom) / 2 : undefined
+    if ((boxMid ?? blockBottom) <= ph * ZONE_RATIO) topEntries.push(entry)
+    else if ((boxMid ?? blockTop) >= ph * (1 - ZONE_RATIO)) bottomEntries.push(entry)
   }
 
   const removeSet = new Set<number>()
@@ -916,7 +933,8 @@ export function removeHeaderFooterBlocks(
       const pages = [...(patternPages.get(p) ?? [])]
       const span = pages.length ? Math.max(...pages) - Math.min(...pages) + 1 : 0
       // 숫자가 등장마다 바뀌면(쪽 번호) 드문드문해도 러닝 머리·바닥글이다 — 일부 쪽에선 표에 흡수돼 따로 선 등장이 성기다(hwp3-sample11)
-      const pageNumbered = (patternNumbers.get(p)?.size ?? 0) > 1
+      // 표 상자는 번호만 바뀌는 드문 상자가 본문이다(안건 표지 "제2차 재정운용전략협의회 | 26-2-1", 56쪽 중 4쪽) — 밀도만 본다
+      const pageNumbered = !tables && (patternNumbers.get(p)?.size ?? 0) > 1
       if (count >= MIN_REPEAT && pages.length >= MIN_REPEAT && (pages.length >= span * 0.4 || pageNumbered)) {
         repeatedPatterns.add(p)
       }
@@ -929,12 +947,16 @@ export function removeHeaderFooterBlocks(
     for (const e of entries) {
       const norm = e.text.replace(/\d+/g, "#")
       if (!repeatedPatterns.has(norm)) continue
+      // 쪽 아래 각주("3) 제19장 부속서 3의 2.3.4 참조 - 역주")는 숫자를 지우면 쪽마다 같은 꼴이다 — 같은 쪽 본문에 같은 위첨자 참조
+      // 표시(footnotes.ts)가 있으면 꼬리말이 아니라 각주다(선박 코드 부속서 각주 25개가 러닝 푸터로 지워졌다)
+      const noteMark = e.text.match(/^\d{1,3}\)/)?.[0]
+      if (noteMark && notes?.get(e.page)?.marks.some(m => m.mark === noteMark)) continue
       const cand = blocks[e.blockIdx]
       const cb = cand.bbox!
       // 표 바로 아래의 출처·주석은 반복되어도 표 내용이다. CropBox를 원점으로 옮기면 같은 주석이
       // 하단 12% 띠에 들어올 수 있어, 영역/반복만으로 지우면 본문을 잃는다. 명시적 표지와
       // 표 폭 안 + 한 줄 높이 이내의 간격을 함께 요구해 떨어진 running footer는 종전대로 둔다.
-      const tableNote = /^(?:주\s*(?:\d+\s*[).:]|[:：])|(?:자료|출처)\s*[:：])/.test(e.text)
+      const tableNote = /^(?:주\s*(?:\d+\s*[).:]|[:：])|(?:자료|출처)\s*[:：])/.test(e.text.replace(/ \| /g, " "))
         && blocks.some(o => {
           if (o.type !== "table" || !o.bbox || o.bbox.page !== cb.page) return false
           const gap = o.bbox.y - (cb.y + cb.height)

@@ -51,8 +51,8 @@ export function markUnderlineItems(items: NormItem[], horizontals: LineSegment[]
 
   for (const line of horizontals) {
     if (line.lineWidth > UNDER_MAX_THICKNESS) continue
-    if (touchesVertical(line, verticals)) continue
-    if (isRepeatedSpanRule(line, horizontals)) continue
+    const enclosed = insideTallCell(line, verticals, 0)
+    if (!enclosed && (touchesVertical(line, verticals) || isRepeatedSpanRule(line, horizontals))) continue
 
     const matches: NormItem[] = []
     for (const item of items) {
@@ -74,13 +74,16 @@ export function markUnderlineItems(items: NormItem[], horizontals: LineSegment[]
       maxH = Math.max(maxH, m.h > 0 ? m.h : m.fontSize)
       covered += m.w
     }
+    // 긴 셀의 패딩 안쪽에 끝나는 반복 밑줄은 행 경계가 아니다. 실제 괘선은 셀 변에 닿는다.
+    const inset = enclosed && insideTallCell(line, verticals, maxH)
+    if (enclosed && !inset && (touchesVertical(line, verticals) || isRepeatedSpanRule(line, horizontals))) continue
     const pad = Math.max(maxH * UNDER_OWNER_PAD_EM, UNDER_OWNER_PAD_MIN_PT)
     if (line.x1 < x1 - pad || line.x2 > x2 + pad) continue
     if (covered < (line.x2 - line.x1) * UNDER_MIN_COVERAGE) continue
 
     // 위쪽에 같은 스팬의 수평선이 마주보면 배지/칩/제목박스의 하변 — 밑줄은 위짝이 없다.
     // 라운드 모서리 배지는 상하변이 직선으로만 나와 수직선 접촉 방어를 비껴가므로 필수.
-    if (hasBoxTopPair(line, maxH, horizontals)) continue
+    if (hasBoxTopPair(line, maxH, horizontals, inset ? items : undefined)) continue
 
     // 매칭 런 사이 컬럼급 구멍 → 표 행 괘선 (밑줄 줄은 단어 간격 수준으로 연속)
     matches.sort((a, b) => a.x - b.x)
@@ -99,6 +102,20 @@ export function markUnderlineItems(items: NormItem[], horizontals: LineSegment[]
   return underlines
 }
 
+/** 여러 줄 높이의 두 셀 변 사이에 양끝이 엄격히 들어간 선. 중간 열 경계를 가로지르면 제외한다. */
+function insideTallCell(line: LineSegment, verticals: LineSegment[], em: number): boolean {
+  let left = false, right = false
+  for (const v of verticals) {
+    const lo = Math.min(v.y1, v.y2), hi = Math.max(v.y1, v.y2)
+    if (lo > line.y1 || hi < line.y1) continue
+    if (v.x1 >= line.x1 - 0.5 && v.x1 <= line.x2 + 0.5) return false
+    if (hi - lo <= em * UNDER_BOX_PAIR_MAX_EM) continue
+    if (v.x1 < line.x1 - 0.5) left = true
+    if (v.x1 > line.x2 + 0.5) right = true
+  }
+  return left && right
+}
+
 /** 선의 x-스팬 내에서 선 y 를 지나는(접촉 포함) 수직선 존재 여부 — 표 그리드/폼 박스 판정 */
 function touchesVertical(line: LineSegment, verticals: LineSegment[]): boolean {
   for (const v of verticals) {
@@ -110,7 +127,7 @@ function touchesVertical(line: LineSegment, verticals: LineSegment[]): boolean {
 }
 
 /** 후보선 위쪽 0.5~2.2em 에 거의 같은 스팬의 수평선 존재 — 박스/배지의 상변 짝 */
-function hasBoxTopPair(line: LineSegment, maxH: number, horizontals: LineSegment[]): boolean {
+function hasBoxTopPair(line: LineSegment, maxH: number, horizontals: LineSegment[], cellItems?: NormItem[]): boolean {
   const w = line.x2 - line.x1
   if (w <= 0) return false
   for (const o of horizontals) {
@@ -120,7 +137,14 @@ function hasBoxTopPair(line: LineSegment, maxH: number, horizontals: LineSegment
     const ow = o.x2 - o.x1
     if (ow <= 0) continue
     const overlap = Math.min(line.x2, o.x2) - Math.max(line.x1, o.x1)
-    if (overlap / Math.max(w, ow) >= UNDER_BOX_PAIR_OVERLAP) return true
+    if (overlap / Math.max(w, ow) < UNDER_BOX_PAIR_OVERLAP) continue
+    // 긴 셀의 위짝도 바로 위 본문에 밀착한 밑줄이면 박스 상변이 아니다. 텍스트 없는 배지 상변은 지킨다.
+    const covered = cellItems?.reduce((sum, item) => {
+      const below = item.y - o.y1
+      if (below < 0.5 || below > 3 || !item.text.trim()) return sum
+      return sum + Math.max(0, Math.min(o.x2, item.x + item.w) - Math.max(o.x1, item.x))
+    }, 0) ?? 0
+    if (covered < ow * UNDER_MIN_COVERAGE) return true
   }
   return false
 }

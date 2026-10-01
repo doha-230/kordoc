@@ -32,7 +32,7 @@ import { detectFormat } from "../detect.js"
 import {
   splitMarkdownUnits, normForMatch, sanitizeText, parseGfmTable, unescapeGfmCell, unescapeGfm, escapeGfm, summarize,
   replicateTableToHtml, replicateHtmlTable, parseHtmlTable, htmlCellInnerToLines, extractTopLevelTables,
-  AUTONUM_PREFIX_RE,
+  AUTONUM_PREFIX_RE, editedFromVisual, LAYOUT_MODE_MISMATCH,
   type MdUnit,
 } from "./markdown-units.js"
 import { stripCellTokens, extractCellTokens, extractImgTags } from "./table-patch.js"
@@ -295,9 +295,12 @@ export async function patchHwp(
   const compressed = (flags & FLAG_COMPRESSED) !== 0
 
   // 2) 원본 파싱 (기존 파서 그대로 — IR 블록 확보)
+  //    원본 표 서수로 위치를 찾으므로 틀 표를 풀지 않은 keep 출력이 기준 — 편집본이 기본(visual) 출력이면 분명히 알린다
   let origBlocks: IRBlock[]
   try {
-    origBlocks = parseHwp5Document(originalBuf).blocks
+    const kept = parseHwp5Document(originalBuf, { layoutTables: "keep" })
+    origBlocks = kept.blocks
+    if (editedFromVisual(kept.markdown, parseHwp5Document(originalBuf).markdown, editedMarkdown)) return fail(LAYOUT_MODE_MISMATCH)
   } catch (err) {
     return fail(`원본 HWP 파싱 실패: ${msg(err)}`)
   }
@@ -371,7 +374,7 @@ export async function patchHwp(
   let verification: DiffResult | undefined
   if (options?.verify !== false) {
     try {
-      const reparsed = parseHwp5Document(Buffer.from(data))
+      const reparsed = parseHwp5Document(Buffer.from(data), { layoutTables: "keep" })
       // 본문 문단은 \n(재파싱 방출)과 <br>(편집)로 강제 줄바꿈 표기 규약이 달라 raw 비교가
       // 항상 잔차를 낸다 — 표기를 통일해 완전 적용된 패치를 '잔차'로 오보고하지 않게 한다 (hwp5-2)
       const normBr = (u: MdUnit): MdUnit => ({ ...u, raw: u.raw.replace(/<br\s*\/?\s*>/gi, "\n") })

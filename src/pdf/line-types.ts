@@ -50,6 +50,8 @@ export interface TextItem {
   fontSize: number; fontName: string
   /** pdfjs 공백 아이템이 이 아이템 직전에 있었음 — 단어 경계 힌트 (parser.ts NormItem에서 전파) */
   hasSpaceBefore?: boolean
+  /** 직전 공백이 pdfjs 가 글자 틈으로 만든 것뿐(글리프 흐름에 공백 글리프 없음, tracked-text markSyntheticSpaces) — 균등배분 run 을 끊지 않는다 */
+  syntheticSpace?: boolean
   /** 콘텐츠 스트림 순번 (NormItem.seq 전파 — 겹친 글자 순서 복원) */
   seq?: number
 }

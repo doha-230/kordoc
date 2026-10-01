@@ -6,6 +6,7 @@
 import { buildTable, convertTableToText } from "../table/builder.js"
 import type { IRBlock, IRCell, IRTable } from "../types.js"
 import type { CellCtxEx, TableState, WalkCtx } from "./parser-shared.js"
+import { CELL_EDGES } from "../table/layout-frames.js"
 
 /**
  * TableState → IRTable 변환 — 캡션·셀 blocks(중첩표/이미지)·제목셀을 함께 attach (v3.0).
@@ -41,6 +42,15 @@ function buildTableWithCellMeta(state: TableState, keepAnchoredEmptyCols?: boole
   }
   const srcCount = state.rows.reduce((s, r) => s + r.length, 0)
   const ordinalReliable = anchors.length === srcCount
+
+  // 보이는 변 — cellAddr 자리의 앵커 칸에 곁정보로 (보이지 않는 틀 표 풀기, v4.17.0)
+  for (const row of state.rows) {
+    for (const src of row as CellCtxEx[]) {
+      if (!src.edges || src.rowAddr === undefined || src.colAddr === undefined) continue
+      const cand = table.cells[src.rowAddr]?.[src.colAddr]
+      if (cand && anchors.includes(cand)) CELL_EDGES.set(cand, src.edges)
+    }
+  }
 
   const claimed = new Set<IRCell>()
   let flatIdx = -1

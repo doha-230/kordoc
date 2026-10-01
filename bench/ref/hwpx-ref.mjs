@@ -7,6 +7,7 @@ import {
   EXCLUDE_SUBTREES, applyAltTextPolicy, newPolicyCounters,
 } from "./policy.mjs"
 import { normText } from "../lib/normalize.mjs"
+import { visibleTables } from "./visible-tables.mjs"
 
 // ─── 경량 XML 트리 파서 ─────────────────────────────
 
@@ -206,11 +207,33 @@ function collectShapeCaptions(node, out = [], depth = 0) {
   return out
 }
 
+// ─── 칸 테두리 (header.xml hh:borderFill) — 보이는 표 판정용 (채점 기준 변경, v4.17.0) ───
+// 변이 보인다 = type 이 NONE 이 아니고 color 가 흰색(#FFFFFF)이 아니다. 굵기·선 모양은 보지 않는다(0.1mm 점선도 보인다).
+// 표 전체 borderFillIDRef·셀 영역(hp:cellzone)은 보지 않는다 — 칸마다 hp:tc borderFillIDRef 가 그린다
+const SIDE_TAGS = { l: "leftborder", r: "rightborder", t: "topborder", b: "bottomborder" }
+function borderVisibility(headerRoot) {
+  const vis = new Map()
+  for (const bf of findAllDesc(headerRoot, "borderfill")) {
+    if (bf.attrs.id === undefined) continue
+    const sides = {}
+    for (const [k, tag] of Object.entries(SIDE_TAGS)) {
+      const n = bf.children.find(c => typeof c !== "string" && c.tag === tag)
+      const type = (n?.attrs.type ?? "NONE").toUpperCase()
+      const color = (n?.attrs.color ?? "").toUpperCase()
+      sides[k] = !!n && type !== "NONE" && color !== "#FFFFFF"
+    }
+    vis.set(bf.attrs.id, sides)
+  }
+  return vis
+}
+
 /**
  * HWPX 버퍼 → 참조 데이터.
  * units  : 문서 순서 RefUnit[] {id, kind: body|cell|drawText|caption|footnote|endnote, text, tableIdx?}
- * tables : post-order(완료 순 = kordoc IR 블록 순) 참조 그리드
- * specials: { equations, footnotes[], endnotes[], headers[], footers[] }
+ *          tableIdx 는 그 칸이 든 "보이는 표" 번호 — 글로 풀린 틀 칸은 없음(표 순서 채점 제외, 글 재현율은 그대로)
+ * tables : 보이는 표 목록 (채점 기준 변경, v4.17.0 — 아래 visibleTables). IR 수집 순서와 같은 post-order
+ *          (보이는 표 칸 안 중첩표 먼저, 그 표 나중). 틀 칸 안의 표는 부모 흐름 제자리
+ * specials: { equations(한글 수식 + 칸으로 조립한 분수), fractions, footnotes[], endnotes[], headers[], footers[] }
  */
 export async function extractRef(buffer) {
   const zip = await JSZip.loadAsync(buffer)
@@ -227,9 +250,11 @@ export async function extractRef(buffer) {
   // 번호 값 자체의 정확성은 파서 유닛 테스트 소관). OUTLINE(개요) 도 같다 — 한컴 2020 PDF 가
   // "1. 3. 단계별 시스템 활용방법"(개요 1수준 번호 + 리터럴 "3.")을 그린다 (rhwp pdf/3249937)
   const headingParaIds = new Set()
+  let borderVis = new Map()
   const headerFile = Object.values(zip.files).find(f => /(^|\/)header\.xml$/i.test(f.name))
   if (headerFile) {
     const headerRoot = parseXmlLite(await headerFile.async("string"))
+    borderVis = borderVisibility(headerRoot)
     for (const pr of findAllDesc(headerRoot, "parapr")) {
       const h = findDesc(pr, "heading")
       const type = (h?.attrs.type ?? "NONE").toUpperCase()
@@ -244,7 +269,7 @@ export async function extractRef(buffer) {
   const tables = []
   // noteHosts: 각주/미주를 하나 이상 가진 문단 수 — 파서는 문단당 "(주: …)" 하나에 그 문단의
   // 주석을 모두 담는다(IRBlock.footnoteText 단일 문자열, HWP5 동일) → fnPresence 모수
-  const specials = { equations: 0, footnotes: [], endnotes: [], headers: [], footers: [], noteHosts: 0 }
+  const specials = { equations: 0, fractions: 0, footnotes: [], endnotes: [], headers: [], footers: [], noteHosts: 0 }
   // 섹션 번호 모양 — secPr footNotePr/endNotePr > autoNumFormat (섹션마다 갱신)
   let noteFormats = {}
 
@@ -252,10 +277,13 @@ export async function extractRef(buffer) {
   // 싱크에 옮긴다. 파서는 중첩표·글상자를 부모 셀 안 제자리에 렌더하므로 유닛도 문서 순서
   // (부모 셀 글 → 셀 안 중첩표 → 셀 글 나머지)여야 짧은 유닛의 위치 창(align Pass 3)이 맞는다
   let curUnits = units
-  const pushUnit = (kind, text, tableIdx, nestedCaption) => {
+  // 보이는 표 싱크 — 유닛 싱크와 같은 방식. 칸 안 표의 보이는 표는 칸 목록에 모았다가, 부모 표의 행 띠가 정해진 뒤
+  // 그 칸이 보이는 표 칸이면 부모 표 앞(post-order), 틀 칸이면 부모 흐름 제자리에 옮긴다. tableIdx 는 끝에 번호를 매겨 푼다
+  let curTables = tables
+  const pushUnit = (kind, text, tableRec, nestedCaption) => {
     const t = text.trim()
     if (!t) return
-    const u = { id: -1, kind, text: t, tableIdx }
+    const u = { id: -1, kind, text: t, tableRec }
     // 중첩표 캡션 — 부모 셀 내부 렌더라 순서 모수 제외 (중첩표 셀과 같은 논리)
     if (nestedCaption) u.nestedCaption = true
     curUnits.push(u)
@@ -267,9 +295,9 @@ export async function extractRef(buffer) {
     // 자동부호 문단 사용 수 — phantom의 자동번호 관용(score.mjs) 문서 단위 게이트용
     if (headingParaIds.has(p.attrs?.parapridref)) counters.autoNumHeadingParas++
     let text = ""
-    let leaderCut = false
+    let inlineObj = false // 수식·양식 단추·주석 — 분수 칸 후보 제외 (분수 판정은 글만 든 칸)
     const structural = [] // {type:'tbl'|'shape'|'drawtext', node}
-    const addText = s => { if (leaderCut) counters.leaderTabChars += s.length; else text += s }
+    const addText = s => { text += s }
 
     const walkText = node => {
       for (const ch of node.children) {
@@ -287,7 +315,7 @@ export async function extractRef(buffer) {
           // 문서 순서 유닛으로 분할한다 (#49/#50). float 표는 종전대로 텍스트 뒤
           const inline = ch.children.some(c => typeof c !== "string" && c.tag === "pos" && c.attrs?.treataschar === "1")
           structural.push({ type: "tbl", node: ch })
-          if (inline && !leaderCut) text += "\x1E"
+          if (inline) text += "\x1E"
           continue
         }
         if (t === "drawtext") { structural.push({ type: "drawtext", node: ch }); continue }
@@ -312,17 +340,15 @@ export async function extractRef(buffer) {
           addText(noteAutoNumText(ch))
           continue
         }
-        if (t === "tab") {
-          const leader = ch.attrs.leader
-          if (leader && leader !== "0") leaderCut = true // 리더탭 이후 절단 (whitelist: leader-tab-cut)
-          else addText(" ")
-          continue
-        }
+        // 채움(leader≠0) 탭도 보통 탭 — 채움선은 글이 아니고 뒤 글(목차 쪽 번호·일정)은 한컴이 그린다 (2026-09-29 채점 기준 변경:
+        // 종전 whitelist leader-tab-cut 은 파서와 같이 뒤를 잘랐다)
+        if (t === "tab") { addText(" "); continue }
         if (t === "br" || t === "linebreak") { addText("\n"); continue }
         if (t === "fwspace" || t === "hwspace") { addText(" "); continue }
         // 양식 선택 상자(☐/☑)·라디오 단추(○/●) — 한컴이 인쇄하는 상자와 캡션(캡션은 개체 폭이 상자 + 글자 한 자 이상일 때만,
         // rhwp issue2470 폭 1297 은 상자만 나옴)
         if (t === "checkbtn" || t === "radiobtn") {
+          inlineObj = true
           const sz = ch.children.find(c => typeof c !== "string" && c.tag === "sz")
           const cap = (ch.attrs.caption ?? "").trim()
           const on = ch.attrs.value === "CHECKED"
@@ -331,6 +357,7 @@ export async function extractRef(buffer) {
           continue
         }
         if (t === "equation") {
+          inlineObj = true
           const script = findDesc(ch, "script")
           if (script && textOfAll(script, counters).trim()) specials.equations++ // presence 분리 (whitelist)
           continue
@@ -352,10 +379,11 @@ export async function extractRef(buffer) {
           case "footer": specials.footers.push(subListParts(ch)); break
           case "footnote": case "endnote": {
             // 개체 자리의 본문 참조 부호("1)"·"문1）") — 한컴이 그린다 (hp:t 에 없음)
-            if (!leaderCut) addText(noteRefMark(ch, noteFormats[ch.tag]))
+            addText(noteRefMark(ch, noteFormats[ch.tag]))
             const parts = subListParts(ch)
             ;(ch.tag === "footnote" ? specials.footnotes : specials.endnotes).push(normText(parts.join(" ")))
             notes.push({ kind: ch.tag, parts })
+            inlineObj = true
             break
           }
           // 주석 머리 번호·캡션 번호(hp:ctrl > hp:autoNum) — 한컴이 그리는 "1)"·"문1）"·"<그림 1>".
@@ -374,7 +402,7 @@ export async function extractRef(buffer) {
           }
           case "fieldend": {
             const open = openFields.pop()
-            if (open && !leaderCut) {
+            if (open) {
               const value = text.slice(open.start)
               if (value && (value === open.guide || value.trimEnd() === open.guide)) {
                 text = text.slice(0, open.start)
@@ -395,7 +423,7 @@ export async function extractRef(buffer) {
     const segs = text.includes("\x1E")
       ? text.split("\x1E").map(s => applyAltTextPolicy(s, null))
       : null
-    return { text: applyAltTextPolicy(text.replace(/\x1E/g, ""), counters), segs, structural, notes }
+    return { text: applyAltTextPolicy(text.replace(/\x1E/g, ""), counters), segs, structural, notes, inlineObj }
   }
 
   // 문단 주석 유닛 방출 — 조각(문단·표 셀·글상자)마다 주석 유닛. 빈 주석(번호·글 모두 없음)은
@@ -473,7 +501,9 @@ export async function extractRef(buffer) {
         const rec = processTable(s.node, depth) // 중첩표 텍스트는 자식 그리드 소관 — cellSink 비전파
         // 파서는 중첩표를 부모 cell.text에 평탄화 텍스트로도 남김(하위 호환) —
         // 셀 텍스트·이미지 참조·캡션 중 하나라도 있으면 부모 IR 셀 텍스트가 비어있지 않다
-        if (rec && (rec.hasCaption || rec.cells.some(a => normText(a.text) || a.hasIrContent))) irContent = true
+        if (rec?.anyContent) irContent = true
+        // 글로 풀린 틀 칸 글은 부모 칸 안에 보이는 글 — 부모 칸 표 글에 제자리로 (유닛은 틀 칸 유닛이 따로 옮긴다)
+        if (rec?.flatText) cellSink?.pushText?.(rec.flatText)
       } else if (s.type === "drawtext") {
         if (processDrawText(s.node, depth, cellSink)) irContent = true
       } else { // shape: 모든 drawText 자손 (파서는 첫 번째만 추출 — 차이는 recall이 검출)
@@ -527,14 +557,17 @@ export async function extractRef(buffer) {
   function processTable(tblNode, depth) {
     // caption — 가시 텍스트 (파서가 드롭하는지 recall로 검증)
     let hasCaption = false
+    const capTexts = [] // 표가 통째로 글로 풀리면 캡션도 그 글 흐름의 일부(위 캡션은 앞, 나머지는 뒤)
+    let capTop = false
     for (const ch of tblNode.children) {
       if (typeof ch === "string" || ch.tag !== "caption") continue
+      capTop = (ch.attrs.side ?? "").toUpperCase() === "TOP"
       const capWalk = n => {
         for (const c of n.children) {
           if (typeof c === "string") continue
           if (c.tag === "p" || c.tag === "para") {
             const { text, structural } = collectPara(c)
-            if (text.trim()) hasCaption = true
+            if (text.trim()) { hasCaption = true; capTexts.push(text.trim()) }
             pushUnit("caption", text, undefined, depth > 0)
             processStructural(structural, depth)
           } else capWalk(c)
@@ -561,30 +594,72 @@ export async function extractRef(buffer) {
     if (rawRows.every(r => r.length === 0)) return null
 
     // v3.0: 중첩표는 크기와 무관하게 부모 IRCell.blocks에 구조 보존 — 전부 비교 대상.
-    // tables[]는 post-order(자식 먼저)로 쌓이며 IR 수집(collectIrGrids)도 같은 순서를 쓴다.
-    const isNested = depth > 0
-    if (isNested) counters.nestedTables++
+    // v4.17.0 (채점 기준 변경): 표 하나를 보이는 표 여럿(또는 0개)과 글 행으로 나눈다 (visible-tables.mjs 정의).
+    // 보이는 표 칸 안 표의 보이는 표는 그 표 앞(post-order = IR 수집 collectIrGrids 순서), 글 행 칸 안 표의 보이는 표는
+    // 흐름 제자리(파서가 틀 칸 글과 함께 부모 흐름에 푼다)
+    counters.hwpxTables++
+    // 후행 빈 열 트림은 원본 표 격자에 먼저 (builder 가 원본 표를 만들 때 트림 — 한 틀 안에서만 빈 열이라도 표 전체에서 글이 있으면
+    // 그 띠의 열은 보이는 빈 열로 남는다)
+    const grid = trimTrailingCols(buildRefGrid(rawRows), counters)
+    const view = visibleTables(grid, {
+      borderOf: a => borderVis.get(a.cell.bf),
+      isFracPart: a => {
+        const t = a.text.trim()
+        return !a.extraCells && a.cell.paraCount === 1 && !a.cell.hasObject && !a.hasIrContent &&
+          t !== "" && !t.includes("\n") && [...t].length <= 40
+      },
+      isEmpty: a => !normText(a.text) && !a.hasIrContent,
+    })
+    for (const [u, d] of view.fractions) u.cell.fraction = d.cell.fraction = true
+    specials.fractions += view.fractions.length
+    specials.equations += view.fractions.length // 분수 = 수식 존재 채점 (whitelist: equation-presence 와 같은 경로)
 
-    const grid = buildRefGrid(rawRows, counters)
-    const record = {
-      idx: tables.length,
-      rows: grid.rows, cols: grid.cols, cells: grid.anchors,
-      nested: isNested, hasCaption,
+    const out = [] // 이 표가 부모 흐름에 내놓는 보이는 표 (문서 순서)
+    const flat = [] // 글 행 칸 글 — 부모가 칸이면 그 칸 글에 합류
+    for (const seg of view.segments) {
+      for (const a of seg.anchors) {
+        for (const c of [a.cell, ...(a.extraCells ?? [])]) {
+          if (seg.band) for (const t of c.tableList) t.nested = true
+          out.push(...c.tableList)
+        }
+        if (!seg.band && !a.cell.fraction && normText(a.text)) flat.push(a.text)
+      }
+      if (!seg.table) continue
+      const record = {
+        rows: seg.table.rows, cols: seg.table.cols, nested: false, hasCaption,
+        // 분수 칸 글은 수식 — 표 칸 글에서 뺀다(파서 $…$ 는 cellOwnText 가 걷는다)
+        cells: seg.table.cells.map(x => x.fraction
+          ? { r: x.r, c: x.c, rs: x.rs, cs: x.cs, text: "", hasNested: false, hasIrContent: true }
+          : { ...x.anchor, r: x.r, c: x.c, rs: x.rs, cs: x.cs }),
+      }
+      for (const x of seg.table.cells) {
+        if (x.anchor) for (const c of [x.anchor.cell, ...(x.anchor.extraCells ?? [])]) c.tableRec = record
+      }
+      out.push(record)
     }
-    tables.push(record)
+    curTables.push(...out)
     // 셀 유닛 (row-major) — 셀마다 [셀 글 조각 · 셀 안 중첩 구조 유닛] 목록을 좌표 순으로 옮긴다
-    // (중첩표 유닛이 부모 셀 제자리에 온다 — 종전 post-order 는 부모 셀보다 앞서 짧은 유닛이 남의 자리를 가로챘다)
+    // (중첩표 유닛이 부모 셀 제자리에 온다 — 종전 post-order 는 부모 셀보다 앞서 짧은 유닛이 남의 자리를 가로챘다).
+    // 분수 칸 글은 수식이라 유닛에서 뺀다. 글 행 칸 유닛은 표 번호 없이(글) — 재현율은 그대로
     for (const c of grid.cellOrder) {
       for (const u of c.unitList) {
-        if (u.own) pushUnit("cell", u.text, record.idx)
-        else curUnits.push(u)
+        if (!u.own) curUnits.push(u)
+        else if (!c.fraction) pushUnit("cell", u.text, c.tableRec)
       }
     }
-    return record
+    if (capTexts.length && !view.segments.some(seg => seg.table)) flat[capTop ? "unshift" : "push"](...capTexts)
+    return {
+      hasCaption, flatText: flat.join("\n"),
+      anyContent: hasCaption || grid.anchors.some(a => normText(a.text) || a.hasIrContent),
+    }
   }
 
   function processCell(tc, depth) {
-    const cell = { textParts: [], headingPartIdx: new Set(), colAddr: undefined, rowAddr: undefined, colSpan: 1, rowSpan: 1, hasNested: false, hasIrContent: false, unitList: [] }
+    const cell = { textParts: [], headingPartIdx: new Set(), colAddr: undefined, rowAddr: undefined, colSpan: 1, rowSpan: 1, hasNested: false, hasIrContent: false, unitList: [],
+      // 보이는 표 판정 — 칸 테두리·문단 수·개체 유무, 칸 안 표의 보이는 표 목록(부모 행 띠가 정해진 뒤 옮긴다)
+      bf: tc.attrs.borderfillidref, paraCount: 0, hasObject: false, tableList: [] }
+    const savedTables = curTables
+    curTables = cell.tableList
     // 셀 유닛은 셀 안 중첩표 경계에서 끊어 문서 순서로 둔다 — 파서는 "셀 글 → 중첩표 → 셀 글"
     // 순으로 렌더하므로 한 덩어리로 두면 중첩표 뒤 짧은 꼬리("끝"·"귀하")가 조각(MIN_FRAG)
     // 미달로 거짓 miss+phantom 이 된다 (k-water-rfp·3249937). cell.text(표 채점용)는 종전 그대로
@@ -602,6 +677,7 @@ export async function extractRef(buffer) {
     const sink = {
       push: (t, decorated) => { if (decorated) flushUnit(); cell.textParts.push(t); unitSegs.push(t) },
       beforeTable: flushUnit,
+      pushText: t => cell.textParts.push(t), // 칸 안 틀 표에서 풀린 글 — 표 칸 글만 (유닛은 틀 칸 유닛)
     }
     const walkTc = node => {
       for (const ch of node.children) {
@@ -622,7 +698,9 @@ export async function extractRef(buffer) {
             break
           }
           case "p": case "para": {
-            const { text, segs, structural, notes } = collectPara(ch)
+            const { text, segs, structural, notes, inlineObj } = collectPara(ch)
+            cell.paraCount++
+            if (inlineObj || structural.length) cell.hasObject = true
             if (text.trim()) {
               cell.textParts.push(text.trim())
               // 자동부호 문단 — 파서는 번호/부호를 렌더하지만 원문 텍스트엔 없음 (장식 관용 대상)
@@ -662,6 +740,7 @@ export async function extractRef(buffer) {
     walkTc(tc)
     flushUnit()
     curUnits = savedUnits
+    curTables = savedTables
     cell.text = cell.textParts.join("\n")
     // 장식 관용 줄 인덱스 — cell.text 기준 (part 내부 개행 반영, 부호는 문단 첫 줄에만 렌더)
     if (cell.headingPartIdx.size) {
@@ -725,12 +804,19 @@ export async function extractRef(buffer) {
     walkBody(root)
   }
   units.forEach((u, i) => { u.id = i })
+  tables.forEach((t, i) => { t.idx = i })
+  for (const u of units) {
+    if (u.tableRec) u.tableIdx = u.tableRec.idx
+    delete u.tableRec
+  }
+  counters.nestedTables = tables.filter(t => t.nested).length
+  counters.visibleTables = tables.length
 
   return { units, tables, specials, counters }
 }
 
-/** 셀 목록 → 앵커 그리드. cellAddr 우선, 없으면 커서 시뮬레이션. 후행 빈 열 트림(policy) 적용. */
-function buildRefGrid(rawRows, counters) {
+/** 셀 목록 → 앵커 그리드 (트림 전). cellAddr 우선, 없으면 커서 시뮬레이션. 후행 빈 열 트림은 trimTrailingCols */
+function buildRefGrid(rawRows) {
   const hasAddr = rawRows.some(row => row.some(c => c.colAddr !== undefined && c.rowAddr !== undefined))
   let anchors = []
   let rows = 0, cols = 0
@@ -790,20 +876,23 @@ function buildRefGrid(rawRows, counters) {
   // 유닛 방출 순서 — 트림 전 전체 셀의 좌표 순 (트림된 빈 열 셀도 중첩 유닛은 옮겨야 한다)
   const cellOrder = [...anchors].sort((x, y) => x.r - y.r || x.c - y.c).flatMap(a => [a.cell, ...(a.extraCells ?? [])])
 
-  // 후행 빈 열 트림 — builder trimAndReturn 미러 (whitelist: trailing-col-trim).
-  // v3.0: 이미지/중첩표/글상자 콘텐츠가 IR 셀 텍스트를 채우므로(![image] 등) 비어있지 않음으로 판정.
-  let effectiveCols = cols
+  return { rows, cols, anchors, cellOrder }
+}
+
+/** 후행 빈 열 트림 — builder trimAndReturn 미러 (whitelist: trailing-col-trim). 원본 표 격자 {rows, cols, anchors} 에 적용.
+ *  v3.0: 이미지/중첩표/글상자 콘텐츠가 IR 셀 텍스트를 채우므로(![image] 등) 비어있지 않음으로 판정 */
+function trimTrailingCols(grid, counters) {
+  let effectiveCols = grid.cols
   while (effectiveCols > 0) {
-    const hasText = anchors.some(a => a.c === effectiveCols - 1 && (normText(a.text) || a.hasIrContent))
+    const hasText = grid.anchors.some(a => a.c === effectiveCols - 1 && (normText(a.text) || a.hasIrContent))
     if (hasText) break
     effectiveCols--
   }
-  if (effectiveCols < cols && effectiveCols > 0) {
-    // 잘린 열에 걸친 병합 셀은 표 폭 안으로 — builder trimAndReturn 의 span 절단 미러
-    anchors = anchors.filter(a => a.c < effectiveCols).map(a => (a.c + a.cs > effectiveCols ? { ...a, cs: effectiveCols - a.c } : a))
-    cols = effectiveCols
+  if (effectiveCols < grid.cols && effectiveCols > 0) {
+    // 잘린 열에 걸친 병합 셀은 표 폭 안으로 — builder trimAndReturn 의 span 절단 미러 (칸 테두리는 칸 것 그대로)
+    grid.anchors = grid.anchors.filter(a => a.c < effectiveCols).map(a => (a.c + a.cs > effectiveCols ? { ...a, cs: effectiveCols - a.c } : a))
+    grid.cols = effectiveCols
     counters.trimmedCols++
   }
-
-  return { rows, cols, anchors, cellOrder }
+  return grid
 }

@@ -1,0 +1,241 @@
+# kordoc 아키텍처
+
+파싱 파이프라인·모듈 구조·설계 결정·구현 주의의 상세. 작업 규칙과 요약은 [AGENTS.md](../AGENTS.md).
+
+## 파싱 파이프라인
+
+모든 포맷은 **IRBlock[]** (Intermediate Representation)으로 변환 후 마크다운 생성:
+
+```
+Buffer → detectFormat() [매직바이트] → 포맷별 파서 → IRBlock[] → blocksToMarkdown() → Markdown
+```
+
+## 핵심 모듈 구조
+
+| 모듈 | 역할 |
+|------|------|
+| `src/index.ts` | 메인 API (`parse`, `parseHwpx`, `parseHwp`, `parseHwp3`, `parsePdf`, `parseXlsx`, `parseDocx`) |
+| `src/types.ts` | IR 타입 (`IRBlock`, `IRTable`, `IRCell`, `ParseResult`), 공통 상수 |
+| `src/utils.ts` | 공용 유틸 (`toArrayBuffer`, `sanitizeError`, `precheckZipSize`, `sanitizeHref`, `classifyError`, `stripDtd`, `safeMin/Max`, `unescapeHtml`, `routeConsoleToStderr`) |
+| `src/detect.ts` | 매직바이트 기반 포맷 감지, `detectZipFormat()`으로 HWPX/XLSX/DOCX 구분 |
+| `src/hwpx/parser.ts` | HWPX 파싱 엔트리 (구현은 8모듈로 분리 — 재수출 허브) |
+| `src/hwpx/section-walker.ts` | 섹션 XML 워커 (문단/표/도형 상호재귀 클러스터) |
+| `src/hwpx/styles.ts` | head.xml 스타일/번호매기기 파싱 + 스타일 기반 헤딩 감지 |
+| `src/hwpx/para-heading.ts` | 항목부호 자동번호 포맷 해석 |
+| `src/hwpx/table-build.ts` | TableState → IRTable 구성 |
+| `src/hwpx/images.ts` | 이미지 ref → ZIP 바이너리 해제 (dedupe·ZIP bomb 가드) |
+| `src/hwpx/metadata.ts` | 메타데이터: Dublin Core + `Contents/content.hpf`(제목·지은이·설명·키워드·날짜, HWP5 요약 정보와 같은 필드) |
+| `src/hwpx/notes.ts` | 각주·미주 번호 표기: 본문 참조 부호("1)"·"문1）")와 주석 머리 번호를 hp:t 밖 개체 속성·autoNum 에서 재구성 (HWP5 `applyNoteEffect` 와 같은 표기) |
+| `src/hwpx/run-spans.ts` | 왕복 채널 run-span 판독(인라인 강조·인용 paraPr·gongmun 들여쓰기 depth 역산), section-walker 에서 분리 |
+| `src/hwpx/zip-sections.ts` | 손상 ZIP 복구 + Manifest 섹션 경로 해석 |
+| `src/hwpx/parser-shared.ts` | 공유 상수(ZIP 한도)·타입(WalkCtx)·XML 유틸 |
+| `src/hwpx/generator.ts` | Markdown → HWPX 역변환 엔트리 (구현은 7모듈로 분리 — 재수출 허브) |
+| `src/hwpx/gen-section.ts` | secPr + 본문 section0.xml 조립 |
+| `src/hwpx/gen-header.ts` | container/manifest/head.xml 생성 |
+| `src/hwpx/gen-table.ts` | GFM/HTML(병합) 표 XML 생성 — 내용 비례 열폭(짧은 열 실폭 고정) + 열 역할 `colRoles`(공문서 모드: 비고·근거·마지막 보조 열 25% 상한, 내용류 열 가중 ×2·LEFT) + 실측 정부 표 문법(헤더 음영·bold·하변 이중선, 외곽 0.4mm 위계, 라벨열, 셀 CENTER 130%/LEFT, 축폭+우측 배치) |
+| `src/hwpx/gen-table-bf.ts` | 표 셀 위치별 borderFill 동적 레지스트리 — 외곽 0.4/내부 0.12/헤더 DOUBLE_SLIM 조합 dedupe 발급, header.xml에 일괄 방출 |
+| `src/hwpx/gen-gongmun.ts` | **v5 공문서 엔진**(2026-09-06) — 기안문·보고서·계획서·통지·회의록·업무보고(ministry) 전담. outline → scheme → 문단 XML, 두문표·결문표·제목표·요약박스 골격, □·제목 한 줄 강제, 표 셀 12→10pt 자동 축소. 항목은 부호 run + 탭(`gen-marker.ts`)·어절 줄바꿈·외톨이줄 보호, 텍스트는 `gongmun-typo.ts` 로 다듬은 뒤 조판. 개조식·보도자료·범용은 gen-section 유지 (docs/gongmunseo-engine-spec.md (i)장) |
+| `src/hwpx/outline.ts` | 마크다운 블록 → 의미 아웃라인 — #/##/###·리스트 깊이·명시 부호(□ㅇ-※1.가.)를 하나의 depth로 정규화 (입력 형태 무관 동일 결과) |
+| `src/hwpx/gongmun-scheme.ts` | 위계 스킴 SSOT — 서울 실결재 629건 실측(reference 2.8): 법정형 굴림 12/2타 계단, 개조식형 □ HY견고딕 17b·ㅇ 한컴돋움 15b 1타·- 휴먼명조 14 3타·※ 한컴돋움 14, 표 한컴돋움 12 #DFE6F7 |
+| `src/hwpx/style-registry.ts` | charPr/paraPr/글꼴 동적 발급(dedupe) — 손계산 id 파티션 제거. 정적 블록(charPr 0~16·paraPr 0~7·글꼴 3종) 뒤에 이어붙임 |
+| `src/hwpx/fit-line.ts` | 한 줄 강제 — 장평→자간→pt 축소 (실측 96/95·-4/-5 관행), 넘치면 warning. `fitParagraph`: 어절 조판을 재현해 짧은 꼬리 줄은 압축 15% 이내로 올리고, 그 밖엔 무압축·자간/장평 사다리 중 비용(벌어진 줄 + 고아 줄 + 압축량)이 가장 낮은 조합. 판단은 여유 2%. `fitCharBreaks`: 한 줄보다 긴 어절이 있는 문단을 글자 단위로, 줄 끝은 공백·목록 구분자 뒤에만 (engine-spec (k)장) |
+| `src/hwpx/font-metrics.ts` | 생성·렌더용 실글꼴 폭표: 한컴오피스 번들 TTF(한컴돋움·HY견고딕·휴먼명조·HY헤드라인M·굴림체·굴림·맑은 고딕·함초롬돋움) ASCII + 기호 예외, 나머지 cjk 균일. 한글 2024 PDF 154줄 줄바꿈 재현으로 검증. `faceClassForGen`/`faceClassOf` 가 `font:이름` 으로 쓴다 |
+| `src/hwpx/gen-marker.ts` | 항목부호 + 탭 원자: `markerLayout`(내어쓰기 = 부호 실폭 + 1타)·`markerRunXml`. paraPr `autoTab`(tabPr 1 = 내어쓰기용 자동 탭)과 짝, 첫 줄 내용이 둘째 줄과 같은 x |
+| `src/hwpx/gongmun-typo.ts` | 공문서 문자 다듬기: 날짜·시각 범위·금액 "원" 앞 공백 → U+00A0(`escapeTextXml` 이 `<hp:nbSpace/>` 로 방출), 곧은따옴표 → ‘’“”. v5 아웃라인·개조식·보도자료 블록에 적용 |
+| `src/hwpx/gen-frame-seoul.ts` | 서울 실결재 골격표 — 두문표(6행, 기관명 굴림 20b 자간띄움), 결문표(48열 격자 위 colSpan — 행마다 임의 폭 주면 한컴이 뒤틀림), 보고서 제목표·요약박스·결재선·표지. 열폭은 실측 비율 스케일 + 내용 폭 |
+| `src/hwpx/gen-frame-seoul-front.ts` | 서울 방침서 앞장 — 사전 검토항목 점검표(16건 공통 고정 서식 19×5, 문항 글·자간·장평 원본 그대로, 제목 배너는 그라데이션 칸)·목차(쪽 칸은 비움). 간이기안 표지는 `gen-frame-seoul.ts` `buildReportCover`(방침서 글꼴은 `BANGCHIM_FRAME.cover`) |
+| `src/hwpx/gen-frame-ministry.ts` | **중앙부처 업무보고 골격**(v4.14.0, preset `ministry`/업무보고) — 재경부 2차 업무보고 PDF 전수 실측: 표지(대외주의 박스·파란 바 2줄·HY헤드라인M 32)·목차 박스·장 띠(그라데이션 2색+파랑 이중선, 장마다 새 쪽)·절 숫자칸(#3057B9)·소제목 박스(#203A7B)·① 항목 띠(#E8F7FC/#00ACFF)·연노랑 요약박스(#FFF7CC)·별첨 띠(#0066FF). `ministryRuns` 가 선두 (키워드)·[키워드]를 파랑 bold 런으로. 스킴은 `ministryScheme`(함초롬바탕 15 전 단계 동일·145%·각주 맑은 고딕 12), 아웃라인은 `headingFrames`·`quoteBox`·`keepMarkers` 옵션 (docs/gongmunseo-engine-spec.md (j)장) |
+| `src/hwpx/gen-gongmun-extra.ts` | 공문서 부속 요소 — 결재란(2×N 서명 표)·"끝." 표시·1페이지형 제목박스(색상바+gradient) |
+| `src/hwpx/font-catalog.ts` | 폰트 카탈로그 — fonts 오버라이드 오타·미설치 경고(`unknownFontWarnings`), 생성은 진행 |
+| `src/hwpx/gen-gongmun-fit.ts` | 공문 자동장평 계획 + 리스트 항목부호 선계산 |
+| `src/hwpx/md-runs.ts` | 마크다운 블록/인라인 파싱 + run/문단 XML |
+| `src/hwpx/gen-ids.ts` | 생성용 NS/charPr/paraPr id 상수·테마·XML 원자 |
+| `src/hwpx/gen-profile.ts` | 서식 프로필(#41) — 타입·표별 id 리맵(전역 재할당)·borderFill/charPr XML 빌더 + 표 매칭(`takeProfile` — 행·열 필수, anchor_text 우선, 앵커 없으면 table_index=방출순번) |
+| `src/hwpx/extract-profile.ts` | hwpx → FormatProfile 추출 (`hwpxToProfile`) — header/section 원문 파싱, top-level 표만, 첫 셀 anchor_text 포함(스키마 0.2.0) |
+| `src/hwpx/equation.ts` | HWPX 수식 script(HULK) → LaTeX 변환 (hml-equation-parser 포팅) |
+| `src/hwpx/equation-generate.ts` | Markdown display math → EqEdit script + `<hp:equation>` XML (equation.ts 토큰맵과 왕복 정합) |
+| `src/hwpx/gongmun.ts` | 공문서 모드 순수 로직 — 항목부호 8단계 시퀀스(가나다·단모음연속·원숫자), 단계별 들여쓰기(`levelIndent`), 단일형제 부호생략, 프리셋 해석(7종 — 기안문·보고서·계획서·통지·회의록·개조식·보도자료), bullet2 ㅇ/○ (v4.0.2) |
+| `src/hwpx/gaejosik.ts` | 개조식(정부 표준 보고서) 순수 로직 — □○-※ 부호·크기 체계·실측 색/기하 상수 (docs/gongmunseo-engine-spec.md (f)장) |
+| `src/hwpx/gongmun-lint.ts` | 공문서 표기법 검수 19룰(편람 — 날짜·시간·금액·붙임·쌍점 등 13 + v4.12.1 금액 한글병기·물결표·두음법칙·외래어·차별표현·"끝." 누락 6) + AI 슬롭 2룰(v4.9.0) — generate 경고 채널 + `kordoc lint` (v4.0.1). `END_MARK_MISSING` 은 `{ document: true }`(lint CLI) 에서만. `COLON_SPACE` 는 표 줄 건너뜀(`skipTable` — 법정 서식 라벨 셀 "성 명 :" 은 규칙 대상 아님), `DATE_NO_SPACE` 는 법제처 연혁 표기(`<개정 2012.2.14>`·`[시행일:…]`) 제외 (v4.12.3). 룰을 손대면 `gate-fill*`(실결재 기안문 206) + `licbyl`(서식 595) 파싱 텍스트에 돌려 오탐을 실측할 것(v4.12.2 TILDE·DUEUM 좁힘 근거) |
+| `src/hwpx/munche-lint.ts` | 개조식 **문체** 검수 12룰(서술형 종결·당위·수사·대구·항목/결론 길이·리드문) — 보고서·계획서·개조식 프리셋 generate 경고 + `kordoc lint --munche`. 표기법(gongmun-lint)과 축이 다름, 실측 근거는 docs/gaejosik-munche.md (v4.9.1) |
+| `src/hwpx/gen-docframe.ts` | 공문서 골격(v4.0.2) — 기안문 두문·결문(별지 제1호서식), 보고정보 행, 공고문 공고번호·발신명의, 보도자료 머리박스·담당 표. charPr는 variant·프로필 뒤 동적 id, 미사용 시 미방출 (spec (h)장) |
+| `src/hwpx/gen-levels.ts` | 항목부호 단계별 위계 타이포 `levels`(v4.12.3) — 지정 depth 마다 charPr 쌍(보통·굵게)을 docframe 뒤 id 에, 글꼴은 정적 fontface 뒤 append(한글·라틴만 참조). 실측 근거 docs/gongmunseo-reference.md 2.7(법정 8단계는 본문 동일 90% → 기본값 무변경, □/ㅇ/- 계열은 □ HY견고딕 +2~3pt bold·ㅇ 한컴돋움 bold). 내어쓰기는 `levelIndent` `markerHeight` |
+| `src/hwpx/gen-gaejosik.ts` | 개조식 XML 조립 — 표지(파랑 바)·목차(1×7 스트라이프 배너+테두리 박스)·로마숫자 장 헤더 표·본문 첫 페이지 제목 반복 박스 (기하는 sizes 비례 스케일) |
+| `src/hwp5/parser.ts` | HWP 5.x(OLE2) 컨테이너·문서 조립·메타데이터, 배포용·암호 복호화 |
+| `src/hwp5/body.ts` | HWP 5.x 본문: 문단 리스트·컨트롤 디스패치(표·그리기 개체·수식·각주·머리말·필드), 컨트롤 ID 정규화 |
+| `src/hwp5/record.ts` | 레코드 리더, UTF-16LE, zlib 압축해제. 하이픈 제어문자(0x18)는 한컴이 그리지 않아 미방출(v4.12.3, "60g/㎡"). 한컴 PUA-A 접힘 해제(v4.12.2; F00E1 네모 안 "인" 도 "(인)" — 한컴 PDF 실렌더 확인, v4.12.3) — WCHAR U+A000~A48C 는 U+F0000대 기호(결재란 "(인)"=F012B↔A12B), 펴서 `pua.ts` 표로 |
+| `src/hwp5/ir-assemble.ts` | 문단·셀 IR 조립 (HWP5·HWP3 공용): 글자처럼 취급 표 앞뒤 글 분할, 셀 평탄화 줄 모델, 머리말·각주 안 표, 좌표 셀 → builder 직접 배치(후행 빈 열 트림 계약)·손상 표 정리 |
+| `src/hwp5/aes.ts` | AES-128 ECB 순수 JS 구현 (배포용 복호화용) |
+| `src/hwp5/crypto.ts` | HWP 배포용 문서 복호화 (MSVC LCG + AES) |
+| `src/hwp5/cfb-lenient.ts` | 손상된 CFB 파일 복구 파서 (rhwp 포팅) |
+| `src/hwp3/parser.ts` | HWP 3.x(1996~2002, 단일 binary stream) 파싱 — header + raw deflate + paragraph_list, 표·문단 IR 은 `hwp5/ir-assemble.ts` 공용 조립 |
+| `src/hwp3/table.ts` | HWP3 표 격자 복원: 셀 정보 기하(x·y·w·h)로 행·열 경계와 병합 (한컴 HWP3→HWP5/HWPX 변환본 표 120개 재현 규칙) |
+| `src/hwp3/drawing.ts` | 그리기 개체 트리 워커 — ch=11 확장 블록(pic_type 3)의 도형 트리를 훑어 글상자 문단 리스트 회수 (#73). 확장 블록 슬라이스 안에서만 동작해 실패해도 본문 스트림 동기가 안 깨진다 |
+| `src/hwp3/records.ts` | DocInfo 128B / DocSummary 1008B / 헤더 구조 정의 |
+| `src/hwp3/johab.ts` + `johab-symbols.ts` | 상용조합형 cho/jung/jong → 0xAC00 한글 음절 + 5,893개 한자/기호 lookup (rhwp 포팅) |
+| `src/hwp3/reader.ts` | LE binary cursor (Buffer 기반) |
+| `src/hwpml/parser.ts` | HWPML 2.x(XML 기반 HWP) 파싱, ParaShape HeadingType 기반 헤딩 감지 |
+| `src/pdf/parser.ts` | PDF 텍스트 추출, XY-Cut 읽기 순서, 헤딩 감지, 머리글/바닥글 제거 (텍스트+y클러스터링) |
+| `src/pdf/line-detector.ts` | 선 기반 테이블 감지 엔트리 (구현은 7모듈로 분리 — 재수출 허브) |
+| `src/pdf/line-extract.ts` | 그래픽 ops → 수평/수직 선 추출 + 전처리 (음영 스택 필터, 개방 변 가상 테두리 합성). 행마다 끊어 그은 짧은 획 조각 사슬 잇기 `chainShortSegments`(칸 클립 격자 없는 쪽만, 예산서 세로선 구멍) |
+| `src/pdf/table-grid.ts` | 선 교차점(Vertex) 기반 테이블 그리드 구성. 음영 칸에만 깐 클립 조각 격자 버리기 `dropShadingClipGrids`(cairo·한컴 구버전). 선 격자 중첩표 `splitNestedBoxes`: 끝점이 맞닿는 선(0.5pt)끼리 이은 닫힌 상자가 다른 틀 안쪽에 네 쪽 모두 틈을 두고 떠 있으면 떼어 `lineNested` 격자로(칸 여백 5pt 를 CONNECT_TOL 이 잇던 것), 소비측 page-blocks 가 품는 칸의 blocks 로 넣는다 |
+| `src/pdf/cell-extract.ts` | 그리드 → 병합 셀 구조 (createMatrix) |
+| `src/pdf/cell-text.ts` | 텍스트→셀 매핑 + 셀 텍스트 조립. 괘선 없는 칸 경계를 걸친 글자 단위 낱말은 한 칸(`keepWordsInOneCell`), 칸 안 한글 줄 이음은 칸 상자가 있으면 꺾임 판정(line-wrap), 온전한 숫자 두 줄(천 단위·세 자리 이하)은 잇지 않음 |
+| `src/pdf/script-items.ts` | PDF 위·아래첨자 판정 `scriptKindsOfLine`(본문보다 작고 왼쪽 글자에 붙어 기준선이 뜨거나 가라앉은 조각)과 사후 태깅 `tagScripts` — 줄 이음·칸 줄 병합 판정(평문)을 다 한 뒤 완성된 글에서 조각을 짚어 `<sup>`·`<sub>` 를 넣고, 조각 사이에 공백 아닌 차이가 있으면 손대지 않는다 |
+| `src/pdf/undersegmented.ts` | 과소분할 표 재구성 (row band 재유도) |
+| `src/pdf/underline.ts` | 밑줄 감지 — baseline 밀착 수평선↔텍스트 상관, `<u>` 보존 (표 괘선·배지 오탐 방어 5겹) |
+| `src/pdf/links.ts` | 링크 어노테이션(/Annots /URI) → [text](url) 래핑 (sanitizeHref 살균, 줄 단위) |
+| `src/pdf/image-regions.ts` | 이미지 XObject 영역 추출 |
+| `src/pdf/image-extract.ts` | 이미지 XObject 바이트 추출 — 비동기 디코딩 대기 + 순수 JS PNG 인코딩, 표 병합 후 페이지 말미 주입 |
+| `src/pdf/line-types.ts` | 선 감지 공유 타입/상수 |
+| `src/pdf/clip-cells.ts` | 셀 클립 사각형 → 표 그리드 (v4.12.1) — 한컴 PDF 의 셀별 `W n` 클립을 셀 기하로 확정(`TableGrid.cells`). 포함 관계로 층을 나눠 같은 부모끼리만 이웃 묶음(중첩표는 별도 그리드 + `clipParent`, 틀은 자기 층의 셀), 클립 그리드·틀과 면적 절반 이상 겹치는 line 그리드 제거(`dropGridsInside`). 칸 클립 묶음과 좌표가 같은 바깥 클립은 표 겉 클립(틀 아님), 격자 끝에 맞붙은 좁은(4pt 미만) 채움 사각형은 클립 없는 가장자리 칸, 틀 칸 안 감싸개 클립은 건너뛰고 중첩표를 틀 칸에 넣는다(v4.14.3). 소비측(`page-blocks.ts`)은 클립 그리드를 면적 오름차순으로 먼저 처리하고 `clipParent` 가 있는 표는 틀 셀의 `IRCell.blocks` 에 원문 순서로 넣는다(v4.12.2). 1칸 틀은 **네 변 획**이 있을 때만 1×1 그리드 — 획 없는 큰 컨테이너는 한컴 본문 영역 클립. 표 위에 걸친 덮개(워터마크·덮개 1칸 표, 상대 클립 10~90%)는 부모가 못 되고, 괘선이 칸 클립 변에 그어진 좁은 틈(셀 간격 표·짧게 깐 문서번호 표 칸)은 이웃으로 이어 표 단위로 닫으며, 쪽을 넘는 한 칸의 뒤 쪽 조각(이웃 없는 클립, 좌우 변 0.1pt·쪽 마지막/첫 내용)은 `continues` 로 낸다(v4.14.4) |
+| `src/pdf/table-parts.ts` | 쪽 넘김 표 잇기 `mergeCrossPageTables`: 클립 표 조각은 열 경계 합집합 격자에 다시 놓고(뒤 조각에 클립 없는 열은 세로 병합 이어 늘림), 짝·홀 쪽 대칭 여백·2단 지면으로 옮겨진 조각은 쪼개진 행·글 있는 반복 머리 행 증거가 있을 때만 잇는다. 쪼개진 행은 글 이어짐(끝줄이 칸 글 오른끝까지·내어쓰기 이어짐·내어쓰기 첫 줄 뒤 내어쓴 자리에서 이어짐·목록 번호 다음 차례) 또는 칸 조각 이어짐(한컴은 글 없이 쪽을 넘은 칸 조각에 클립을 안 깖 — 글 쌍 둘 이상이면 뒤 조각 칸이 모두 여러 행이거나 괘선 없는 쪽 경계의 줄 넘침일 때만) 또는 괘선 없는 쪽 경계(칸 밑변마다 괘선을 긋는 표에서 쪽 경계만 안 그음, `ROW_RULES`)일 때 합치고, 한 줄로 끝난 이름표 뒤 다른 글이면 새 행. 뒤 쪽에서 여러 행을 덮는 칸은 앞 쪽 한 행 칸의 세로 병합 나머지로 잇는다(그 칸 글이 스스로 이어지거나 칸 조각 이어짐·괘선 없는 쪽 경계가 있을 때). 쪽 경계에 걸친 세로 병합 칸 글은 다른 열이 경계를 넘을 때만 잇는다. 첫 행 이름표를 되풀이하며 값만 다른 표(서식 되풀이)와 전폭 제목 칸만 다르고 둘째 행 짜임·이름표가 같은 상자(`restartsTitledForm`)는 새 표. 쪽 가장자리 글만 끼면 인접, 첨부 머리표(붙임·별지)·쪽 끝 띠 밖 표는 잇지 않음 |
+| `src/pdf/cell-continuation.ts` | 쪽을 넘는 칸 잇기 `mergeContinuedCells`: 이어짐 1칸 조각(clip-cells `continues`)을 앞 쪽 표 마지막 행의 좌우 변 같은 칸에 붙이고 칸 안에서 쪽 경계로 갈린 표를 `mergeCrossPageTables` 로 다시 잇는다. parser 에서 `mergeCrossPageTables` 보다 먼저 |
+| `src/pdf/table-meta.ts` | PDF 표 IR 곁정보(WeakMap/WeakSet): 클립 표·열 경계 x·채움 칸·빈 조각·칸 글줄 상자·이어짐 칸 조각(`CONT_PARTS`)·가로 괘선(`ROW_RULES`: 표 윗변·밑변과 칸 밑변 괘선 유무, 전처리가 합성한 가상 괘선 말고 그어진 획으로). 공개 IR 에 안 나감 |
+| `src/pdf/cell-edges.ts` | 한컴 칸 클립 격자 칸의 보이는 변(v4.17.0): 네 변 자리의 실제 선(획·얇은 채움 괘선·짧은 조각)이 변 길이 60% 이상을 덮고 빈 길이 3pt 이하면 보임(점선 틈 3pt 이음, 옆 칸 괘선 끝 1.5pt 미만 무시). 흰 선·음영 윤곽(`nonRules`)·합성 가상 테두리는 제외. 선 격자·클러스터·booktabs·글상자 표에는 두지 않는다. 쪽 잇기(칸 복사·`appendCell`·이어짐 조각)가 변을 옮기고 합친다 |
+| `src/pdf/table-trim.ts` | PDF 표 후행 빈 열 정리: HWP 계열 builder 와 같은 규칙(칸 단위 빈 열, 걸친 병합 칸은 폭 안으로), 그림만 든 칸은 빈 칸 아님 |
+| `src/pdf/text-clean.ts` | PDF 마크다운 최종 정리 — 쪽번호 제거·균등배분·`mergeKoreanLines`(한글 줄 병합). v4.12.3: `normalizeAraea`(한컴 PDF 의 ㆍ→U+119E 되돌림, 셀 blocks 포함)·`splitSingleCellTables`(중첩 없는 1×1 표는 줄마다 문단 — 1×1 줄 결합의 원인은 builder 가 아니라 mergeKoreanLines). v4.14.4: 본문 줄 이음은 line-wrap(블록 조립 단계)으로 옮겨 `mergeKoreanLines` 는 블록 안 `\n`(강등 표 글·글상자)만 |
+| `src/pdf/symbol-fonts.ts` | Wingdings 글리프 코드 → 유니코드 복원 (v4.12.1) — pdfjs 가 심볼 폰트 코드를 Latin-1 로 돌려주는 것(`è`=0xE8 ➔)을 `page.commonObjs` 폰트 실명으로 판별해 되돌림. Windows 양식 선택 상자(Marlett g·f·e·d·c 겹침 + 체크 b)는 ☐·☑ 한 글자로 |
+| `src/pdf/cluster-detector.ts` | 클러스터 기반 테이블 감지 (선 없는 PDF용). 칸 글은 선 표와 같은 공백 규칙(`joinCellItems`, 글자 단위 제작기의 "2 0 , 7 7 5" 방지) |
+| `src/pdf/polyfill.ts` | pdfjs-dist 호환 심 (DOMMatrix, Path2D) |
+| `src/pdf/quality.ts` | PDF 페이지별 텍스트 품질 신호 계산 (한글/제어문자/PUA 비율, needsOcr 판정). 사유 `vector_text`: 글자를 곡선으로 그린 쪽(vector-glyphs) |
+| `src/pdf/vector-glyphs.ts` | 벡터 글자 감지: 글자를 채운 곡선 경로로 그린 쪽(rhwp cairo·윤곽 인쇄): 음절 모양 채움 경로의 글줄 → quality `vector_text`(코퍼스 16,775쪽 한컴 PDF 오탐 0), OCR 쪽 그래픽 추림(글자 경로·클립 제외, cairo 는 음영 칸에만 클립) |
+| `src/pdf/line-wrap.ts` | PDF 줄 꺾임 이음: 본문 줄을 문단으로 복원(찬 줄·새 항목 아님), 칸 안 어절 중간 꺾임, 쪽 넘김 꺾임(`joinPageBreakWraps`). 한컴 텍스트층은 줄 끝 공백을 싣지 않아 어절 중간/경계는 기하로 못 가르고 글로 판정: 조사·어미, 문서 어휘 증거(`WrapLexicon`), 한 음절 조각, 날짜 줄(HWPX 정답 22,911곳 92.9%) |
+| `src/pdf/open-table-ends.ts` | 열린 위·아래 변 닫기 `closeOpenTableEnds`: 머리행 위·합계행 아래 가로선을 긋지 않고 세로선만 내려 그은 표 — 몸통 괘선 묶음 밖 같은 끝점까지 뻗은 내부 세로선 2개 이상이면 그 끝점에 가상 가로선(v4.15.5, ODL 045~047). 맨 아래 괘선에 닿은 내부 세로선이 모두 아래로 뻗었는데 끝점이 제각각이면 가장 얕은 끝점에서 닫는다(텍스트층 쪽만, ODL 182). 양끝이 같은 괘선 묶음은 세로선으로 이어진 몸통마다 갈라 본다(같은 폭 표 여럿이 위아래로 놓인 서식) |
+| `src/pdf/header-box-rows.ts` | 1행 머리 상자 아래 무괘선 행 `extendHeaderBoxRows`: 머리만 칸 괘선(음영 상자)이고 데이터는 괘선 없는 표 — 상자 칸 안에만 놓인 고른 간격 글줄을 행으로 보고 가상 괘선. 클립 격자 쪽은 안 부름(v4.15.5) |
+| `src/pdf/ruled-band-tables.ts` | 가로 괘선만 있는 표(booktabs) `detectRuledBandTables`: 끝점 정렬 가로선 3개 이상 사이 띠마다 열 틈이 있으면 표 — 열은 몸통 x 투영 틈, 머리 띠는 한 행(걸친 글은 병합 칸). 행 간격 8pt 표도 있어 가상 괘선 대신 IR 표를 바로 만들어 격자 경로(두 단 밴드 순서)에 넘긴다. 안·양끝 세로선(선 격자·테두리 상자)·목차는 제외(v4.15.5). 위·아래 괘선 둘뿐인 표는 몸통 행 간격보다 촘촘히 붙은 첫 줄 묶음을 머리 띠로(꺾인 머리 칸, 빈 머리 칸 허용 — 텍스트층 글만, ODL 170) |
+| `src/pdf/text-box-table.ts` | 보이지 않는 글상자 표 `detectTextBoxTables`: 슬라이드 PDF 는 글상자마다 불투명도 0(ca=0) 채움 틀을 깔고 표 괘선은 래스터 그림에 굽는다 — line-extract 는 ca=0 채움·CA=0 획을 선·채움 칸에서 빼고 `hiddenBoxes` 로 모으며, 왼·오른끝이 같은 틀 열 3개 이상이 행마다 윗변을 맞추면 틀을 칸으로 표를 세운다(선 격자·클립·booktabs 없는 쪽만, ODL 200). 차트 눈금 틀은 같은 폭 열이 서지 않는다(ODL 199) |
+| `src/pdf/grid-header-line.ts` | 선 격자 바로 위 무괘선 머리행 `headerLineAbove`: 몸통만 괘선으로 가른 표의 머리 줄이 격자 폭 안에서 열마다 따로 놓이면(두 열 이상·칸 경계 걸친 글 없음·캡션 줄 아님) 머리행으로 붙인다. 텍스트층 글(seq)만 — OCR 래스터 괘선 경로에서 괴산 예산서가 무너진 전력(ODL 052·182) |
+| `src/pdf/page-regions.ts` | 쪽 지면 영역(page-blocks 에서 분리): 두 단 밴드 `splitTwoColumnProse`(쪽 머리 줄·다른 단 위로 떨어진 짧은 캡션 띠 먼저, 작은 글자 각주 띠는 두 단 본문 뒤), 두 단 위 표 밴드, 3단 머리 표, 쌓인 캡션 표, 카드·인포그래픽 3열 |
+| `src/pdf/local-regions.ts` | 지역 읽기 영역: 전폭 영역 아래 짧은 좌·우 단, 여백의 큰 표시 제목과 독립 본문, drop cap 줄 소속 |
+| `src/pdf/table-roles.ts` | 무괘선 표 후보의 역할: 목차(증가하는 쪽번호 열)·산문 표(긴 문장 칸 과반, 짧은 라벨 열 없음)·차트(값 축·빈 칸 과반 수량) |
+| `src/pdf/heading-demote.ts` | 승격 뒤 제목 강등: 쪽 가장자리 머리말·꼬리말, 캡션, 수식 번호·관계 기호 줄(#89), 소문자 시작 이어진 문장, 본문 스타일 긴 문장, 제목 바로 아래 본문 크기 기울임 필자 줄(실제 서체 이름), 7.5pt 미만 글. 같은 줄 소문자 항목 부호("n.") + 굵은 도입문은 문단으로, 다른 서체로 떨어진 절 번호·소문자로 꺾인 둘째 줄·"&" 이음 줄은 제목에 잇는다 |
+| `src/pdf/paragraph-lines.ts` | 줄 → 문단 결합(page-blocks 에서 분리), drop cap 소속을 결합 전에 적용 |
+| `src/pdf/equation-runs.ts` | 한컴 수식 글꼴(HyhwpEQ) 글 → `$…$`: U+E0xx 코드 해독표(숫자 E034~E03D·이탤릭 a~z E0E5~·A~Z E000~·그리스 E09D~·기호), 가까운 수식 글자 union-find 묶음(분수 막대는 가로로 늘려 찍어 글자 크기가 막대 길이만큼 커지므로 크기 판단에서 뺌), 막대 위·아래 `\frac`, √+윗줄 `\sqrt`, 첨자 `^{}`·`_{}`. parser 가 리터럴 `$` 이스케이프 뒤에 부른다 |
+| `src/pdf/tracked-text.ts` | 자간 벌린 라틴 글 `restoreTrackedSpacing`: pdfjs 가 글자마다 공백을 넣은 아이템("E M A I L")을 같은 글꼴 글리프 흐름의 진짜 공백으로 다시 짠다(normalizeItems 전, 한글 균등배분 제외, 흐름이 어긋나는 글꼴은 건너뜀) |
+| `src/pdf/vertical-text.ts` | 세로쓰기 글상자 `joinVerticalColumns`: 한 글자씩 쌓은 기둥(글자 높이 1~2배 간격, 네 자 이상) 둘 이상이 윗머리를 맞춰 오른쪽→왼쪽으로 늘어서고, 기둥 안 간격 중앙값이 기둥 사이×0.8·글자 높이×1.15 이하, 기둥 절반 이상에 낱말 틈이 있을 때 기둥마다 한 줄 아이템으로 바꿔 영역 안에 위→아래로 놓는다. 세로 구두점(、。)은 왼쪽 기둥에. 표 칸에 쌓인 지역명·직위 열은 간격 조건에서 빠진다 |
+| `src/html-tables.ts` | `htmlTables` 옵션 후처리 `toHtmlTables`: 파이프 표를 HTML 표로(Markdown 이스케이프 해제·HTML 이스케이프, `<br>`·`<u>`·`<img>` 보존), 모든 표를 태그마다 한 줄씩 들여쓰기(prettify 모양, 빈 줄 없음). `parse()` 가 plain 뒤에 markdown·pages[].markdown 에 적용 |
+| `src/plain-markdown.ts` | `plain` 옵션 후처리 `toPlainMarkdown`: 그림 자리 표시·칸 안 `<img>`·링크 URL(글만 남김)·`<u>`·`**` 를 걷는다. `parse()` 가 markdown 과 pages[].markdown 에 적용 |
+| `src/script-tags.ts` | 첨자 표지 공용 — `wrapScript`·`tidyScriptTags`(이웃 합치기·공백 밖으로)·`plainScripts`(`plain` 의 `10^4`·`H_2O`)·`stripScriptTags`(`scriptTags` 끔: 마크다운·IR 글에서 태그만 걷음). HWPX `hh:supscript`·HWP5 CharShape bit 15·16·DOCX `w:vertAlign`·PDF 기하가 이 태그를 낸다 |
+| `src/pdf/occluded-text.ts` | 가려진 글: 연산자 목록에서 불투명 사각형 채움마다 그때까지 찍은 글자 수·영역을 기록하고, 텍스트 아이템을 같은 글자 흐름으로 짚어 뒤에 칠한 사각형 안에 드는 아이템을 뺀다(ODL 079·080 쪽 배경 아래 머리글). 반투명·혼합 모드·사각형 아닌 클립은 판단 안 함, 흐름이 어긋나면 그 뒤는 손대지 않음. pdfjs v4 사각형 경로만 |
+| `src/pdf/glyph-names.ts` | ToUnicode 없이 /Differences 글리프 이름만 둔 글꼴(옛 숫자 `seven.oldstyle`·작은 대문자 `c.sc`·합자 `f_l`)을 AGL 규칙으로 글자 복원 — pdfjs 가 제어 문자로 돌려주는 코드를 되살린다(ToUnicode 가 U+FFFD 로 매긴 코드 포함). TeX CM 수식 글꼴을 라틴-1 이름으로 다시 매긴 하위 글꼴(TeXCMMathsSymbols thorn=+·onequarter==·eth=(·C0=−, Italic 0x3D=/)은 원래 기호로. `getDocument({ fontExtraProperties: true })` 가 필요. `restoreNamedGlyphs` 는 normalizeItems 전에 연산자 목록 showText 글리프(originalCharCode)를 글꼴마다 텍스트 아이템 글자에 맞춰 짚어, 공백·빈 글로 사라지는 코드(9 `nine.oldstyle`·129 `F.a`, ODL 005·006)와 ToUnicode 가 소문자로 매긴 작은 대문자(`h.smcp`, ODL 001~015)를 되살린다 — 맞춤이 어긋난 글꼴은 손대지 않음(코퍼스 PDF 1,911건 중 대상 글꼴 2건·출력 변화 0) |
+| `src/xlsx/parser.ts` | XLSX(ZIP+XML) 파싱, 공유 문자열/병합 셀 처리 |
+| `src/xlsx/sheet-blocks.ts` | XLSX·XLS 공용 시트 → 표: 글 있는 행·열만 펼침(빈 행·열 제외·병합은 남은 행·열로 축소, #91), 열 수에 따른 칸 예산·절단 경고 |
+| `src/docx/parser.ts` | DOCX(ZIP+XML) 파싱, 스타일/번호매기기/각주 처리 |
+| `src/table/builder.ts` | 2-pass 그리드 테이블 빌더 + 마크다운 변환, `escapeHtmlCellText`로 HTML 칸 원문 이스케이프. 캡션 안 표(`captionBlocks`)는 `captionToMarkdown`/`captionToHtml` 이 표로 낸다 |
+| `src/table/layout-frames.ts` | 보이지 않는 틀 표 풀기 `unframeLayoutTables`(v4.17.0, `layoutTables` 기본 visual): 파서가 칸마다 단 보이는 변(`CELL_EDGES`: HWPX borderFill·HWP5 BORDER_FILL·한컴 PDF 칸 클립 격자의 실제 획)으로 ① 위아래 두 칸 사이 가로선만 보이는 짧은 한 줄 칸 쌍을 `$\frac{}{}$` 로 합치고(표 온 폭 두 칸은 2×1 표만) ② 세로선이 보이는 행·온 폭 가로선 사이 칸 둘 이상인 행을 표 띠로 남겨 새 표로 다시 짠다(안 쓰는 격자선·선 밖 빈 칸·빈 여백 행·후행 빈 열 접기). 나머지 행은 문단, 칸 안 표는 재귀. 곁정보 없는 표는 그대로. 그림 칸은 `CONTENT_CELLS`(PDF) |
+| `src/render/svg-render.ts` | 레이아웃 보존 렌더 — HWPX 조판 캐시(lineseg·cellAddr·pos)를 SVG 절대배치로. 문단·표·이미지·도형 region 기록 + `<g data-kordoc-*>` 래퍼. 포맷 무관 단계 `renderSectionRoots`(구역 DOM→페이지 버퍼)·`assemblePageSvgs`(페이지별 standalone SVG) 를 HWPX·HWP5 어댑터가 공유 (#75) |
+| `src/render/para-model.ts` | 렌더 문단 모델(슬롯 스트림: 글자·필러·탭)·탭 정지점(`tabAdvance`: autoTabLeft 첫 줄 = 내어쓰기, 기본 40pt)·표 실효 높이. svg-render·reflow 공유(그리기 코드 비의존) |
+| `src/render/scene.ts` | RenderScene 계약 — 1-based 페이지·페이지 로컬 pt bbox·결정적 region id(`table-000017`)·다중 페이지 조각·parentId·sourceId |
+| `src/render/document.ts` | 통합 렌더 API `renderDocument`/`renderDocumentToScene` — 포맷 감지(hwpx→svg-render / hwp→hwp5-scene)→페이지 선택→svg/html/png/jpeg/pdf 자산 |
+| `src/render/hwp5-scene.ts` | HWP5 렌더 어댑터 (#75 Task 7) — BodyText 레코드(LINE_SEG·CTRL/TABLE/LIST_HEADER·SHAPE_COMPONENT/PICTURE)를 HWPX 동형 section DOM 으로 합성해 공용 렌더러(`renderSectionRoots`/`assemblePageSvgs`)에 전달. 레코드 오프셋 실측은 헤더 주석 |
+| `src/hwp5/table-ids.ts` | HWP5 표 순번 `t{N}` 프리패스 — 파서 `IRTable.sourceId` 와 렌더 `RenderRegion.sourceId` 공용 키 |
+| `src/render/html.ts` · `pdf.ts` · `regions.ts` | 레이아웃 HTML(`.kordoc-page[data-page]`+인쇄 CSS) · HTML→PDF(puppeteer-core optional) · region crop(`cropRect` bbox×실배율, `extractRenderedRegions`) |
+| `src/table/classifier.ts` · `analyze.ts` · `visual.ts` | 표 분류(의미/비표/불확실 휴리스틱, 키워드는 구조 증거 게이트) · opt-in 트리 배선+표현 정책 · 분류↔렌더 region 조인(HWPX `hp:tbl id`·HWP5 `t{N}`)·`extractTables` (#76) |
+| `src/render/layout.ts` | 렌더 순수 계산 — uint32 음수(toInt32), 표 열 경계 전파 솔버, 행 높이(max+콘텐츠 성장) |
+| `src/render/head-styles.ts` | 렌더용 header.xml 스타일 — charPr(크기·굵기·색·장평·자간)/paraPr 정렬/borderFill |
+| `src/diff/compare.ts` | 문서 비교 (블록 단위 diff) |
+| `src/form/recognize.ts` | 양식 서식 레이블-값 쌍 추출, 라벨 셀 판별 |
+| `src/form/match.ts` | 양식 필드 매칭 공용 유틸 (정규화, 접두사 매칭, 인셀 패턴 채우기) |
+| `src/form/filler.ts` | IRBlock[] 기반 양식 필드 값 채우기 |
+| `src/form/filler-hwpx.ts` | HWPX XML 직접 조작으로 양식 채우기 (원본 서식 100% 보존) |
+| `src/ocr/engine.ts` | 내장 텍스트 OCR 엔진 — PP-OCRv5 korean det(DBNet)+rec(CTC) ONNX 추론, 세션 싱글턴 |
+| `src/ocr/models.ts` | OCR 모델 스펙(HF 공식 변환본, SHA 핀) + inference.yml 사전 파서 |
+| `src/ocr/pdf-ocr.ts` | PDF OCR 브릿지 — pdfium 래스터 → 내장 엔진/사용자 프로바이더 → 블록 파이프라인 (좌표는 PDF pt 환산, **pdfium page.number 는 0-based — +1 환산 필수**). 벡터 글자 쪽(`vector_text`)은 기울기 보정 없이 그 쪽 실제 벡터 괘선으로 표 복원 |
+| `src/ocr/ruling-lines.ts` | 래스터 괘선 감지 — 페이지 픽셀 이진화+런렝스로 표 수평/수직 선 추출 → 선 기반 표 파이프라인 공급 (오탐 방어 3겹: 최소길이 20pt·두께 상한 2.5pt·양측 잉크 포위 제외). 점선 괘선·채움 사각형 변(표 괘선에 맞물린 것만)·흐린 선(잉크 상한 205) |
+| `src/ocr/image-ocr.ts` | 이미지(PNG/JPG/WebP) 직접 입력 OCR: sharp 디코딩 → 기울기 보정 → 내장 엔진 상시 적용 + 괘선 감지 (해상도는 메타데이터·쪽 비율로 추정, 없으면 216dpi) |
+| `src/ocr/line-split.ts` | 검출 박스 픽셀 분석: 세로로 이어 붙은 키 큰 박스(세로쓰기 머리·균등배분 목차)를 행 밴드로 갈라 따로 인식, 잉크 경계(`inkBounds`)로 박스 좌표 조임. 목차 리더 점 무리(`leaderRuns`)·숫자 앞 △▲ 판정. 글리프 모양 판정(괄호 「」【】·따옴표 머리·원문자 고리·로마 숫자 세로 획·줄 머리 글머리 ◎●▪□)과 한 줄 박스에 걸린 이웃 줄 끝자락·상자 테두리(`edgeTrim` — 엔진이 그 부분을 배경으로 지운 crop 도 인식해 신뢰도 0.06 넘게 높을 때만 씀, 그림 영역 OCR 에선 끔) |
+| `src/ocr/glyph-restore.ts` | 인식 글자열 되살리기 배선(`restoreGlyphs` — CTC 글자와 1:1 배열 한 벌을 도는 단일 패스): 글자 자리(steps)를 박스 픽셀로 옮겨 line-split 모양 판정으로 [ ] → 「」【】, 곧은 따옴표 → ‘“(연도 생략·줄에 하나뿐인 자리만), 숫자 → ①~⑨, 두 글자 사이에서 빠진 · ▲ 「 」 □(`gapGlyphs`, 공백 자리 · 와 0 자리 □ 포함), I·Ⅱ → Ⅰ~Ⅲ(획 수)·"." 로 시작한 제목 줄 앞 로마 숫자 |
+| `src/ocr/postprocess.ts` | OCR 문자열 후처리: 사전에 없는 공문서 기호 복원(○·△·곧은/굽은 따옴표·○○ 자리표시), 쉼표 숫자 붙임, 떠도는 리더 점 제거, 목차 한 줄 잇기(리더 양쪽·쪽번호 열 맞춤), "(cid:)"·배경 도안 환각 제거 |
+| `src/ocr/crop.ts` | 인식 입력 준비: 밴드 서브 박스 좌표·라인 crop 리사이즈(회전 포함) |
+| `src/ocr/deskew.ts` | 스캔 기울기 보정: 투영 프로파일 제곱합으로 각도 추정, PDF·이미지 경로 공통 |
+| `src/shared/offline.ts` | 폐쇄망 게이트 — `KORDOC_OFFLINE` 아웃바운드 킬스위치(`assertNetworkAllowed`), `KORDOC_ROOT` 파일 접근 루트 제한(`assertWithinRoot`, realpath 기준). **새 네트워크 호출은 반드시 여기를 경유** |
+| `src/shared/generate-images.ts` | CLI·MCP 생성 이미지 로더 `loadGenerationImages` — 파일마다 실경로를 이미지 폴더(MCP 는 `KORDOC_ROOT` 도) 안인지 보고 `O_NOFOLLOW`·일반 파일만 연다. 한글·URL 인코딩·하위 폴더 이름 지원 (#101) |
+| `src/shared/symbol-fonts.ts` | Wingdings 코드표 SSOT: PDF 심볼 폰트 글리프와 HWP/HWPX 한컴 심볼 PUA(U+F021~F0FF) 공용 |
+| `src/shared/model-bundle.ts` | OCR·수식 모델 오프라인 사이드로드 (`kordoc models --export/--import`) — SHA 스펙이 SSOT, manifest 없음 |
+| `src/page-range.ts` | 페이지 범위 문자열 파싱 (`"1-3,5"` → `Set<number>`) |
+| `src/page-markdown.ts` | 페이지별 마크다운 사영 (#68) — `IRBlock.pageNumber` 로 갈라 페이지마다 `blocksToMarkdown()`. `parse()` 가 `ParseSuccess.pages` 로 붙인다 |
+| `src/watch.ts` | 디렉토리 감시 모드 + Webhook 알림 |
+| `src/cli.ts` | Commander 기반 CLI 진입점(루트 파싱 명령). 하위 명령은 `src/cli/commands-{docs,generate,render,system,worker}.ts` (등록 순서 = 도움말 순서) |
+| `src/mcp.ts` | MCP 서버 진입점 (Claude/Cursor 연동, 17개 도구). 도구는 `src/mcp/tools-{parse,form,render,generate}.ts`, 경로 검증·파일 읽기는 `src/mcp/shared.ts` (테스트용 헬퍼 재수출) |
+| `src/print/renderer.ts` | 인쇄용 Chromium 공용 기동 `launchLockedPage`: JavaScript 끔·data:/about: 외 요청 차단·기동 한도 90초. 렌더 PDF도 공유 |
+| `src/render/rasterize.ts` | SVG → PNG 래스터 (sharp optional, render_document MCP용) + `rasterizePageSvg` 페이지 단위 png/jpeg(실배율 보고) |
+| `src/redact.ts` | PII 탐지·마스킹 엔진: 정규화·겹침 처리·마크다운 표 머리글 문맥(선형 시간). 룰 정의는 `redact-rules.ts`(번호형)·`redact-name-address.ts`(인명·주소) |
+| `src/redact-rules.ts` | redact 룰: 룰별 정규식 변형·검증기(생년월일·Luhn·사업자/법인 체크섬·전화 국번)·라벨 사전(창 안 라벨 전부 반영) |
+| `src/redact-name-address.ts` | opt-in 룰 `name`·`address` (v4.14.4): 인명은 문맥 게이트(역할어·호칭·라벨·연락처 괄호·나열·표 머리글 "성명") + 성씨 사전, 문맥 없는 맨이름은 안 잡음. v4.15.0: 회의록 발언자·기관 직함 앞 이름·결재란·도로명 변형 보강과 오탐 정리. 주소는 도로명·지번 문법 + 행정구역 사전, 시·도·시·군·구는 남기고 그 아래를 가림, 행정구역만 있는 글은 주소 아님. 룰을 손대면 `redact-bench.mjs --corpus --corpus-rules=name,address` 로 오탐 재실측 |
+| `src/redact-doc.ts` | 파일 단위 마스킹 `redactDocument`(CLI `redact`·MCP `redact_document`): parse → 탐지 → 컨테이너 수술 → 재파싱 잔존 검사. 본문에서 찾은 값(리터럴)은 마크다운 출력 다른 자리에도 전파, 바이너리 조각에는 인명·주소 룰 대신 리터럴만 |
+| `src/redact-hwpx.ts` · `redact-hwp5.ts` | 컨테이너 PII 수술: HWPX 는 ZIP 안 모든 XML 문단·텍스트 노드·속성·미리보기, HWP5 는 전 스트림 레코드(같은 길이 치환, 한컴 압축 꼬리 보존, 미할당 섹터 wipe) |
+| `src/redact-scrub.ts` | 파일 마스킹 공용: 텍스트 탐지(룰+리터럴), 바이너리 문자열 조각 훑기(UTF-16·OLE·EMF), 빈 미리보기 이미지 |
+| `src/chunks.ts` | RAG용 구조 청킹 — IR 위계(헤딩·listDepth·표) → breadcrumb 청크 JSON |
+
+## 주요 설계 결정
+
+- **IR 패턴**: 파서가 직접 마크다운을 생성하지 않고, `IRBlock[]`로 정규화 후 `blocksToMarkdown()`에서 일괄 변환
+- **2-pass 테이블**: Pass 1에서 colSpan/rowSpan 고려한 그리드 크기 계산, Pass 2에서 셀 배치
+- **깨진 ZIP 복구**: HWPX Central Directory 손상 시 Local File Header(PK\x03\x04) 직접 스캔
+- **pdfjs-dist 외부 의존**: `external`로 번들에서 제외, 사용자가 선택적 설치. cfb는 `noExternal`로 번들에 포함
+- **HWP5 레코드 구조**: 4바이트 헤더(tagId 10bit, level 10bit, size 12bit), FLAG_COMPRESSED 시 inflateRawSync
+- **공문서 항목부호 뒤는 탭**: 부호 run(부호 + `<hp:tab/>`) + 내용 run, 문단은 `tabPrIDRef="1"`(autoTabLeft). 공백을 쓰면
+  양쪽 정렬이 부호 뒤 공백을 늘려 첫 줄 내용이 둘째 줄보다 오른쪽에 선다(실결재 99%가 가진 결함). 헤더는 공문서 모드에서
+  `TAB_PROPS_GONGMUN`(tabPr 0·1)을 방출. v5 본문은 어절 줄바꿈(BREAK_WORD)+외톨이줄 보호, 날짜·금액은 묶음 빈칸 (engine-spec (k)장)
+- **v5 공문서(official/report/plan/notice/minutes)는 gen-gongmun.ts 경로** — gen-section의 h2Marker·coverH1Idx·docframe 분기는 개조식·보도자료·범용에만 산다. 위계·글꼴 값을 바꾸려면 gongmun-scheme.ts 하나만 (reference 2.8 실측 인용 필수). □ 두 줄·제목 두 줄은 fit-line이 막는다 — 실렌더 확인은 `bench/visual` 또는 scratch capture(한컴 창 1500px로 좁혀 HUD 회피)
+- **공문서 모드 paraPr margin**: HWPX `<hh:margin>`은 **반드시 자식요소형**(`<hc:intent>`/`<hc:left>`/`<hc:right>`/`<hc:prev>`/`<hc:next>`, `xmlns:hc` 선언 필수). 속성형(`indent="…"`)은 한컴이 무시함. 내어쓰기 = `<hc:intent>` **음수**(둘째 줄을 오른쪽으로), 깊이 들여쓰기 = `<hc:left>` 누적. (실제 한컴 공문서 파일로 검증한 모델)
+
+## 빌드 설정 (tsup)
+
+두 개의 빌드 파이프라인:
+1. **라이브러리** (`src/index.ts`): ESM + CJS, dts 생성, `pdfjs-dist` external / `cfb` bundled
+2. **바이너리** (`src/cli.ts`, `src/mcp.ts`): ESM only, shebang 자동 삽입
+
+## 구현 주의 (상세)
+
+- `IRBlock` 타입 변경 시 모든 파서(hwpx, hwp5, pdf)와 `table/builder.ts`에 영향
+- HWP5 파서에서 21개 제어 문자 처리 로직 주의 (`record.ts`)
+- PDF 파서의 Y좌표 그룹핑은 3px(`groupByY`), 줄 안 틈은 글자 크기 비례 — 탭은 max(2em, 30), 공백은 `spaceGapThreshold`(`mergeLineSimple`)
+- `parse()` 함수는 `detectFormat()` 결과로 자동 분기 — 새 포맷 추가 시 여기에 분기 추가
+- **`breakNonLatinWord`는 이름 역전**: `BREAK_WORD`=어절 유지, `KEEP_WORD`=글자 단위
+  (한글 COM 실렌더 실측 — `docs/gongmunseo-engine-spec.md` (f)장 줄나눔 절 참조).
+  어절 줄바꿈 의도로 `KEEP_WORD`를 쓰면 정확히 반대로 나온다. `breakLatinWord`는 이름대로.
+- 한글 실조판 검증은 COM 자동화(HWPFrame.HwpObject `Open`→`SaveAs PDF`)로 사람 없이 가능 —
+  `bench/hangul-com-pdf.ps1` → `bench/extract-pdf-lines.mjs` → `bench/verify-junctions.mjs` 체인
+- **OUTLINE 헤딩 금지 (공문서 모드)**: `<hh:heading type="OUTLINE">` 문단은 한글이 개요
+  번호("1.", "1.1.")를 강제로 그린다 — `outlineShapeIDRef=0`·`numFormat=NONE`으로도 못 끔
+  (COM 실렌더 실측). 공문서 모드는 명명 스타일("개요 N") + 파서의 스타일명 헤딩 감지로 왕복 보존
+- **treatAsChar 표의 줄간격**: 표를 담는 호스트 문단의 lineSpacing %가 표 줄높이에 곱해진다 —
+  페이지급 대형 표(목차 박스 등)는 저줄간격 호스트(GJ_PARA_BAR류) 필수, 아니면 페이지 분리됨
+- **HWPX 스타일 요소 전수 분석**은 `scripts/style-digest.mjs`로 압축 JSON 덤프 후 대조
+  (골라 읽기 금지 — 실측 원본 16종 전수 대조로 v4.0.0 스펙 확정한 방법론)
+- **colPr 필수 (생성 경로)**: 섹션 첫 run에 secPr 뒤 `<hp:colPr colCount="1">`이 없으면
+  한글이 컬럼 영역을 좌우 10mm씩 좁게 잡는다 — 본문 우측 미달 + 광폭 treatAsChar 표의
+  우측 여백 침범 (v4.0.2 GAP-01, COM 실렌더 실측). 새 섹션 생성 경로 추가 시 누락 금지
+- **아웃바운드는 2곳뿐** (`src/pdf/formula/models.ts` 모델 다운로드, `src/watch.ts` webhook).
+  둘 다 `assertNetworkAllowed()` 뒤에 있다 — 세 번째를 만들지 말 것. 폐쇄망 배포의 근거
+  문서(`docs/offline-deployment.md`)가 "fetch 는 2건"을 재현 가능한 grep 으로 주장한다
+- **한컴 PDF 표는 클립이 진실**: 한컴 PDF 1.3 은 표 셀마다 `W n` 클립 사각형을 깐다(획 괘선과
+  무관). 별지서식처럼 테두리 "없음" 셀이 많은 표는 획으로는 복원이 안 되고, 실선 표도 line
+  경로(교차점 클러스터·MIN_COL_WIDTH 병합)보다 클립 셀이 정확하다 — pdf-table-gt cellExact
+  0.73 → 0.96 (v4.12.1). 클립 셀 판정을 손댈 때는 `bench/pdf-table-gt.mjs` 와
+  `licbyl/` HWP↔PDF 셀 대조를 함께 볼 것. `mergeParallelLines` 는 입력 선 객체를 **제자리 수정**하므로
+  전처리 뒤의 선을 클립 판정(획 유무)에 넘기면 결과가 달라진다
+- **HWP5 `flattenLayoutTables` 는 여러 쪽 본문 상자만 푼다**: 칸이 A4 용지(84,188 HWPUNIT)보다 높은 표만 해체 대상이고, 나머지는
+  `markNonLayoutTable` 로 건너뛴다(v4.15.7) — 종전엔 3행 이하·글 많은 표를 모두 풀어 같은 문서의 HWPX 표 130개가 사라지고 틀 안 중첩표가
+  바깥 단부터 풀려 5~8단이 4단이 됐다(score·roundtrip·한국 PDF 표 게이트 출력은 그대로). 칸 테두리 기준(보이는 변 있는 표만 유지)은 91.7%로
+  여러 쪽 기준 92.7%보다 낮아 버렸다. 본문 전체를 9쪽짜리 상자에 담은 문서(rhwp issue3637)는 여전히 푼다
+- **PDF 1칸 틀은 획 4변이 조건**: 한컴 PDF 는 본문 영역(여백 안쪽)에도 클립을 깔고 그 안에 페이지의
+  모든 표·칩이 들어간다. 획 없는 컨테이너를 틀로 삼으면 페이지가 통째로 1×1 표가 되어 pair 게이트가
+  0.985 → 0.87 로 무너진다(v4.12.2 실측). 테두리 없는 1칸 틀(별표 1×1 프레임·선서문 바깥)은 v4.12.3 부터
+  **제목 아래 틀** 기하로만 삼는다(`titledFrame`: 윗변 ≥ 페이지 20%·폭 ≥ 60%·머리말 띠 아래 위쪽에 글 존재·안에 글 존재).
+  "문서 전 페이지 반복 클립 = 본문 영역" 가설은 반증됨(본문 영역 클립은 쪽마다 y1 이 다르고 별표는 1쪽). 폭 조건을
+  빼면 2단 채용공고 단 상자(폭 38%)가 틀이 되어 pdf-table-gt cellF1 0.945 → 0.933 회귀(pair06 실측)
+- **PDF 본문은 문단 블록이다 (v4.14.4)**: 시각 줄마다 블록을 만들던 것을 line-wrap 이 문단으로 복원한다(어절 중간 꺾임은 붙이고 경계는 띄움).
+  왼쪽 정렬은 다음 어절이 남은 폭에 들어가지 못하는 줄도 잇는다. 정렬 판정의 찬 줄 비율은 찬 줄·꺾임 후보만으로 센다.
+  짧은 문단 끝줄까지 분모에 넣으면 양쪽 정렬의 두 줄 문단·한 줄 문단이 섞인 본문을 왼쪽 정렬로 오인해 문단 경계를 지운다.
+  중·일문은 다음 줄 전체가 한 어절이 아니다. 글자 단위로 남은 폭을 비교하고, 이을 때 공백을 넣지 않는다(국한문 어절은 기존 판정).
+  `extractPageBlocksWithLines` 는 쪽 순서로 부를 때 `carry`(쪽을 넘는 칸, clip-cells)와 `lexicon`(문서 어휘, line-wrap)을 받는다(OCR 경로는 둘 다 없이 쪽 단위).
+  헤딩 판정의 글꼴 크기 중앙값은 **아이템 수** 기준이라 아이템을 쪼개는 변경은 중앙값을 흔든다(성과평가 보고서: 낱말 조각 +535개로 14→13pt, 본문 2,180줄이 `###`)
+- **한컴 PDF 쪽 넘김 증거 (v4.14.4 실측)**: 글 없이 쪽을 넘은 칸 조각에는 클립을 깔지 않는다(1.3.0.550. 546·538 은 깔기도 하니 뒤 쪽 빈 클립을 새 칸
+  증거로 쓰지 말 것). 칸 테두리 괘선은 칸 클립 **변**에 그어진다. 틈 한가운데 괘선(글줄마다 클립을 까는 Microsoft Print To PDF)은 칸 경계 증거가 아니다.
+  클립 좌표 묶음 `CLIP_COORD_TOL` 0.3 → 0.1 은 반증됐다(0.1~0.3pt 차 같은 경계가 흔함, exact −0.33pp). 머리글 제거(상하 12%·3쪽 반복)는 제목 행 반복으로
+  쪽마다 찍힌 절 제목의 원본 1회분까지 지운다(규제영향분석서 "Ⅲ. 규제의 실효성"). 커버리지 채점기도 반복 줄을 빼서 안 보이고 `pdf-text-gt` 로만 보인다(잔여)
+- **본문폭급 표(48180)는 outMargin 좌우 0**: 283이면 진행폭(w+566)이 컬럼폭을 넘어 1mm
+  침범 — 실물(t2)도 표지 표만 0. `gen-gaejosik.ts table()`이 w 기준 자동 분기 (v4.0.2)

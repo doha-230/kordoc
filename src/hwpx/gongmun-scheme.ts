@@ -35,6 +35,8 @@ export interface LevelStyle {
   keepWithNext?: boolean
   /** 앞에 빈 줄 한 줄(실결재 □ 74%) */
   blankBefore?: boolean
+  /** 문단 정렬 — 미지정이면 양쪽 */
+  align?: "LEFT" | "JUSTIFY"
 }
 
 export interface TableStyleSpec {
@@ -57,6 +59,23 @@ export interface FrameSpec {
   summaryFont: string
   summaryPt: number
   summaryFill: string
+  /** 간이기안 표지 — 없으면 서울 보고서 기본(문서정보 한컴돋움 12·단색 파랑 띠·날짜 22b·기관 24b·부서 한컴돋움 22b) */
+  cover?: CoverSpec
+}
+
+export interface CoverSpec {
+  /** 문서정보표·결재선표 글꼴과 크기(이름칸·값칸·결재선) */
+  infoFont: string
+  infoLabelPt: number
+  infoValuePt: number
+  approvalPt: number
+  /** 제목 위아래 띠 — 2색 세로 그라데이션, 높이(HWPUNIT) */
+  bar: { gradient: [string, string]; h: number }
+  date: { font: string; pt: number; bold: boolean }
+  org: { font: string; pt: number; bold: boolean }
+  dept: { font: string; pt: number; bold: boolean }
+  /** 문단 줄간격(%) — 문서정보·결재선·제목·날짜·기관·부서 */
+  lineSp: { info: number; approval: number; title: number; date: number; org: number; dept: number }
 }
 
 export interface Scheme {
@@ -177,6 +196,74 @@ export function ministryScheme(bodyPt = 15, lineSp = 145): Scheme {
   }
 }
 
+/**
+ * 서울 방침서 스킴 — 시장방침 편집형 계획서 정답지 5건(정보소통광장, bench/corpus-gen/seoul-bangchim) 실측, 정본
+ * 「청년취업사관학교 2.0」 추진계획(서울특별시장 제81호) 역할별 최빈값:
+ *   □ HY견고딕 17 보통 · 양쪽 / ㅇ 한컴돋움 15 굵게 · 양쪽 / - 휴먼명조 14 · 양쪽 /
+ *   ▸ 한컴돋움 13 · 왼쪽 180% / ※ 한컴돋움 13 · 왼쪽 / 서술 문단 HY견고딕 16 굵게.
+ * 글꼴·크기는 같은 폴더 방침서 16건의 문서별 최빈값과도 같다(□ 15건 중 14·ㅇ 14건 중 13·- 14건 중 11·※ 12건 중 7).
+ * 줄간격·정렬은 쪽 맞춤 손조정이라 문서 안에서도 20~70% 만 최빈값이고 문서마다 다르다 — 16건 문서별 최빈값 표로
+ * 정했다: 줄간격 190%(□ 5·ㅇ 4·- 3건, 정본의 200% 는 □ 1건), ㅇ 양쪽(15건 중 11, 정본은 왼쪽).
+ */
+export const BANGCHIM_FRAME: FrameSpec = {
+  font: "한컴돋움",
+  titleFont: "HY헤드라인M", titlePt: 26,
+  contactFont: "휴먼명조", contactPt: 12,
+  summaryFont: "한컴돋움", summaryPt: 15, summaryFill: "#DFE6F7",
+  // 간이기안 표지 — 방침서 16건: 문서정보 굴림체(16건) 이름칸 10 굵게(11건)·값칸 9, 결재선 굴림체 9(15건 중 11)·8,
+  // 제목 띠 그라데이션 #3057B9→#A0B4E6(15건) 높이 663(11건), 날짜 HY견명조 21b(13건), 기관 HY헤드라인M 26b(11건), 부서 HY견명조 22(14건 중 12)
+  cover: {
+    infoFont: "굴림체", infoLabelPt: 10, infoValuePt: 9, approvalPt: 9,
+    bar: { gradient: ["#3057B9", "#A0B4E6"], h: 663 },
+    date: { font: "HY견명조", pt: 21, bold: true },
+    org: { font: "HY헤드라인M", pt: 26, bold: true },
+    dept: { font: "HY견명조", pt: 22, bold: false },
+    // 줄간격 — 문서정보 160(16건)·결재선 130(16건)·제목 120(최다 5건)·날짜 170(11)·기관 170(12)·부서 190(11)
+    lineSp: { info: 160, approval: 130, title: 120, date: 170, org: 170, dept: 190 },
+  },
+}
+
+export function seoulBangchimScheme(bodyPt = 15, lineSp = 190): Scheme {
+  const d = bodyPt - 15
+  const lv = (font: string, pt: number, bold: boolean, leadTa: number, extra: Partial<LevelStyle> = {}): LevelStyle =>
+    ({ font, pt: pt + d, bold, leadTa, ...extra })
+  return {
+    kind: "gaejosik",
+    lineSp,
+    body: lv("HY견고딕", 16, true, 0),
+    levels: [
+      lv("HY견고딕", 17, false, 0, { oneLine: true, keepWithNext: true, blankBefore: true }),
+      lv("한컴돋움", 15, true, 1),
+      lv("휴먼명조", 14, false, 3),
+      lv("한컴돋움", 13, false, 4, { align: "LEFT", lineSp: 180 }),
+      lv("한컴돋움", 13, false, 5, { align: "LEFT", lineSp: 180 }),
+      lv("한컴돋움", 13, false, 6, { align: "LEFT", lineSp: 180 }),
+      lv("한컴돋움", 13, false, 7, { align: "LEFT", lineSp: 180 }),
+      lv("한컴돋움", 13, false, 8, { align: "LEFT", lineSp: 180 }),
+    ],
+    ref: lv("한컴돋움", 13, false, 0, { align: "LEFT" }),
+    sub: lv("한컴돋움", 13, false, 2),
+    attach: lv("한컴돋움", 15, true, 0),
+    chapter: lv("HY견고딕", 20, false, 0, { oneLine: true, keepWithNext: true }),
+    marker: (depth) => (depth === 0 ? "□" : depth === 1 ? "ㅇ" : depth === 2 ? "-" : "▸"),
+    table: { ...SEOUL_TABLE, pt: SEOUL_TABLE.pt + d },
+    frame: BANGCHIM_FRAME,
+    blankBetweenTop: false,
+  }
+}
+
+/**
+ * 방침서 숫자 위계 — 「제3차 서울 청년정책 기본계획」(35530133) 실측: 1. HY견고딕 17(50건 중 38)·1) 한컴돋움 15 굵게(123건 중 112)·
+ * ① 휴먼명조 14(94건 중 76)·① 아래 - 휴먼명조 14(25건 모두). □ㅇ- 단계와 글꼴·크기가 같고 부호만 다르며, 넷째 단계는 ▸ 한컴돋움 13 이
+ * 아니라 - 휴먼명조 14 다. 선두 공백 0·1·2·4칸 → 들여쓰기 0·1·2·4타.
+ */
+export function bangchimNumbered(s: Scheme): Scheme {
+  const levels = s.levels.map((l) => ({ ...l }))
+  levels[2] = { ...levels[2], leadTa: 2 }
+  levels[3] = { ...levels[2], leadTa: 4 }
+  return { ...s, levels, marker: (depth, n) => (depth >= 2 ? "-" : s.marker(depth, n)) }
+}
+
 /** 서울 실측 법정형(기안문 본문) 스킴 — 전 단계 본문 글꼴·크기 동일, 2타 계단 */
 export function seoulLegalScheme(bodyFont = "굴림체", bodyPt = 12, lineSp = 160): Scheme {
   const lv = (leadTa: number, extra: Partial<LevelStyle> = {}): LevelStyle => ({ font: bodyFont, pt: bodyPt, bold: false, leadTa, ...extra })
@@ -228,7 +315,11 @@ export function levelGeometry(style: LevelStyle, marker: string): { left: number
 }
 
 /** 스킴 선택 — 옵션·프리셋·본문 부호 자동감지 */
-export function pickScheme(g: ResolvedGongmun, bodyHasBoxMarkers: boolean): Scheme {
+export function pickScheme(g: ResolvedGongmun, bodyHasBoxMarkers: boolean, numbered = false): Scheme {
+  if (g.preset === "bangchim") {
+    const s = seoulBangchimScheme(g.bodyPtExplicit ? g.bodyHeight / 100 : 15, g.lineSpacingExplicit ? g.lineSpacing : 190)
+    return applySchemeOverrides(numbered ? bangchimNumbered(s) : s, g)
+  }
   if (g.preset === "ministry") {
     return applySchemeOverrides(ministryScheme(g.bodyPtExplicit ? g.bodyHeight / 100 : 15, g.lineSpacingExplicit ? g.lineSpacing : 145), g)
   }

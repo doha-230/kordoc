@@ -67,6 +67,13 @@ describe("simulateWrap — 어절(keep)·글자(charAll) 모델", () => {
     assert.equal(r.lines, 2)
     assert.deepEqual(r.starts, [0, 3])
   })
+  it("금칙으로 직전 이모지를 옮겨도 서로게이트 쌍을 나누지 않는다", () => {
+    for (const mode of ["keep", "charAll"] as const) {
+      const r = simulateWrap("가😀,나", 1940, 1940, 1000, 100, mode)
+      assert.deepEqual(r.starts, [0, 1, 4])
+      for (const start of r.starts) assert.ok(!/[\uDC00-\uDFFF]/.test("가😀,나"[start]))
+    }
+  })
 })
 
 describe("fitRatioForFewerLines — 자동 장평(orphan 축소)", () => {
@@ -100,6 +107,15 @@ describe("faceClass — 고정폭 글꼴 폭 테이블 (v4.0.6 회귀)", () => {
     const text = "가나다라마바사아자차"
     assert.equal(simulateWrap(text, 9800, 9800, 1000, 100, "charAll").lines, 1)
     assert.equal(simulateWrap(text, 9800, 9800, 1000, 100, "charAll", { faceClass: "fixedPitch" }).lines, 2)
+  })
+  it("미등록 글꼴명이 객체 속성과 같아도 고딕 근사 폭으로 계산한다", () => {
+    const text = "가나다 ABC 123,😀"
+    for (const face of ["constructor", "toString", "__proto__", "없는글꼴"]) {
+      const opts = { faceClass: `font:${face}` as const }
+      assert.equal(measureTextWidth(text, 1500, 97, opts), measureTextWidth(text, 1500, 97, { faceClass: "gothic" }))
+      assert.deepEqual(simulateWrap(text, 5000, 6000, 1500, 97, "keep", opts),
+        simulateWrap(text, 5000, 6000, 1500, 97, "keep", { faceClass: "gothic" }))
+    }
   })
 })
 

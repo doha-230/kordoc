@@ -31,15 +31,25 @@ export function splitTwoColumnProse(items: NormItem[], cutX: number): NormItem[]
     if (last && Math.abs(last[0].y - c.y) <= 3) last.push(c)
     else crossLines.push([c])
   }
-  // 경계 줄과 같은 y의 좌/우 아이템은 그 경계 줄에 편입 (목차 줄의 나란한 조각)
-  const bandItem = (arr: NormItem[]) => arr.filter(i => {
+  // 경계 줄과 같은 y의 좌/우 아이템은 그 경계 줄에 편입 (목차 줄의 나란한 조각). 경계 줄 글보다 작은 첨자는 기준선이
+  // 3pt 넘게 떠도 위 0.6em·아래 0.35em 안에서 경계 줄 조각 오른끝에 붙어(0.35em 안) 시작하면 편입 — 저자 줄
+  // "Dahyun Kim∗, Chanjun Park∗†" 의 ∗† (8pt, 0.36em 위)가 단 경계에서 좌·우 조각 줄로 갈려 이름 위에 따로 섰다 (ODL 185).
+  // 글자 위에 얹힌 조각(수식 ∑ 위아래 극한)은 붙어 있지 않아 제외 — 2단 시험지 수식 줄이 섞였다
+  const scriptOf = (i: NormItem, cl: NormItem[]) => {
+    const fs = cl[0].fontSize, dy = i.y - cl[0].y
+    if (i.fontSize > fs * 0.85 || dy > fs * 0.6 || dy < -fs * 0.35) return false
+    return cl.some(c => c !== i && c.fontSize > fs * 0.85 && i.x - (c.x + c.w) <= fs * 0.35 && i.x - (c.x + c.w) >= -fs * 0.1)
+  }
+  const bandItem = (arr: NormItem[], fits: (i: NormItem, cl: NormItem[]) => boolean) => arr.filter(i => {
     for (const cl of crossLines) {
-      if (Math.abs(cl[0].y - i.y) <= 3) { cl.push(i); return false }
+      if (fits(i, cl)) { cl.push(i); return false }
     }
     return true
   })
-  const leftRest = bandItem(left)
-  const rightRest = bandItem(right)
+  // 같은 y 조각을 다 붙여 줄 폭이 정해진 뒤에 첨자를 붙인다
+  const sameY = (i: NormItem, cl: NormItem[]) => Math.abs(cl[0].y - i.y) <= 3
+  const leftRest = bandItem(bandItem(left, sameY), scriptOf)
+  const rightRest = bandItem(bandItem(right, sameY), scriptOf)
 
   // 밴드 k = 경계줄 k-1 아래 ~ 경계줄 k 위 (PDF y는 위가 큼)
   const boundYs = crossLines.map(cl => cl[0].y)
@@ -53,7 +63,8 @@ export function splitTwoColumnProse(items: NormItem[], cutX: number): NormItem[]
     const L = leftRest.filter(i => bandOf(i.y) === k)
     const R = rightRest.filter(i => bandOf(i.y) === k)
     groups.push(...columnPair(L, R))
-    if (k < crossLines.length) groups.push(crossLines[k])
+    // 편입한 조각이 뒤에 붙어 있어 y 순으로 — groupByY 는 y 순서를 전제한다(떠 있는 첨자가 줄을 번갈아 쪼갠다)
+    if (k < crossLines.length) groups.push(crossLines[k].sort((a, b) => b.y - a.y || a.x - b.x))
   }
   return groups
 }
@@ -130,7 +141,7 @@ export function topTableBand(items: NormItem[]): { top: NormItem[]; rest: NormIt
     const top = upper.flat()
     const candidate = detectClusterTables(top.map(i => ({
       text: i.text, x: i.x, y: i.y, w: i.w, h: i.h,
-      fontSize: i.fontSize, fontName: i.fontName, hasSpaceBefore: i.hasSpaceBefore,
+      fontSize: i.fontSize, fontName: i.fontName, hasSpaceBefore: i.hasSpaceBefore, syntheticSpace: i.syntheticSpace,
     })), 1)
     if (!candidate.some(t => t.table.cols >= 3 && t.table.rows >= 3 && t.usedItems.size >= top.length * 0.75)) continue
     return { top, rest: lines.slice(n).flat() }

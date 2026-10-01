@@ -70,6 +70,7 @@ export async function extractImagesFromZip(
   decompressed: { total: number },
   warnings?: ParseWarning[],
   sweepUnreferenced?: boolean,
+  deletedRefs?: Set<string>,
 ): Promise<ExtractedImage[]> {
   const images: ExtractedImage[] = []
   let imageIndex = 0
@@ -162,6 +163,10 @@ export async function extractImagesFromZip(
     const binEntries = zip.file(/(?:^|\/)BinData\//i)
     for (const file of binEntries) {
       if (file.dir || usedPaths.has(file.name) || isPathTraversal(file.name)) continue
+      // 살아있는 동일 ref는 위 image 블록 처리에서 이미 보존했다. 삭제 개체만 참조한 바이너리는 보강하지 않는다.
+      const basename = file.name.slice(file.name.lastIndexOf("/") + 1)
+      if (deletedRefs?.has(file.name) || deletedRefs?.has(basename)
+        || deletedRefs?.has(file.name.replace(/\.[^/.]+$/, "")) || deletedRefs?.has(basename.replace(/\.[^.]+$/, ""))) continue
       try {
         const data = await file.async("uint8array")
         decompressed.total += data.length

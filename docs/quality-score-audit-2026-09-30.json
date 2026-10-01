@@ -1,0 +1,726 @@
+{
+  "snapshot": "C",
+  "report": "/Users/mong-e/workspace/kordoc-quality-99/bench/out/score.json",
+  "overallPass": true,
+  "population": {
+    "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+    "threshold": "≥ 2286/1911/1120",
+    "pass": true
+  },
+  "pdfVsB": [],
+  "hwpxVsB": [],
+  "hwp5": {
+    "aggregate": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "vsB": [
+      {
+        "path": "pairs.414.tables.exact",
+        "baseline": 0,
+        "final": 2
+      },
+      {
+        "path": "pairs.414.tables.cellF1",
+        "baseline": 0.394584,
+        "final": 1
+      },
+      {
+        "path": "pairs.414.tables.cellExact",
+        "baseline": 22,
+        "final": 28
+      },
+      {
+        "path": "pairs.414.tables.contentNum",
+        "baseline": 97,
+        "final": 109
+      },
+      {
+        "path": "pairs.414.tables.contentDen",
+        "baseline": 117,
+        "final": 109
+      },
+      {
+        "path": "pairs.414.tables.mismatches.0",
+        "baseline": {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "3x3",
+          "irDims": "4x3",
+          "exact": false,
+          "f1": 0.3636,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "○○경찰서",
+              "ir": "[별지제23호서식]"
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "검사지휘",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 1,
+              "c": 1,
+              "ref": "가",
+              "ir": "검사지휘"
+            },
+            {
+              "r": 1,
+              "c": 2,
+              "ref": "부",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 2,
+              "c": 1,
+              "ref": "",
+              "ir": "가"
+            }
+          ],
+          "cellMissCount": 6
+        }
+      },
+      {
+        "path": "pairs.414.tables.mismatches.1",
+        "baseline": {
+          "refIdx": 1,
+          "irIdx": 1,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "11x6",
+          "irDims": "13x7",
+          "exact": false,
+          "f1": 0.4255,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      },
+      {
+        "path": "pairs.451.tables.ir",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.451.tables.unmatchedIr",
+        "baseline": 1,
+        "final": 0
+      },
+      {
+        "path": "pairs.531.tables.ir",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.531.tables.exact",
+        "baseline": 5,
+        "final": 6
+      },
+      {
+        "path": "pairs.531.tables.cellF1",
+        "baseline": 0.866667,
+        "final": 1
+      },
+      {
+        "path": "pairs.531.tables.cellExact",
+        "baseline": 86,
+        "final": 89
+      },
+      {
+        "path": "pairs.531.tables.contentNum",
+        "baseline": 387,
+        "final": 401
+      },
+      {
+        "path": "pairs.531.tables.contentDen",
+        "baseline": 420,
+        "final": 401
+      },
+      {
+        "path": "pairs.531.tables.unmatchedIr",
+        "baseline": 1,
+        "final": 0
+      },
+      {
+        "path": "pairs.531.tables.mismatches.0",
+        "baseline": {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x3",
+          "irDims": "3x5",
+          "exact": false,
+          "f1": 0.2,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "접수번호",
+              "ir": "[]정신[]신체"
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "접수일",
+              "ir": "장애로인한최저임금적용제외인가신청서"
+            },
+            {
+              "r": 0,
+              "c": 2,
+              "ref": "처리기간21일",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 3
+        }
+      },
+      {
+        "path": "pairs.612.tables.ir",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.612.tables.unmatchedIr",
+        "baseline": 1,
+        "final": 0
+      },
+      {
+        "path": "pairs.797.tables.exact",
+        "baseline": 5,
+        "final": 6
+      },
+      {
+        "path": "pairs.797.tables.cellF1",
+        "baseline": 0.833333,
+        "final": 1
+      },
+      {
+        "path": "pairs.797.tables.cellExact",
+        "baseline": 16,
+        "final": 23
+      },
+      {
+        "path": "pairs.797.tables.contentNum",
+        "baseline": 215,
+        "final": 229
+      },
+      {
+        "path": "pairs.797.tables.mismatches.0",
+        "baseline": {
+          "refIdx": 5,
+          "irIdx": 5,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x7",
+          "irDims": "2x7",
+          "exact": false,
+          "f1": 0,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "신고",
+              "ir": ""
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "➔",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 2,
+              "ref": "접수",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 3,
+              "ref": "➔",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 4,
+              "ref": "검토ㆍ확인",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 7
+        }
+      },
+      {
+        "path": "pairs.802.tables.ir",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.802.tables.unmatchedIr",
+        "baseline": 1,
+        "final": 0
+      },
+      {
+        "path": "pairs.827.tables.ir",
+        "baseline": 3,
+        "final": 2
+      },
+      {
+        "path": "pairs.827.tables.unmatchedIr",
+        "baseline": 1,
+        "final": 0
+      },
+      {
+        "path": "pairs.962.tables.exact",
+        "baseline": 0,
+        "final": 1
+      },
+      {
+        "path": "pairs.962.tables.cellF1",
+        "baseline": 0.804878,
+        "final": 1
+      },
+      {
+        "path": "pairs.962.tables.cellExact",
+        "baseline": 35,
+        "final": 39
+      },
+      {
+        "path": "pairs.962.tables.contentNum",
+        "baseline": 157,
+        "final": 210
+      },
+      {
+        "path": "pairs.962.tables.contentDen",
+        "baseline": 248,
+        "final": 210
+      },
+      {
+        "path": "pairs.962.tables.mismatches.0",
+        "baseline": {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "15x13",
+          "irDims": "16x13",
+          "exact": false,
+          "f1": 0.8049,
+          "cellMisses": [
+            {
+              "r": 12,
+              "c": 0,
+              "ref": "1980년해직공무원의보상등에관한특별조치법시행령제4조제3항에의하여확인합니다.",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 13,
+              "c": 0,
+              "ref": "년월일",
+              "ir": "1980년해직공무원의보상등에관한특별조치법시행령제4조제3항에의하여확인합니다."
+            },
+            {
+              "r": 14,
+              "c": 0,
+              "ref": "확인기관의장",
+              "ir": "년월일"
+            },
+            {
+              "r": 14,
+              "c": 7,
+              "ref": "(직인)",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 4
+        }
+      },
+      {
+        "path": "unpaired.293.mdLen",
+        "baseline": 11648,
+        "final": 11169
+      },
+      {
+        "path": "unpaired.294.mdLen",
+        "baseline": 11645,
+        "final": 11166
+      },
+      {
+        "path": "agg.tables.exact",
+        "baseline": 4239,
+        "final": 4244
+      },
+      {
+        "path": "agg.gates.pairTableExact.value",
+        "baseline": 0.998822,
+        "final": 1
+      },
+      {
+        "path": "agg.gates.pairTableExact.pass",
+        "baseline": false,
+        "final": true
+      },
+      {
+        "path": "agg.gates.pairCellF1.value",
+        "baseline": 0.999245,
+        "final": 1
+      },
+      {
+        "path": "agg.gates.pairCellF1.pass",
+        "baseline": false,
+        "final": true
+      },
+      {
+        "path": "agg.gates.pairCellExact.value",
+        "baseline": 0.999782,
+        "final": 1
+      },
+      {
+        "path": "agg.gates.pairCellExact.pass",
+        "baseline": false,
+        "final": true
+      },
+      {
+        "path": "agg.gates.pairContentNED.value",
+        "baseline": 0.999815,
+        "final": 1
+      },
+      {
+        "path": "agg.gates.pairContentNED.pass",
+        "baseline": false,
+        "final": true
+      },
+      {
+        "path": "agg.pass",
+        "baseline": false,
+        "final": true
+      }
+    ],
+    "vsPrimary": [
+      {
+        "path": "pairs.414.tables.cellTotal",
+        "baseline": 33,
+        "final": 28
+      },
+      {
+        "path": "pairs.414.tables.cellExact",
+        "baseline": 33,
+        "final": 28
+      },
+      {
+        "path": "pairs.414.tables.contentNum",
+        "baseline": 161,
+        "final": 109
+      },
+      {
+        "path": "pairs.414.tables.contentDen",
+        "baseline": 161,
+        "final": 109
+      },
+      {
+        "path": "pairs.451.tables.ref",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.451.tables.ir",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.451.tables.exact",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.451.tables.cellTotal",
+        "baseline": 57,
+        "final": 56
+      },
+      {
+        "path": "pairs.451.tables.cellExact",
+        "baseline": 57,
+        "final": 56
+      },
+      {
+        "path": "pairs.451.tables.contentNum",
+        "baseline": 202,
+        "final": 175
+      },
+      {
+        "path": "pairs.451.tables.contentDen",
+        "baseline": 202,
+        "final": 175
+      },
+      {
+        "path": "pairs.531.tables.ref",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.531.tables.ir",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.531.tables.exact",
+        "baseline": 7,
+        "final": 6
+      },
+      {
+        "path": "pairs.531.tables.cellTotal",
+        "baseline": 111,
+        "final": 89
+      },
+      {
+        "path": "pairs.531.tables.cellExact",
+        "baseline": 111,
+        "final": 89
+      },
+      {
+        "path": "pairs.531.tables.contentNum",
+        "baseline": 548,
+        "final": 401
+      },
+      {
+        "path": "pairs.531.tables.contentDen",
+        "baseline": 548,
+        "final": 401
+      },
+      {
+        "path": "pairs.612.tables.ref",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.612.tables.ir",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.612.tables.exact",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.612.tables.cellTotal",
+        "baseline": 71,
+        "final": 70
+      },
+      {
+        "path": "pairs.612.tables.cellExact",
+        "baseline": 71,
+        "final": 70
+      },
+      {
+        "path": "pairs.612.tables.contentNum",
+        "baseline": 225,
+        "final": 211
+      },
+      {
+        "path": "pairs.612.tables.contentDen",
+        "baseline": 225,
+        "final": 211
+      },
+      {
+        "path": "pairs.797.tables.cellTotal",
+        "baseline": 24,
+        "final": 23
+      },
+      {
+        "path": "pairs.797.tables.cellExact",
+        "baseline": 24,
+        "final": 23
+      },
+      {
+        "path": "pairs.797.tables.contentNum",
+        "baseline": 230,
+        "final": 229
+      },
+      {
+        "path": "pairs.797.tables.contentDen",
+        "baseline": 230,
+        "final": 229
+      },
+      {
+        "path": "pairs.802.tables.ref",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.802.tables.ir",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.802.tables.exact",
+        "baseline": 2,
+        "final": 1
+      },
+      {
+        "path": "pairs.802.tables.cellTotal",
+        "baseline": 45,
+        "final": 44
+      },
+      {
+        "path": "pairs.802.tables.cellExact",
+        "baseline": 45,
+        "final": 44
+      },
+      {
+        "path": "pairs.802.tables.contentNum",
+        "baseline": 242,
+        "final": 208
+      },
+      {
+        "path": "pairs.802.tables.contentDen",
+        "baseline": 242,
+        "final": 208
+      },
+      {
+        "path": "pairs.827.tables.ref",
+        "baseline": 3,
+        "final": 2
+      },
+      {
+        "path": "pairs.827.tables.ir",
+        "baseline": 3,
+        "final": 2
+      },
+      {
+        "path": "pairs.827.tables.exact",
+        "baseline": 3,
+        "final": 2
+      },
+      {
+        "path": "pairs.827.tables.cellTotal",
+        "baseline": 48,
+        "final": 47
+      },
+      {
+        "path": "pairs.827.tables.cellExact",
+        "baseline": 48,
+        "final": 47
+      },
+      {
+        "path": "pairs.827.tables.contentNum",
+        "baseline": 228,
+        "final": 219
+      },
+      {
+        "path": "pairs.827.tables.contentDen",
+        "baseline": 228,
+        "final": 219
+      },
+      {
+        "path": "pairs.962.tables.cellTotal",
+        "baseline": 43,
+        "final": 39
+      },
+      {
+        "path": "pairs.962.tables.cellExact",
+        "baseline": 43,
+        "final": 39
+      },
+      {
+        "path": "pairs.962.tables.contentNum",
+        "baseline": 214,
+        "final": 210
+      },
+      {
+        "path": "pairs.962.tables.contentDen",
+        "baseline": 214,
+        "final": 210
+      },
+      {
+        "path": "unpaired.293.mdLen",
+        "baseline": 11648,
+        "final": 11169
+      },
+      {
+        "path": "unpaired.294.mdLen",
+        "baseline": 11645,
+        "final": 11166
+      },
+      {
+        "path": "agg.tables.ref",
+        "baseline": 4249,
+        "final": 4244
+      },
+      {
+        "path": "agg.tables.exact",
+        "baseline": 4249,
+        "final": 4244
+      }
+    ]
+  },
+  "policyWhitelistEqual": true,
+  "sourceFreeze": {
+    "src/hwp5/body.ts": "01eea86b183137c7000a452fa731ea0ae6b01c09d0d26b40c1b4910365dc6982",
+    "src/hwpx/styles.ts": "fc05c1edd6c34a5f3c14788fa8f81207af0d19ec662d18c41f06fa2163edf263",
+    "src/hwpx/text-metrics.ts": "844c9391144dd0d5fe06763707168d852632c282184a65cd258581aa2313553f",
+    "src/hwpx/font-metrics.ts": "0bef92a1f330c47f5ac29d6a85d9e5476b36910e2514eb8b060e8da11e222f45",
+    "src/hwpx/outline.ts": "7a1b530c7ab5cff3743960b000d6a06ad039e02a6350d8eab6535533d43ed56a",
+    "src/pdf/image-regions.ts": "f47fc343e9056b48889c8f5c51cb3871000993f6b4c11f8cc3c943d815f51355",
+    "src/pdf/image-panels.ts": "699722ac7acf1977859f7ef141a113fc566b57834ef21214c7406251c965028c",
+    "src/pdf/page-blocks.ts": "208d07285c795693db1d1103752bba9582ea4d4d0b60dd68364711a1c6851765",
+    "src/pdf/formula/models.ts": "b2ddd72a6552870ed4d99cdfaefa2b1fdd3f6e117614fc93d669ccc7b8a1b61f",
+    "src/pdf/formula/model-partials.ts": "aa640946352ccdf8182511ccf95a6e35ed73ec90cded9863ec4b65a53996992c",
+    "dist/index.js": "e6aab45b10cee65c978904c2f84080a4fde290d1524470b1d2b60f94b0e57c40"
+  }
+}

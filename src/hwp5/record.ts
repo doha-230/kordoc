@@ -1,7 +1,9 @@
 /** HWP 5.x 레코드 리더, UTF-16LE 텍스트 추출, 스트림 압축해제 */
 
+import type { ScriptKind } from "../script-tags.js"
 import { inflateRawSync, inflateSync } from "zlib"
 import { KordocError } from "../utils.js"
+import type { Edges } from "../table/layout-frames.js"
 
 // ─── 레코드 태그 상수 ────────────────────────────────
 
@@ -22,6 +24,7 @@ export const TAG_EQEDIT = 0x0058
 
 // DocInfo 태그 (스타일 정보 해석용) — HWPTAG_BEGIN(0x0010) 기준
 export const TAG_ID_MAPPINGS = 0x0011      // HWPTAG_BEGIN + 1
+export const TAG_BORDER_FILL = 0x0014      // HWPTAG_BEGIN + 4
 export const TAG_BIN_DATA = 0x0012         // HWPTAG_BEGIN + 2
 export const TAG_FACE_NAME = 0x0013        // HWPTAG_BEGIN + 3
 export const TAG_DOC_CHAR_SHAPE = 0x0015   // HWPTAG_BEGIN + 5
@@ -195,6 +198,8 @@ export interface HwpDocInfo {
   numberings: HwpNumbering[]
   /** BULLET 정의 (1-based bulletId → bullets[id-1]) */
   bullets: HwpBullet[]
+  /** BORDER_FILL 의 보이는 변 (1-based borderFillId → borderEdges[id-1]) — 보이지 않는 틀 표 풀기 (v4.17.0) */
+  borderEdges: Edges[]
 }
 
 /** length-prefixed UTF-16LE 문자열 읽기 (HWP WCHAR 배열) */
@@ -215,8 +220,19 @@ export function parseDocInfo(records: HwpRecord[]): HwpDocInfo {
   const binData: HwpBinDataItem[] = []
   const numberings: HwpNumbering[] = []
   const bullets: HwpBullet[] = []
+  const borderEdges: Edges[] = []
 
   for (const rec of records) {
+    // BORDER_FILL — 속성 u16@0 · 변 4개(왼/오/위/아래) @2+6k = 종류 u8(0 없음) · 굵기 u8 · COLORREF u32 (render/hwp5-scene 과 같은 해독).
+    // 흰 선(0xFFFFFF)은 흰 바탕에 안 보인다
+    if (rec.tagId === TAG_BORDER_FILL) {
+      const seen = (k: number): boolean => {
+        const o = 2 + 6 * k
+        return rec.data.length >= o + 6 && rec.data[o] !== 0 && (rec.data.readUInt32LE(o + 2) & 0xffffff) !== 0xffffff
+      }
+      borderEdges.push({ l: seen(0), r: seen(1), t: seen(2), b: seen(3) })
+    }
+
     // PARA_SHAPE — 문단 모양 (rhwp doc_info.rs parse_para_shape)
     // attr1(u32@0) 비트 팩: bits 23-24 = 머리 종류, bits 25-27 = 문단 수준
     // numberingId: u16@30 (attr1 4 + 여백/간격 i32*6 = 24 + tabDefId 2 → offset 30)
@@ -344,7 +360,7 @@ export function parseDocInfo(records: HwpRecord[]): HwpDocInfo {
     }
   }
 
-  return { charShapes, paraShapes, styles, binData, numberings, bullets }
+  return { charShapes, paraShapes, styles, binData, numberings, bullets, borderEdges }
 }
 
 // ─── UTF-16LE 텍스트 추출 (21가지 제어문자 처리) ─────
@@ -375,15 +391,17 @@ export interface ParaTextState {
   ctrlIdx: number
   fieldStack: Array<{ start: number; ctrlIdx: number }>
   fieldRanges: HwpFieldRange[]
-  /** 채움(리더) 탭을 "\t" 대신 LEADER_TAB_MARK 로 — 본문 파서만 켠다(목차 쪽번호 절단, HWPX \x1F 정책과 대칭) */
-  leaderMark?: boolean
   /** 리터럴 "$" 를 LITERAL_DOLLAR_MARK 한 글자로 — 본문 파서만 켠다. 필드 범위가 글자 위치라
    *  두 글자 "\$" 를 바로 넣지 않고, 필드 처리 뒤 본문 파서가 "\$" 로 바꾼다(escapeLiteralDollar 규약) */
   dollarMark?: boolean
+  /** 글자 위치(문단 WCHAR 순번)의 첨자 종류 — 문단 글자 모양(PARA_CHAR_SHAPE) 위치표로 본문 파서가 채운다.
+   *  있으면 첨자 글자를 <sup>·<sub> 로 감싼다(제어 문자·개체 자리에서는 닫는다) */
+  scriptAt?: (pos: number) => ScriptKind | null
+  /** 지금 열린 첨자 태그 */
+  script?: ScriptKind | null
+  /** 앞 PARA_TEXT 레코드까지의 WCHAR 수 — 글자 모양 위치는 문단 전체 기준 */
+  wpos?: number
 }
-
-/** 채움 탭 표지 — 뒤는 목차 쪽번호라 본문 파서가 문단 텍스트를 여기서 자른다 (HWPX section-walker 와 같은 문자) */
-export const LEADER_TAB_MARK = "\x1F"
 
 /** 리터럴 "$" 표지 (dollarMark) — 유니코드 비문자라 문서 글에 나오지 않는다 */
 export const LITERAL_DOLLAR_MARK = "\uFDD0"
@@ -427,6 +445,15 @@ export function isExtendedOnlyCtrlChar(ch: number): boolean {
 export function appendParaText(state: ParaTextState, data: Buffer, resolveControl?: IndexedControlResolver): void {
   let result = ""
   let i = 0
+  const wbase = state.wpos ?? 0
+  // 첨자 태그 전환 — 보이는 글자 앞에서 그 자리 글자 모양대로 열고, 제어 문자 앞에서는 닫는다
+  const setScript = (want: ScriptKind | null): void => {
+    const cur = state.script ?? null
+    if (cur === want) return
+    if (cur) result += `</${cur}>`
+    if (want) result += `<${want}>`
+    state.script = want
+  }
   // 필드 범위는 state.text 기준 인덱스로 기록
   const base = state.text.length
 
@@ -440,6 +467,7 @@ export function appendParaText(state: ParaTextState, data: Buffer, resolveContro
 
   while (i + 1 < data.length) {
     const ch = data.readUInt16LE(i)
+    if (state.scriptAt) setScript(ch >= 0x0020 ? state.scriptAt(wbase + i / 2) : null)
     i += 2
 
     switch (ch) {
@@ -464,9 +492,10 @@ export function appendParaText(state: ParaTextState, data: Buffer, resolveContro
       case CHAR_FIXED_WIDTH: result += " "; break  // 고정폭 공백
 
       // ── inline 타입 (2바이트 + 14바이트 확장) ──
-      // 확장 u16[7] 중 [2] 의 하위 바이트 = 채움 모양(0 없음·3 점선 …), 상위 = 탭 종류+1 (rhwp tab_extended 실측)
+      // 확장 u16[7] 중 [2] 의 하위 바이트 = 채움 모양(0 없음·3 점선 …), 상위 = 탭 종류+1 (rhwp tab_extended 실측).
+      // 채움 탭도 보통 탭 — 채움선은 글이 아니고 뒤 글(목차 쪽 번호 등)은 남긴다 (HWPX section-walker "tab" 과 같은 정책)
       case CHAR_TAB:
-        result += state.leaderMark && i + 14 <= data.length && data[i + 4] !== 0 ? LEADER_TAB_MARK : "\t"
+        result += "\t"
         if (i + 14 <= data.length) i += 14
         break
 
@@ -517,6 +546,8 @@ export function appendParaText(state: ParaTextState, data: Buffer, resolveContro
     }
   }
 
+  if (state.scriptAt) setScript(null)
+  state.wpos = wbase + Math.floor(data.length / 2)
   state.text += result
 }
 

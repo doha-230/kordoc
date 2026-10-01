@@ -1,0 +1,875 @@
+{
+  "date": "2026-10-01",
+  "version": "4.17.4",
+  "status": "released",
+  "baseline": {
+    "version": "4.17.3",
+    "commit": "b053ae9f1e7b2586fc7bbd7cedcd183ac459c3cf",
+    "indexSHA256": "b6aa73022cbec4734a3c1ad7ba9393c7a571f4ed00610603d650cfdd286a9518",
+    "cliSHA256": "f2e416bfadb930d92d87ec4ad134bc82582a10f61244cfe06963af77fce5d494"
+  },
+  "candidate": {
+    "sourceCommit": "74698a88105ad6717045ba3047f4193fc1cc38da",
+    "indexSHA256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+    "cliSHA256": "74375949f9590db75c551f2ef21c5bcee1deca912eb5364bd7b5ca9f77783a2c",
+    "qualitySnapshotIndexSHA256": "8cbfb39a8d625c9b388f5683ccf3adf15ad285b244409dd8abc529d725c9d54c",
+    "qualitySnapshotScope": "ODL measured before renderer-only marker-free optimization; parser components unchanged. Normal publish reran every corpus gate on the final build.",
+    "releasedSourceCommit": "94ddf96962a0e78c54eb0d32f2001ae7b104a0c2"
+  },
+  "scoringPolicy": "GT/evaluator/populations/exclusions unchanged",
+  "odl": {
+    "gtMarkdownManifestSHA256": "59c4847fe1428bb3161fdb8f7ca1d7d02e3bc57b52c3be7d27bc53f1d4a4b5b8",
+    "evaluatorSHA256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "documents": 200,
+    "comparison": {
+      "default": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9604023202745556,
+            "nid_mean": 0.9608759169736125,
+            "nid_s_mean": 0.9647433700135438,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9459239841738709,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9603991404735508,
+            "nid_mean": 0.9608686889707626,
+            "nid_s_mean": 0.9647267039559515,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9459239841738709,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "changedDocuments": [
+          {
+            "id": "01030000000041",
+            "before": {
+              "overall": 0.9567125473768203,
+              "nid": 0.9567125473768203,
+              "nid_s": 0.9567125473768203,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            },
+            "after": {
+              "overall": 0.9568862275449103,
+              "nid": 0.9568862275449103,
+              "nid_s": 0.9568862275449103,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            }
+          },
+          {
+            "id": "01030000000116",
+            "before": {
+              "overall": 0.935246036309866,
+              "nid": 0.9148936170212765,
+              "nid_s": 0.9538745387453873,
+              "teds": 0.9555984555984556,
+              "teds_s": 1,
+              "mhs": null,
+              "mhs_s": null
+            },
+            "after": {
+              "overall": 0.9344363959408207,
+              "nid": 0.9132743362831859,
+              "nid_s": 0.9503676470588235,
+              "teds": 0.9555984555984556,
+              "teds_s": 1,
+              "mhs": null,
+              "mhs_s": null
+            }
+          }
+        ]
+      },
+      "plain-html": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9720162877922346,
+            "nid_mean": 0.9764221642297596,
+            "nid_s_mean": 0.9762261174153737,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9558109230721217,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.972017156193075,
+            "nid_mean": 0.9764230326306,
+            "nid_s_mean": 0.9762269858162143,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9558109230721217,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "changedDocuments": [
+          {
+            "id": "01030000000041",
+            "before": {
+              "overall": 0.9567125473768203,
+              "nid": 0.9567125473768203,
+              "nid_s": 0.9567125473768203,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            },
+            "after": {
+              "overall": 0.9568862275449103,
+              "nid": 0.9568862275449103,
+              "nid_s": 0.9568862275449103,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            }
+          }
+        ]
+      },
+      "native-off": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9373331908708186,
+            "nid_mean": 0.9382622103144246,
+            "nid_s_mean": 0.9437289431168497,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9373300110698137,
+            "nid_mean": 0.9382549823115746,
+            "nid_s_mean": 0.9437122770592574,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "changedDocuments": [
+          {
+            "id": "01030000000041",
+            "before": {
+              "overall": 0.9567125473768203,
+              "nid": 0.9567125473768203,
+              "nid_s": 0.9567125473768203,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            },
+            "after": {
+              "overall": 0.9568862275449103,
+              "nid": 0.9568862275449103,
+              "nid_s": 0.9568862275449103,
+              "teds": null,
+              "teds_s": null,
+              "mhs": null,
+              "mhs_s": null
+            }
+          },
+          {
+            "id": "01030000000116",
+            "before": {
+              "overall": 0.935246036309866,
+              "nid": 0.9148936170212765,
+              "nid_s": 0.9538745387453873,
+              "teds": 0.9555984555984556,
+              "teds_s": 1,
+              "mhs": null,
+              "mhs_s": null
+            },
+            "after": {
+              "overall": 0.9344363959408207,
+              "nid": 0.9132743362831859,
+              "nid_s": 0.9503676470588235,
+              "teds": 0.9555984555984556,
+              "teds_s": 1,
+              "mhs": null,
+              "mhs_s": null
+            }
+          }
+        ]
+      }
+    },
+    "notes": [
+      "default/plain-html retain the original modes; native-off is an additional track with ocr:false, formulaOcr:false.",
+      "Document 041 paragraph/false-heading improves NID. Document 116 joins a wrapped caption and attaches it through the unchanged existing bold-caption Markdown policy, causing a small default/native NID decrease. TEDS/MHS do not change.",
+      "Native wrapped paragraphs improve semantically even where NID normalizes line breaks; no aggregate score increase is claimed."
+    ]
+  },
+  "hwpx": {
+    "before": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "tableCount": 9865,
+      "exactCount": 9849,
+      "nestedTables": 559,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.998378,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.998581,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999953,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999982,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "after": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "tableCount": 9865,
+      "exactCount": 9849,
+      "nestedTables": 559,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.998378,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.998581,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999953,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999982,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "remainingGroundTruthDefects": {
+      "count": 16,
+      "invalidGrids": 14,
+      "mathOnlyColumnsCollapsedByGroundTruth": 2,
+      "evidence": "hwpx-table-original-audit-2026-09-30.json"
+    }
+  },
+  "koreanPdfTables": {
+    "before": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "after": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "pass": true
+  },
+  "koreanPdfText": {
+    "before": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99582,
+      "order": 0.99146,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "after": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "pass": true,
+    "exclusionsUnchanged": true
+  },
+  "renderer": {
+    "publicBuiltPixelMatrix": [
+      {
+        "file": "00_대조_덮개없음.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "01_대조_덮개가_사진뒤문단.hwpx",
+        "baseline": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "02_바탕쪽_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "03_머리말_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "04_글앞덮개_사진앞문단.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "05_변경추적_지운사진.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": []
+      },
+      {
+        "file": "06a_그라데이션_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "06b_그림채움_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "07_곡선_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 20800,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "08_회전_덮개.hwpx",
+        "baseline": [
+          {
+            "red": 3250,
+            "green": 0,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 0,
+            "green": 0,
+            "pixels": 100651
+          }
+        ]
+      },
+      {
+        "file": "09_글앞사진_밑에_뒤문단글.hwpx",
+        "baseline": [
+          {
+            "red": 17439,
+            "green": 8893,
+            "pixels": 100651
+          }
+        ],
+        "current": [
+          {
+            "red": 20800,
+            "green": 28,
+            "pixels": 100651
+          }
+        ]
+      }
+    ],
+    "verified": "11 fixtures via public extractRenderedRegions + sharp raster pixels; rotation descendants and independent deletion stories covered by tests",
+    "limits": [
+      "Top-level floating objects use page-global layer/zOrder; full arbitrary renderingInfo matrices, photo/container rotation remain unverified.",
+      "Curve support verified for LINE segments and image fill for TOTAL; unsupported variants warn and skip.",
+      "The front-photo crop retains 28 green pixels outside the actual photo at the existing outward-rounded crop edge; green pixels inside the photo are zero.",
+      "Hancom GUI visual oracle not run; existing explicit user deployment override retained."
+    ]
+  },
+  "unitTests": {
+    "tests": 2868,
+    "suites": 824,
+    "pass": 2868,
+    "fail": 0,
+    "skip": 0,
+    "scope": "Final source including three marker-free regressions"
+  },
+  "typecheck": true,
+  "freshIndependentReview": {
+    "blockers": 0,
+    "finalRelatedTests": 274,
+    "markerFreeFollowupTests": 80
+  },
+  "performanceEvidence": "quality-followup-performance-2026-10-01.json",
+  "issues": {
+    "integratedPrHeads": {
+      "115": "1aa00a5cbda75775a54e2ad61596d4fb82bd3220",
+      "118": "a3416de46a7a2a006be0dd4f7a9d1fa383ca5ebc"
+    },
+    "original327PageBookVerified": false,
+    "openMissingOriginal": [
+      112,
+      113
+    ],
+    "parallelCliPr": 110
+  },
+  "limits": [
+    "Not all metrics reach 99: Korean text spacing F1 98.804; Korean PDF exact tables 97.9408; ODL structural/text tracks and forced OCR table accuracy remain below 99.",
+    "Remaining HWPX GT defects are not copied into parser output or excluded to manufacture 100%."
+  ],
+  "releaseEvidence": "release-4.17.4.json",
+  "finalGates": {
+    "allPass": true,
+    "population": {
+      "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+      "threshold": "≥ 2286/1911/1120",
+      "pass": true
+    },
+    "hwpx": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "tableCount": 9865,
+      "exactCount": 9849,
+      "nestedTables": 559,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.998378,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.998581,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999953,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999982,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "hwp5": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "pdfTable": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "pdfText": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "fuzz": {
+      "runs": 23700,
+      "incidents": 0,
+      "pass": true
+    },
+    "ocr": {
+      "charF1": 0.99178,
+      "cellF1": 0.5465,
+      "strictCerBefore": 0.09542,
+      "strictCerAfter": 0.09589
+    }
+  }
+}

@@ -14,10 +14,10 @@
 const HANGUL_START = /^[\uac00-\ud7a3]/
 
 /** 박스 텍스트 한 줄 후처리 (위치 독립 규칙) */
-export function restoreSymbols(text: string): string {
+export function restoreSymbols(text: string, ringDecided = false): string {
   let s = text
-  // ○ 글머리: 줄 머리 O/o + (공백) + 한글
-  s = s.replace(/^([Oo])(\s?)(?=[\uac00-\ud7a3])/, "\u25cb$2")
+  // ○ 글머리: 줄 머리 O/o + (공백) + 한글 — 줄 머리 고리를 픽셀로 이미 정했으면(glyph-restore ring) 건너뛴다
+  if (!ringDecided) s = s.replace(/^([Oo])(\s?)(?=[\uac00-\ud7a3])/, "\u25cb$2")
   // ○○ 자리표시(○○시·○○○ 과장): 라틴 글자와 붙지 않은 O 2개 이상이 한글과 (공백 하나 사이로) 이웃
   s = s.replace(/(?<![A-Za-z])O{2,}(?![A-Za-z])/g, (m, i: number) =>
     /[\uac00-\ud7a3]$/.test(s.slice(Math.max(0, i - 2), i).trimEnd()) || /^\s?[\uac00-\ud7a3]/.test(s.slice(i + m.length))

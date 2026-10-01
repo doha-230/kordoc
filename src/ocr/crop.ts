@@ -36,7 +36,8 @@ export function bandBoxes(b: Box, bands: Array<{ y0: number; y1: number; x0: num
  * (90 = 반시계 np.rot90, 270 = 시계). 리사이즈는 bilinear(반픽셀 중심, cv2 INTER_LINEAR 등가)
  * — 공식 전처리(cv2.resize 기본)와 같은 보간.
  */
-export function lineCrop(rgba: Uint8Array, pageW: number, box: Box, rot: 0 | 90 | 270): { rgb: Uint8Array; w: number } {
+/** keep: 박스 로컬 [x0, x1)×[y0, y1) 밖은 배경 휘도 bg 로 칠한다 (rot 0 만 — 박스 끝에 걸린 이웃 줄 조각·상자 테두리 지우기) */
+export function lineCrop(rgba: Uint8Array, pageW: number, box: Box, rot: 0 | 90 | 270, keep?: { x0: number; x1: number; y0: number; y1: number; bg: number }): { rgb: Uint8Array; w: number } {
   const srcW = rot === 0 ? box.w : box.h
   const srcH = rot === 0 ? box.h : box.w
   const rw = Math.min(REC_MAX_WIDTH, Math.max(16, Math.round((srcW * REC_HEIGHT) / srcH)))
@@ -65,6 +66,10 @@ export function lineCrop(rgba: Uint8Array, pageW: number, box: Box, rot: 0 | 90 
       const wx = sx - x0
       const i00 = at(x0, y0), i01 = at(x1, y0), i10 = at(x0, y1), i11 = at(x1, y1)
       const o = (dy * rw + dx) * 3
+      if (keep && rot === 0 && (sx < keep.x0 || sx >= keep.x1 || sy < keep.y0 || sy >= keep.y1)) {
+        rgb[o] = rgb[o + 1] = rgb[o + 2] = keep.bg
+        continue
+      }
       for (let c = 0; c < 3; c++) {
         const top = rgba[i00 + c] * (1 - wx) + rgba[i01 + c] * wx
         const bottom = rgba[i10 + c] * (1 - wx) + rgba[i11 + c] * wx

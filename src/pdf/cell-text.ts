@@ -9,11 +9,22 @@
  */
 
 import type { ExtractedCell, TextItem } from "./line-types.js"
-import { sortLineByX, isCjkLatinAutospace } from "./text-line.js"
+import { sortLineByX, isCjkLatinAutospace, collapseEvenSpacing } from "./text-line.js"
+import { tagScripts } from "./script-items.js"
+
+/** 시도·전국 이름표 — 두 음절 배분 칸을 문서 어휘 증거 없이도 붙이는 닫힌 목록. "전 체"·"구 분" 같은 표 머리글은 원고에서 띄어 쓰기도
+ *  해서(해외직접투자 보도자료 정답 "전 체") 넣지 않는다 */
+const REGION_LABELS = new Set(["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주", "전국"])
 import { type WrapLexicon, cellLineWraps, cellLineFills, startsNewItem, wrapJoiner } from "./line-wrap.js"
 
 /** 셀 경계 내부 판별 여유 (텍스트 매핑용) */
 const CELL_PADDING = 2
+
+/** 셀 텍스트 정리 — 페이지 번호 표시 제거 + 줄별 균등배분 공백 정리 */
+export function cleanCellText(text: string): string {
+  const stripped = text.replace(/^[\s]*[-–—]\s*\d+\s*[-–—][\s]*$/gm, "").trim()
+  return stripped.split("\n").map(line => collapseEvenSpacing(line)).join("\n")
+}
 
 /**
  * 공백 삽입 갭 임계값 — 폰트 크기 비례.
@@ -40,6 +51,7 @@ export function mapTextToCells(
   for (const cell of cells) {
     result.set(cell, [])
   }
+  const candidates = items.length * cells.length >= 5000 ? cellBandLookup(cells) : () => cells
 
   for (const item of items) {
     const pad = CELL_PADDING
@@ -47,7 +59,7 @@ export function mapTextToCells(
     let bestCell: ExtractedCell | null = null
     let bestScore = 0
 
-    for (const cell of cells) {
+    for (const cell of candidates(item.y - pad, item.y + (item.h || item.fontSize) + pad)) {
       // 텍스트 bbox와 셀 bbox의 교차 영역 계산
       const ix1 = Math.max(item.x, cell.bbox.x1 - pad)
       const ix2 = Math.min(item.x + item.w, cell.bbox.x2 + pad)
@@ -74,6 +86,36 @@ export function mapTextToCells(
 
   keepWordsInOneCell(result)
   return result
+}
+
+/** 세로 범위로 칸 후보를 좁힌다. 병합 칸도 포함하고, 동률 배정은 원래 칸 순서를 그대로 따른다. */
+function cellBandLookup(cells: ExtractedCell[]): (lo: number, hi: number) => ExtractedCell[] {
+  const sorted = cells.map((cell, index) => ({ cell, index })).sort((a, b) => a.cell.bbox.y1 - b.cell.bbox.y1)
+  interface Band { start: number; end: number; lo: number; hi: number; left?: Band; right?: Band }
+  const build = (start: number, end: number): Band => {
+    let lo = Infinity, hi = -Infinity
+    for (let i = start; i < end; i++) { lo = Math.min(lo, sorted[i].cell.bbox.y1); hi = Math.max(hi, sorted[i].cell.bbox.y2) }
+    const band: Band = { start, end, lo, hi }
+    if (end - start > 8) {
+      const mid = (start + end) >> 1
+      band.left = build(start, mid); band.right = build(mid, end)
+    }
+    return band
+  }
+  const root = build(0, sorted.length)
+  return (lo, hi) => {
+    const found: typeof sorted = []
+    const visit = (band: Band): void => {
+      if (band.hi <= lo || band.lo >= hi) return
+      if (band.left && band.right) { visit(band.left); visit(band.right) }
+      else for (let i = band.start; i < band.end; i++) {
+        const entry = sorted[i]
+        if (entry.cell.bbox.y2 > lo && entry.cell.bbox.y1 < hi) found.push(entry)
+      }
+    }
+    visit(root)
+    return found.sort((a, b) => a.index - b.index).map(entry => entry.cell)
+  }
 }
 
 /**
@@ -149,11 +191,10 @@ export function cellTextToString(items: TextItem[], wrap?: { box: { x1: number; 
   // tolerance를 벗어나 별도 행이 된 것을 수직 겹침으로 되돌린다
   // (text-line.ts mergeSuperscriptLines와 동일 규칙: 조각 ≤3개·각 ≤8자·
   //  높이가 인접 행의 80% 이하·수직 겹침 ≥ 조각 높이 50%)
-  const merged = mergeSuperscriptRows(lines)
+  const merged = mergeSuperscriptRows(lines).map(line => sortLineByX(line))
 
   // 각 행을 텍스트로 변환 — 좌표 기반 균등배분 감지 포함
-  const textLines = merged.map(line => {
-    const s = sortLineByX(line)
+  const textLines = merged.map(s => {
     if (s.length === 1) return s[0].text
     // 두 음절 배분 정렬 칸("중  동"·"유  럽") — 세 글자 이상 균등배분(detectEvenSpacedItems)과 같은 조판인데 두 글자라 빠졌다.
     // 음절 사이가 글자 크기의 1.5배 이상이고 두 음절이 칸 폭을 꽉 채우며(배분 정렬은 첫 글자를 칸 왼쪽, 끝 글자를 오른쪽 여백에
@@ -161,13 +202,14 @@ export function cellTextToString(items: TextItem[], wrap?: { box: { x1: number; 
     // 원문에 공백을 친 채 벌린 칸은 그림이 같아 기하로 못 가른다: 좁은 칸 "과 장"(보도자료 연락처)은 간격 1.0배 안팎이라 문턱에서,
     // 서식 이름표 "성  명"은 본문에 한 어절로 잘 안 나와 어휘에서 걸러진다. 본문에도 나오는 낱말을 크게 벌린 이름표("경  력"·"은  행")는
     // 못 가른다(hwpx↔pdf 751쌍: 건설업조사·해외직접투자 보도자료 등 나아짐, 2문서 1~4어절 나빠짐)
+    // 통계표 지역 이름표(시도·전국)는 본문에 한 어절로 안 나와도 붙인다 — 띄어 쓰는 일이 없는 닫힌 목록(건설업조사 보도자료 "서  울" 102곳)
     if (s.length === 2 && /^[가-힣]$/.test(s[0].text) && /^[가-힣]$/.test(s[1].text) && !!wrap?.lex &&
-        (wrap.lex.isWord(s[0].text + s[1].text) || wrap.lex.evidence(s[0].text, s[1].text) === "") &&
+        (wrap.lex.isWord(s[0].text + s[1].text) || wrap.lex.evidence(s[0].text, s[1].text) === "" || REGION_LABELS.has(s[0].text + s[1].text)) &&
         s[1].x - (s[0].x + s[0].w) >= Math.max(s[0].fontSize, s[1].fontSize) * 1.5 &&
         s[1].x + s[1].w - s[0].x >= (wrap.box.x2 - wrap.box.x1) - Math.max(s[0].fontSize, s[1].fontSize) * 2) return s[0].text + s[1].text
 
     // 균등배분 구간 감지 (좌표 기반)
-    const evenSpaced = detectEvenSpacedItems(s)
+    const evenSpaced = detectEvenSpacedItems(s, true)
 
     let result = s[0].text
     for (let j = 1; j < s.length; j++) {
@@ -193,22 +235,25 @@ export function cellTextToString(items: TextItem[], wrap?: { box: { x1: number; 
     return result
   })
 
-  if (!wrap) return mergeCellTextLines(textLines)
+  // 첨자 태그는 줄 병합 판정(평문)을 다 한 뒤에 — 판정은 글 끝 글자를 본다
+  const scripted = (s: string) => tagScripts(s, merged)
+  if (!wrap) return scripted(mergeCellTextLines(textLines))
   // 줄마다 "다음 줄로 꺾여 넘어갔나" — 다음 줄 첫 글자가 이 줄 뒤에 칸 안쪽으로 못 들어갈 때
   let contentLeft = Infinity
   for (const it of items) if (it.x < contentLeft) contentLeft = it.x
-  const lineEnds = merged.map(line => {
-    const s = sortLineByX(line)
+  const lineEnds = merged.map(s => {
     let right = -Infinity
     for (const it of s) if (it.x + it.w > right) right = it.x + it.w
     const first = s[0]
-    return { right, fontSize: first.fontSize, firstCharW: first.w / Math.max(1, [...first.text].length) }
+    // 아이템에 붙인 표시 태그는 글리프가 아니다 — 다음 줄 첫 글자 폭은 실제 글자 수로 나눈다.
+    const visible = first.text.replace(/<\/?u>|~~/g, "")
+    return { right, fontSize: first.fontSize, firstCharW: first.w / Math.max(1, [...visible].length) }
   })
   let cellRight = -Infinity
   for (const e of lineEnds) if (e.right > cellRight) cellRight = e.right
   const wraps = lineEnds.slice(0, -1).map((a, i) => cellLineWraps(wrap.box, contentLeft, a.right, a.fontSize, lineEnds[i + 1].firstCharW)
     || (lineEnds.length >= 3 && !textLines[i + 1].startsWith("(") && cellLineFills(wrap.box, contentLeft, cellRight, a.right, a.fontSize)))
-  return mergeCellTextLines(textLines, { wraps, lex: wrap.lex })
+  return scripted(mergeCellTextLines(textLines, { wraps, lex: wrap.lex }))
 }
 
 /** 첨자 행 병합 — cellTextToString 행 그룹핑 결과에 적용 (규칙은 text-line.ts와 동일) */
@@ -253,20 +298,31 @@ function mergeSuperscriptRows(lines: TextItem[][]): TextItem[][] {
  * 일정 간격으로 3개+ 연속되면 균등배분으로 판단.
  * ODL TextLineProcessor의 핵심 로직을 좌표 기반으로 구현.
  */
-function detectEvenSpacedItems(items: TextItem[]): boolean[] {
+function detectEvenSpacedItems(items: TextItem[], cellLine = false): boolean[] {
   const result = new Array(items.length).fill(false)
   if (items.length < 3) return result
+  const visible = items.map(it => it.text.replace(/<\/?u>|~~/g, ""))
+  // 칸 한 줄이 한 음절 글자뿐이고 글자 틈이 모두 벌어졌는데 공백 글리프가 하나도 없으면(pdfjs 가 틈에 만든 공백뿐) 배분 정렬 칸이다 —
+  // "보 [-777.8] 험 [-777.8] 업"(해외직접투자 보도자료), 틈 일부에만 합성 공백이 든 "법 무 연 수 원"(교정공무원 인사). 공백 글리프가 있거나
+  // 붙은 글자가 있으면(한 글자씩 찍고 낱말 틈만 벌린 글) 아래 종전 규칙(공백에서 끊음)대로.
+  // 칸 글에서만 — 쪽 줄(mergeLineSimple)은 칸 경계를 넘어 한 글자씩 찍은 행("대구교도소장 김진아")을 한 낱말로 붙였다
+  if (cellLine && visible.every(text => /^[가-힣]$/.test(text)) && items.slice(1).every(it => !it.hasSpaceBefore || it.syntheticSpace)
+    && items.slice(1).every((it, k) => it.x - (items[k].x + items[k].w) >= it.fontSize * 0.1)) {
+    markEvenRun(items, visible, result, 0, items.length)
+    // 줄 전체가 고른 배분이 아니면(틈 비율 3배 넘음 — "전 문 업 종  건 설 업") 종전 규칙으로 부분 run 을 본다
+    if (result.some(Boolean)) return result
+  }
 
   let runStart = -1
   for (let i = 0; i < items.length; i++) {
     // 균등배분 = 한글 1자 개별 배치. 2자 단어는 균등배분이 아니라 실제 단어.
-    const isShortKorean = /^[가-힣]{1}$/.test(items[i].text) || /^[\d]{1}$/.test(items[i].text)
+    const isShortKorean = /^[가-힣]{1}$/.test(visible[i]) || /^[\d]{1}$/.test(visible[i])
 
     // 명시적 공백 글리프가 직전에 있으면 단어 경계 — 균등배분 run 분리.
     // (Type3 폰트가 글자를 1자씩 배치하면서 공백 글리프를 따로 두는 경우,
     //  진짜 단어 경계를 균등배분으로 오판해 문장 전체가 붙는 것을 방지)
     if (isShortKorean && runStart >= 0 && items[i].hasSpaceBefore) {
-      if (i - runStart >= 3) markEvenRun(items, result, runStart, i)
+      if (i - runStart >= 3) markEvenRun(items, visible, result, runStart, i)
       runStart = i
       continue
     }
@@ -276,7 +332,7 @@ function detectEvenSpacedItems(items: TextItem[]): boolean[] {
       const gap = items[i].x - (items[i - 1].x + items[i - 1].w)
       const maxRunGap = Math.max(items[i].fontSize * 3, 30)
       if (gap > maxRunGap) {
-        if (i - runStart >= 3) markEvenRun(items, result, runStart, i)
+        if (i - runStart >= 3) markEvenRun(items, visible, result, runStart, i)
         runStart = i
         continue
       }
@@ -286,24 +342,24 @@ function detectEvenSpacedItems(items: TextItem[]): boolean[] {
       if (runStart < 0) runStart = i
     } else {
       if (runStart >= 0 && i - runStart >= 3) {
-        markEvenRun(items, result, runStart, i)
+        markEvenRun(items, visible, result, runStart, i)
       }
       runStart = -1
     }
   }
   if (runStart >= 0 && items.length - runStart >= 3) {
-    markEvenRun(items, result, runStart, items.length)
+    markEvenRun(items, visible, result, runStart, items.length)
   }
 
   return result
 }
 
-function markEvenRun(items: TextItem[], result: boolean[], start: number, end: number): void {
+function markEvenRun(items: TextItem[], visible: string[], result: boolean[], start: number, end: number): void {
   // 별지서식 기입 빈칸 "년   월   일"·"시   분" 은 균등배분이 아니다 — 글자 단위가 전부 날짜·시각 단위면 두고 문자열 안전망
   // (collapseEvenSpacing isDateUnitBlank)과 같게. 공백 글리프 없이 칸을 벌린 서식은 틈이 3em 안이면 여기서 붙었다
   // (hwpx↔pdf 칸 줄: 한 글자 조각이 날짜 단위뿐인 줄 46곳 중 원문이 붙여 쓴 곳 0 — 행정업무운영 편람 서식 "년 월 일")
   let dateOnly = true
-  for (let i = start; i < end; i++) if (!/^[년월일시분초]$/.test(items[i].text)) { dateOnly = false; break }
+  for (let i = start; i < end; i++) if (!/^[년월일시분초]$/.test(visible[i])) { dateOnly = false; break }
   if (dateOnly) return
   const gaps: number[] = []
   for (let i = start + 1; i < end; i++) {

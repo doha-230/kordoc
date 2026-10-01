@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "status": "complete",
+  "cpuWorkFinished": true,
+  "pair": "lo-pairs/kats-ks표준안",
+  "gtExt": ".docx",
+  "pagesVisuallyVerified": [
+    4
+  ],
+  "inputs": {
+    "pdf": {
+      "path": "/Users/mong-e/workspace/kordoc/bench/corpus/lo-pairs/kats-ks표준안.pdf",
+      "sha256": "0decac8ecb8a705ddb0bbf52a86f99370265e5439fb6b039c705477c5f1dbbe4"
+    },
+    "docx": {
+      "path": "/Users/mong-e/workspace/kordoc/bench/corpus/lo-pairs/kats-ks표준안.docx",
+      "sha256": "fedcb5c9e57e61b17c4594e837e7caaec0ec740a13a375c07a735b6f6b39383b"
+    },
+    "scorer": {
+      "path": "/Users/mong-e/workspace/kordoc/bench/pdf-text-gt.mjs",
+      "sha256": "cdac2c73964a058ecbb39af61d582fe1023df6e60f4a915032e583a0a648deea"
+    }
+  },
+  "versions": {
+    "baseline": {
+      "name": "4.17.5",
+      "index": "/tmp/kordoc-toc-baseline-4.17.5-20261001/dist/index.js",
+      "sha256": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991"
+    },
+    "candidate": {
+      "name": "4.17.6",
+      "index": "/Users/mong-e/workspace/kordoc/dist/index.js",
+      "sha256": "5d5170f6ea14517b6d957bc328a73595d9656ea501285810b3b3b8c6d86d9d0a"
+    }
+  },
+  "options": {
+    "filename": "kats-ks표준안.pdf",
+    "ocr": false
+  },
+  "productionChanges": false,
+  "scorerChanged": false,
+  "gtChanged": false,
+  "populationChanged": false,
+  "rebuilt": false,
+  "execution": {
+    "pairParsesPerVersion": 1,
+    "sequential": true,
+    "command": "node bench/pdf-text-diagnostic.mjs --doc=kats-ks표준안 --sets=lo-pairs --verbose",
+    "fullBenchRun": false,
+    "originalPdfPagesRendered": [
+      4
+    ],
+    "elapsedRoundedSeconds": {
+      "baseline": 3,
+      "candidate": 4
+    },
+    "performanceClaim": false,
+    "anonymousOriginalAlignUnitsExample": true
+  },
+  "originalGate": {
+    "aggregatePrecision": {
+      "baseline": 0.99581,
+      "candidate": 0.9958
+    },
+    "document": {
+      "baseline": {
+        "refChars": 70015,
+        "recall": 0.99157,
+        "precision": 0.92813,
+        "order": 0.96333,
+        "spaceF1": 0.98252
+      },
+      "candidate": {
+        "refChars": 70015,
+        "recall": 0.99157,
+        "precision": 0.92768,
+        "order": 0.96333,
+        "spaceF1": 0.98252
+      }
+    },
+    "unchangedEvaluation": true
+  },
+  "exactEquality": {
+    "gtMarkdown": true,
+    "gtNormalizedText": true,
+    "pdfNormalizedText": true,
+    "pdfNormalizedTextSHA256": "b62b5b578f676feafb328b9cdae46a755c5567a04e68bb791b114e040bd71627",
+    "pdfPlain": false
+  },
+  "unitChange": {
+    "baselineCount": 1742,
+    "candidateCount": 1762,
+    "removedMergedParagraphs": 3,
+    "addedIndependentTocRecords": 23,
+    "totalCharacters": {
+      "baseline": 74987,
+      "candidate": 74987
+    },
+    "matchedCharacters": {
+      "baseline": 69598,
+      "candidate": 69564
+    },
+    "matchedDelta": -34,
+    "changedUnitsMatched": {
+      "baseline": 204,
+      "candidate": 170
+    },
+    "allMatchingLossLocalizedToChangedTocUnits": true
+  },
+  "originalEvidence": {
+    "pdf": "/Users/mong-e/workspace/kordoc/bench/corpus/lo-pairs/kats-ks표준안.pdf",
+    "image": "/tmp/kordoc-toc-kats-audit-20261001/original-p4.png",
+    "glyphs": "/tmp/kordoc-toc-kats-audit-20261001/original-glyphs.json",
+    "pageBox": [
+      0,
+      0,
+      595.303937007874,
+      841.889763779528
+    ],
+    "fontSize": 10,
+    "tocRowPitch": 16.05,
+    "example": {
+      "label": "5.1",
+      "labelOrigin": {
+        "x": 83.9,
+        "y": 540.239
+      },
+      "pageReference": "3",
+      "pageNumberOrigin": {
+        "x": 525.55,
+        "y": 540.239
+      },
+      "rightEdge": 531.11,
+      "nextRecordPitch": 16.05
+    },
+    "assessment": "Sections 5, 6, 7 and their subentries are separate printed TOC records, each with a label, dot leader and aligned page reference. DOCX GT also has independent lines. Candidate separation restores those boundaries; no text-layer content or order change was found."
+  },
+  "scorerMechanism": {
+    "lineUnitSplit": "pdf-text-gt.mjs lineUnits: plain.split(/\\n+/)",
+    "normalization": "mdToPlain + normKey preserves the ASCII leader dots in this track; DOCX native GT supplies labels/page references without rendered dot filler.",
+    "alignment": "bench/lib/align.mjs partialConsume only consumes fragments of length >= MIN_FRAG(3).",
+    "cause": "Joined TOC units could match a 1–2 digit page reference together with the following record number after the preceding dot run. Independent record units leave that same 1–2 digit page reference at the end, where it does not meet MIN_FRAG. No digits were removed.",
+    "pageReferenceCharacters": {
+      "all23Records": 40,
+      "alreadyUnmatchedEndsOf3BaselineParagraphs": 6,
+      "newlyUnmatchedInteriorPageDigits": 34
+    },
+    "anonymousExample": {
+      "path": "/tmp/kordoc-toc-kats-audit-20261001/anonymous-boundary-diagnostic.json",
+      "baselineMatched": 9,
+      "candidateMatched": 8
+    }
+  },
+  "sourceConnection": {
+    "boundaryGuard": "/Users/mong-e/workspace/kordoc/src/pdf/xy-cut.ts:232",
+    "paragraphBoundary": "/Users/mong-e/workspace/kordoc/src/pdf/paragraph-lines.ts:57",
+    "assessment": "The completed aligned TOC-record guard deliberately creates independent rows and is supported by original geometry for these cases. Rejoining them to regain precision would reintroduce the original boundary defect."
+  },
+  "decision": {
+    "sourceRegressionFound": false,
+    "rollbackRecommended": false,
+    "changeScorerForRelease": false,
+    "keepOriginalRawMetrics": true,
+    "nextRecommendation": "Preserve the original gate decrease openly. If a future benchmark revision addresses leader filler or fragment-boundary sensitivity, define and version the symmetric evaluation policy separately; do not change this release benchmark."
+  },
+  "proofs": {
+    "comparison": "/tmp/kordoc-toc-kats-audit-20261001/comparison.json",
+    "precisionUnitDelta": "/tmp/kordoc-toc-kats-audit-20261001/precision-unit-delta.json",
+    "baselineCapture": "/tmp/kordoc-toc-kats-audit-20261001/baseline/bench/out/capture.json",
+    "candidateCapture": "/tmp/kordoc-toc-kats-audit-20261001/candidate/bench/out/capture.json",
+    "baselineReport": "/tmp/kordoc-toc-kats-audit-20261001/baseline/bench/out/pdf-text.json",
+    "candidateReport": "/tmp/kordoc-toc-kats-audit-20261001/candidate/bench/out/pdf-text.json",
+    "scorerOriginalCopy": "/tmp/kordoc-toc-kats-audit-20261001/baseline/bench/pdf-text-gt.mjs",
+    "diagnosticInstrumentation": "/tmp/kordoc-toc-kats-audit-20261001/baseline/bench/pdf-text-diagnostic.mjs"
+  }
+}

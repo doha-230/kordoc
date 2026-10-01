@@ -210,7 +210,8 @@ describe("hwp5-scene: 코퍼스 (bench/corpus/hwp5)", { skip: !existsSync(HWP5_D
     const tables = scene.regions.filter(r => r.type === "table")
     assert.equal(tables.length, 1)
     assert.equal(tables[0].sourceId, "t1")
-    const parsed = await parse(readFileSync(f).buffer as ArrayBuffer)
+    // readFileSync(f).buffer 는 Node 풀 버퍼(파일보다 크고 오프셋이 있음)라 Buffer 를 그대로 넘긴다
+    const parsed = await parse(readFileSync(f))
     assert.ok(parsed.success)
     const ir = collectTableBlocks(parsed.blocks)
     assert.equal(ir.length, 1)

@@ -500,3 +500,69 @@ describe("DOCX 머리글·바닥글 1회 방출 (HWPX 머리말 정책)", () => 
     assert.deepEqual(texts, ["Kintetsu World Express(Korea), Inc.", "본문", "페이지 / 19"])
   })
 })
+
+describe("DOCX 과학 문서 보충자료 (#104·#105·#107·#108)", () => {
+  const M = `xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"`
+  const t = (s: string) => `<w:r><w:t xml:space="preserve">${s}</w:t></w:r>`
+  const om = (inner: string) => `<m:oMath ${M}>${inner}</m:oMath>`
+  const mr = (s: string) => `<m:r><m:t>${s}</m:t></m:r>`
+
+  it("#104 문단·표 칸 속 인라인 수식은 제자리에", async () => {
+    const buf = await createDocx(
+      `<w:p>${t("Where ")}${om(mr("f"))}${t(" and ")}${om(mr("λ"))}${t(" are the frequency and wavelength, and ")}` +
+      `${om(`<m:sSub><m:e>${mr("p")}</m:e><m:sub>${mr("0")}</m:sub></m:sSub>`)}${t(" is the pressure amplitude.")}</w:p>` +
+      `<w:tbl><w:tr><w:tc><w:p>${om(`<m:sSub><m:e>${mr("k")}</m:e><m:sub>${mr("r")}</m:sub></m:sSub>`)}${t(" /s")}` +
+      `<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:t>-1</w:t></w:r></w:p></w:tc>` +
+      `<w:tc><w:p>${t("9.1")}</w:p></w:tc></w:tr></w:tbl>` +
+      // 별행 수식(oMathPara)은 종전대로 $$…$$
+      `<w:p><m:oMathPara ${M}><m:oMath>${mr("E=mc")}</m:oMath></m:oMathPara></w:p>`)
+    const r = await parse(buf, { images: false })
+    assert.equal(r.success, true)
+    if (!r.success) return
+    assert.equal(r.blocks[0].text, "Where $f$ and $λ$ are the frequency and wavelength, and ${p}_{0}$ is the pressure amplitude.")
+    assert.equal(r.blocks[1].table?.cells[0][0].text, "${k}_{r}$ /s<sup>-1</sup>")
+    assert.equal(r.blocks[2].text, "$$E=mc$$")
+  })
+
+  it("#105 w:sym — Symbol 글꼴은 유니코드로, 그림 글꼴(Wingdings)은 건너뛴다", async () => {
+    const sym = (font: string, ch: string) => `<w:r><w:sym w:font="${font}" w:char="${ch}"/></w:r>`
+    const buf = await createDocx(`<w:p>${t("Molar mass in kg")}${sym("Symbol", "F0D7")}${t("mol, stored at 4 ")}` +
+      `${sym("Symbol", "F0B0")}${t("C in 0.25")}${sym("Symbol", "F0B4")}${t(" PBS with 1 ")}${sym("Symbol", "F06D")}` +
+      `${t("M ")}${sym("Wingdings", "F0FC")}${sym("Times New Roman", "2264")}${sym("Symbol", "F0A3")}${sym("Symbol", "F044")}</w:p>`)
+    const r = await parse(buf)
+    assert.equal(r.success, true)
+    if (!r.success) return
+    assert.equal(r.blocks[0].text, "Molar mass in kg⋅mol, stored at 4 °C in 0.25× PBS with 1 μM ≤≤Δ")
+  })
+
+  it("#107 w:dir·w:bdo 안의 글", async () => {
+    const buf = await createDocx(
+      `<w:p>${t("Corresponding author: J. Doe (")}<w:dir w:val="ltr">${t("jdoe@example.org)")}</w:dir>${t(";")}</w:p>` +
+      `<w:p>${t("Second author: A. Roe (")}<w:bdo w:val="ltr">${t("aroe@example.org)")}</w:bdo>${t(";")}</w:p>`)
+    const r = await parse(buf)
+    assert.equal(r.success, true)
+    if (!r.success) return
+    assert.deepEqual(r.blocks.map(b => b.text), ["Corresponding author: J. Doe (jdoe@example.org);", "Second author: A. Roe (aroe@example.org);"])
+  })
+
+  it("#108 images:false 면 그림 파트를 ZIP 상한에 세지 않고, 그림 자리 표시는 남긴다", async () => {
+    const pic = `<w:p><w:r><w:drawing><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData>` +
+      `<a:blip r:embed="rIdImg"/></a:graphicData></a:graphic></w:drawing></w:r></w:p>`
+    const zip = await JSZip.loadAsync(await createDocx(`<w:p>${t("본문")}</w:p>${pic}`, {
+      relationships: `<Relationship Id="rIdImg" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>`,
+    }))
+    zip.file("word/media/image1.png", new Uint8Array(101 * 1024 * 1024))
+    const buf = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" })
+
+    const off = await parse(buf, { images: false })
+    assert.equal(off.success, true, off.success ? "" : off.error)
+    if (!off.success) return
+    assert.ok(off.markdown.includes("본문") && off.markdown.includes("image_001.png"), off.markdown)
+    assert.equal(off.images, undefined)
+
+    const on = await parse(buf)
+    assert.equal(on.success, false)
+    if (on.success) return
+    assert.ok(on.error.includes("그림·개체 파트가 101.0MB"), on.error)
+  })
+})

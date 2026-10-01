@@ -9,6 +9,7 @@ import { inlineImagesIntoMarkdown } from "../image/transcode.js"
 import { decryptViewText } from "./crypto.js"
 import { parseLenientCfb, type LenientCfbContainer } from "./cfb-lenient.js"
 import { blocksToMarkdown, flattenLayoutTables, dedupeRunningHeaders } from "../table/builder.js"
+import { unframeLayoutTables } from "../table/layout-frames.js"
 import type { IRBlock, DocumentMetadata, InternalParseResult, ParseOptions, ParseWarning, OutlineItem } from "../types.js"
 import { HEADING_RATIO_H1, HEADING_RATIO_H2, HEADING_RATIO_H3 } from "../types.js"
 import { assertDecryptedDocInfo, assertSupportedEncryptVersion, decryptPasswordStream, readEncryptVersion } from "./pw-crypto.js"
@@ -251,6 +252,8 @@ export function parseHwp5Document(buffer: Buffer, options?: ParseOptions): Inter
   // 레이아웃 테이블 해체 (heading 감지 전에 수행하여 해체된 텍스트도 heading 감지 대상). 칸 테두리가 보이는 표는 풀지 않는다 —
   // 종전엔 3행 이하·글 많은 표를 테두리와 상관없이 풀어 같은 문서의 HWPX 표 118개가 사라지고 틀 안 중첩표가 바깥 단부터 풀렸다
   let flatBlocks = flattenLayoutTables(blocks)
+  // 보이지 않는 틀 표 풀기 (v4.17.0) — 칸 테두리로 선 없는 틀은 글로, 칸으로 조립한 분수는 수식으로
+  if (options?.layoutTables !== "keep") flatBlocks = unframeLayoutTables(flatBlocks, !!options?.keepTrailingEmptyCols)
   // 페이지 레이아웃 표의 반복 러닝 헤더 중복 제거 — opt-in (기본 off).
   // 위치 정보가 없는 HWP5 특성상 정당한 번호매김 반복(붙임별 재번호)까지 오삭제할 수
   // 있어 옵션이 켜졌을 때만 수행하고, 실제 제거가 있으면 경고로 가시화한다.

@@ -40,7 +40,7 @@ export function registerFormTools(server: McpServer): void {
       try {
         const { buffer } = await readValidatedFile(file_path)
         // 서식 입력란(빈 후행 열)이 필드로 잡히도록 보존 (#47)
-        const result = await parse(buffer, { keepTrailingEmptyCols: true })
+        const result = await parse(buffer, { keepTrailingEmptyCols: true, layoutTables: "keep" })
 
         if (!result.success) {
           return {
@@ -124,7 +124,7 @@ export function registerFormTools(server: McpServer): void {
           // 마스킹 verify — 채운 결과를 재파싱해 값이 실제 문서에 있는지만 확인 (값 미노출)
           let verifyLine: string | null = null
           if (mask_values && hwpxResult.filled.length > 0) {
-            const reparsed = await parse(Buffer.from(hwpxResult.buffer))
+            const reparsed = await parse(Buffer.from(hwpxResult.buffer), { layoutTables: "keep" })
             // 마크다운 이스케이프(\*,\|,\~ 등)·개행/연속공백 정규화 후 비교 — rrn:masked
             // ('900315-1******')의 * 이스케이프로 생기던 결정적 false negative 방지.
             // 빈 값은 includes('')===true 로 항상 통과하던 것을 FILLED 에서 제외한다.
@@ -159,7 +159,7 @@ export function registerFormTools(server: McpServer): void {
         }
 
         // ─── 일반 경로: parse → fill → output ─── (양식 입력란 보존, #47)
-        const result = await parse(buffer, { keepTrailingEmptyCols: true })
+        const result = await parse(buffer, { keepTrailingEmptyCols: true, layoutTables: "keep" })
         if (!result.success) {
           return {
             content: [{ type: "text", text: `파싱 실패: ${result.error}` }],
@@ -293,7 +293,7 @@ export function registerFormTools(server: McpServer): void {
     "원본 HWPX/HWP의 서식(글꼴·표·도장칸·이미지)을 1바이트도 건드리지 않고, 편집된 마크다운의 바뀐 텍스트만 제자리 치환해 새 문서로 출력합니다. parse_document로 얻은 마크다운을 수정해 넘기세요 — 양식 빈칸 채우기·문구 수정에 적합하며 한컴 한글에서 변조 경고 없이 열립니다. (블록 추가/삭제·표 구조 변경은 미지원, 미적용 항목은 결과에 보고)",
     {
       file_path: z.string().min(1).describe("원본 문서의 절대 경로 (HWPX 또는 HWP 5.x)"),
-      edited_markdown: z.string().min(1).describe("parse_document 출력 마크다운을 편집한 전체 마크다운. 바뀐 문단/셀 텍스트만 반영하고 블록 수·순서는 원본과 같게 유지하세요"),
+      edited_markdown: z.string().min(1).describe("parse_document(keep_layout_tables: true) 출력 마크다운을 편집한 전체 마크다운. 바뀐 문단/셀 텍스트만 반영하고 블록 수·순서는 원본과 같게 유지하세요"),
       output_path: z.string().min(1).describe("출력 파일 저장 절대 경로 (원본과 같은 확장자: .hwpx 또는 .hwp)"),
     },
     async ({ file_path, edited_markdown, output_path }) => {

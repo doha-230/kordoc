@@ -28,7 +28,9 @@ import { measureTextWidth, faceClassOf, type WrapMode } from "../hwpx/text-metri
 import { parseRenderStyles, DEFAULT_CHAR, type RenderStyles, type RenderBorderEdge, type RenderParaGeom } from "./head-styles.js"
 import { reflowSection } from "./reflow.js"
 import { RegionCollector, type PageBBox, type RenderRegion, type RenderScene } from "./scene.js"
-import { ln, elements, num, findFirst, type Seg, type ParaChar, OBJ_TAGS, type ParaObj, type ParaModel, buildPara, tabAdvance, type ExtentMemo, cellContentExtent, collectCells, measureTableHeight } from "./para-model.js"
+import { ln, elements, num, findFirst, type Seg, type ParaChar, OBJ_TAGS, type ParaObj, type ParaModel, buildPara, prepareDeletedRanges, tabAdvance, type ExtentMemo, cellContentExtent, collectCells, measureTableHeight } from "./para-model.js"
+import { pageStories } from "./page-stories.js"
+import { shapeGeometry, rotatedBounds, SHAPE_TAGS, type RegionRotation } from "./shape-geometry.js"
 export { buildPara, measureTableHeight, tabAdvance, type Seg, type ParaChar, type ParaModel, type ExtentMemo } from "./para-model.js"
 
 export interface RenderSvgOptions {
@@ -100,7 +102,11 @@ interface Ctx {
   pageBase: number
   /** 이 구역 페이지의 실높이(HWPUNIT) — 단일 페이지 캔버스 연장 포함. region 하단 클램프용 */
   pageH: number
+  paintJobs: PaintJob[] | null
+  /** Same ancestor rotations as the SVG groups containing this object's paint. */
+  regionRotations: RegionRotation[]
 }
+interface PaintJob { page: number; layer: number; z: number; draw: () => void }
 
 const pt = (u: number): string => String(Math.round(u) / 100)
 /** HWPUNIT → pt (소수 둘째 자리) */
@@ -111,8 +117,9 @@ function pageNo(ctx: Ctx): number { return ctx.pageBase + ctx.page + 1 }
 
 /** HWPUNIT 사각형 → 페이지 로컬 pt bbox. 페이지 하단을 넘는 높이는 잘라 기록(분할 지오메트리 없음) */
 function bboxOf(ctx: Ctx, x: number, y: number, w: number, h: number): PageBBox {
-  const clippedH = Math.max(0, Math.min(h, ctx.pageH - y))
-  return { page: pageNo(ctx), x: ptNum(x), y: ptNum(y), width: ptNum(Math.max(0, w)), height: ptNum(clippedH) }
+  const b = rotatedBounds({ x, y, w, h }, ctx.regionRotations)
+  const clippedH = Math.max(0, Math.min(b.h, ctx.pageH - b.y))
+  return { page: pageNo(ctx), x: ptNum(b.x), y: ptNum(b.y), width: ptNum(Math.max(0, b.w)), height: ptNum(clippedH) }
 }
 
 function regionOpenTag(id: string, type: string, page: number): string {
@@ -240,7 +247,10 @@ function drawPara(p: Element, ox: number, oy: number, areaW: number, ctx: Ctx, d
     if (m.chars.some(c => c.ch !== "")) {
       warnOnce(ctx, "no-lineseg", "조판 캐시 없는 문단 텍스트 생략 — reflow 옵션으로 합성 가능")
     }
-    for (const o of m.objs) drawObject(o, ox, oy, 0, areaW, ctx, depth)
+    for (const o of m.objs) {
+      const { x, y } = o.inline ? { x: ox, y: oy } : anchorObject(o, ox, oy, 0, areaW, ctx)
+      drawObject(o, x, y, 0, areaW, ctx, depth)
+    }
     return
   }
   const plans = planLines(m, ctx.styles)
@@ -434,6 +444,19 @@ function anchorObject(o: ParaObj, ox: number, oy: number, baseV: number, areaW: 
 }
 
 function drawObject(o: ParaObj, x: number, y: number, baseV: number, areaW: number, ctx: Ctx, depth: number): void {
+  if (!o.inline && depth === 0 && ctx.paintJobs) {
+    const wrap = o.el.getAttribute("textWrap")
+    const layer = wrap === "BEHIND_TEXT" ? -1 : wrap === "IN_FRONT_OF_TEXT" ? 1 : 0
+    const page = ctx.page, parents = [...ctx.parentStack]
+    ctx.paintJobs.push({ page, layer, z: num(o.el, "zOrder"), draw: () => {
+      ctx.page = page
+      const saved = ctx.parentStack
+      ctx.parentStack = parents
+      drawObject(o, x, y, baseV, areaW, ctx, depth)
+      ctx.parentStack = saved
+    } })
+    return
+  }
   if (o.tag === "tbl") drawTable(o.el, x, y, ctx, depth + 1)
   else if (o.tag === "pic") drawPic(o.el, x, y, ctx)
   else if (o.tag === "container") {
@@ -455,70 +478,24 @@ function drawObject(o: ParaObj, x: number, y: number, baseV: number, areaW: numb
   }
 }
 
-// ─── 그리기 도형 (rect/ellipse/line/polygon/curv/arc) ────────────────
-// geometry 좌표는 개체 로컬(orgSz 기준). 실제 크기 = curSz(있으면)로 스케일.
-// lineShape=선(color/width/style), fillBrush>winBrush=채움(faceColor). 회전은 근사 생략.
-
-const SHAPE_TAGS = new Set(["rect", "ellipse", "line", "polygon", "curv", "arc"])
-
-/** lineShape width(1/100 mm) → pt */
-function shapeStrokePt(v: number): number {
-  return Math.max(0.2, (v / 100) * 2.834645)
-}
-
+// ─── 그리기 도형 ───────────────────────────────────
 function drawShape(o: ParaObj, x: number, y: number, ctx: Ctx, depth: number): void {
-  const el = o.el
-  const orgSz = findChildByLocalName(el, "orgSz")
-  const curSz = findChildByLocalName(el, "curSz")
-  const ow = num(orgSz, "width"), oh = num(orgSz, "height")
-  const w = num(curSz, "width") || ow || o.width
-  const h = num(curSz, "height") || oh || o.height
-  const sx = ow > 0 ? w / ow : 1
-  const sy = oh > 0 ? h / oh : 1
-
-  const lineShape = findChildByLocalName(el, "lineShape")
-  const lstyle = lineShape?.getAttribute("style") ?? "SOLID"
-  const strokeCol = lineShape?.getAttribute("color") || "#000000"
-  const hasStroke = lstyle !== "NONE"
-  const strokeW = hasStroke ? shapeStrokePt(lineShape ? num(lineShape, "width") : 33) : 0
-  const dash = /DASH|DOT/.test(lstyle) ? ` stroke-dasharray="${lstyle.includes("DOT") ? "1,1.5" : "3,1.5"}"` : ""
-  const strokeAttr = hasStroke ? ` stroke="${escapeXml(strokeCol)}" stroke-width="${strokeW.toFixed(2)}"${dash}` : ""
-
-  const fillBrush = findChildByLocalName(el, "fillBrush")
-  const winBrush = fillBrush ? findChildByLocalName(fillBrush, "winBrush") : null
-  const face = winBrush?.getAttribute("faceColor")
-  const fill = face && face.toLowerCase() !== "none" ? face : "none"
-  const fillAttr = ` fill="${fill === "none" ? "none" : escapeXml(fill)}"`
-
+  const geometry = shapeGeometry(o, x, y, ctx.defs, ctx.images, (key, msg) => warnOnce(ctx, key, msg))
+  // Transform original corners through every ancestor and this shape's rotation
+  // before bounding once. An intermediate axis-aligned box inflates nested crops.
+  const b = geometry
+  if (geometry.rotation) ctx.regionRotations.push(geometry.rotation)
   ctx.stats.shapes++
-  const shapeId = ctx.regions.add("shape", bboxOf(ctx, x, y, w, h), { parentId: parentId(ctx) })
+  const shapeId = ctx.regions.add("shape", bboxOf(ctx, b.x, b.y, b.w, b.h), { parentId: parentId(ctx) })
   emit(ctx, regionOpenTag(shapeId, "shape", pageNo(ctx)))
   ctx.parentStack.push(shapeId)
-
-  if (o.tag === "rect") {
-    emit(ctx, `<rect x="${pt(x)}" y="${pt(y)}" width="${pt(w)}" height="${pt(h)}"${fillAttr}${strokeAttr}/>`)
-  } else if (o.tag === "ellipse") {
-    emit(ctx, `<ellipse cx="${pt(x + w / 2)}" cy="${pt(y + h / 2)}" rx="${pt(w / 2)}" ry="${pt(h / 2)}"${fillAttr}${strokeAttr}/>`)
-  } else if (o.tag === "line") {
-    const s = findChildByLocalName(el, "startPt"), e = findChildByLocalName(el, "endPt")
-    const x1 = x + num(s, "x") * sx, y1 = y + num(s, "y") * sy
-    const x2 = x + num(e, "x") * sx, y2 = y + num(e, "y") * sy
-    emit(ctx, `<line x1="${pt(x1)}" y1="${pt(y1)}" x2="${pt(x2)}" y2="${pt(y2)}" stroke="${escapeXml(strokeCol)}" stroke-width="${(strokeW || 0.3).toFixed(2)}"${dash}/>`)
-  } else if (o.tag === "polygon" || o.tag === "curv") {
-    const pts: string[] = []
-    for (const c of elements(el)) if (ln(c) === "pt") pts.push(`${pt(x + num(c, "x") * sx)},${pt(y + num(c, "y") * sy)}`)
-    if (pts.length >= 2) emit(ctx, `<polygon points="${pts.join(" ")}"${fillAttr}${strokeAttr}/>`)
-  } else if (o.tag === "arc") {
-    // 호는 외접 박스 타원으로 근사 (start/sweep 각 미해석)
-    emit(ctx, `<ellipse cx="${pt(x + w / 2)}" cy="${pt(y + h / 2)}" rx="${pt(w / 2)}" ry="${pt(h / 2)}" fill="none"${strokeAttr || ` stroke="${escapeXml(strokeCol)}" stroke-width="0.3"`}/>`)
-  }
-
-  // 도형 안 텍스트(drawText>subList) — 조판 캐시 있으면 그린다
-  const dt = findChildByLocalName(el, "drawText")
+  if (geometry.transform) emit(ctx, `<g transform="${geometry.transform}">`)
+  emit(ctx, geometry.svg)
+  const dt = findChildByLocalName(o.el, "drawText")
   const sub = dt ? findChildByLocalName(dt, "subList") : null
-  if (sub) {
-    for (const p of elements(sub)) if (ln(p) === "p") drawPara(p, x, y, w, ctx, depth + 1)
-  }
+  if (sub) for (const p of elements(sub)) if (ln(p) === "p") drawPara(p, x, y, geometry.w, ctx, depth + 1)
+  if (geometry.rotation) ctx.regionRotations.pop()
+  if (geometry.transform) emit(ctx, "</g>")
   ctx.parentStack.pop()
   emit(ctx, "</g>")
 }
@@ -694,14 +671,17 @@ interface RenderedSection { pages: string[][]; PW: number; pageH: number; clipId
 function renderSectionToPages(
   root: Element,
   geom: PageGeom,
-  ctxBase: Omit<Ctx, "pages" | "page" | "geom" | "pageH">,
+  ctxBase: Omit<Ctx, "pages" | "page" | "geom" | "pageH" | "paintJobs" | "regionRotations">,
   doReflow: boolean,
   reflowMode: WrapMode,
+  masters: Element[] = [],
+  hasDeletionMarkers = true,
 ): { pages: string[][]; pageH: number } {
   const { PW, PH, ML, MT, BODY_W, BODY_H } = geom
   // Tier-2 reflow — 캐시 없는 문단에 linesegarray 합성 주입. 혼합 캐시 문서(한컴
   // 저장본을 프로그램 편집해 일부 문단만 캐시 없음)도 reflow 옵션이면 진입한다 —
   // 전량 캐시 문서는 전 문단 skip(Tier-1 무회귀)이라 no-op.
+  if (hasDeletionMarkers) prepareDeletedRanges(root)
   if (doReflow) reflowSection(root, ctxBase.styles, { BODY_W, BODY_H }, reflowMode)
 
   // 페이지 분할 프리패스 — 최상위 lineseg vertpos는 페이지 로컬(페이지마다 0부터)이라
@@ -753,11 +733,34 @@ function renderSectionToPages(
     page: 0,
     geom,
     pageH,
+    paintJobs: [],
+    regionRotations: [],
   }
+  for (const story of pageStories(root, masters, paraSegPages, nPages, ctx.pageBase, geom)) {
+    prepareDeletedRanges(story.sub)
+    if (doReflow) reflowSection(story.sub, ctx.styles, { BODY_W: story.width, BODY_H: 0 }, reflowMode)
+    const draw = (): void => {
+      ctx.page = story.page
+      for (const p of elements(story.sub)) if (ln(p) === "p") drawPara(p, story.x, story.y, story.width, ctx, 0)
+    }
+    if (story.layer !== undefined) ctx.paintJobs!.push({ page: story.page, layer: story.layer, z: 0, draw })
+    else draw()
+  }
+  ctx.page = 0
   for (const p of elements(root)) {
     if (ln(p) !== "p") continue
     drawPara(p, ML, MT, BODY_W, ctx, 0, paraSegPages.get(p))
   }
+  const normal = ctx.pages
+  const jobs = ctx.paintJobs!
+  ctx.paintJobs = null
+  const behind = Array.from({ length: nPages }, () => [] as string[])
+  const front = Array.from({ length: nPages }, () => [] as string[])
+  for (const job of jobs.sort((a, b) => a.layer - b.layer || a.z - b.z)) {
+    ctx.pages = job.layer < 0 ? behind : front
+    job.draw()
+  }
+  ctx.pages = normal.map((buf, page) => [...behind[page], ...buf, ...front[page]])
   return { pages: ctx.pages, pageH }
 }
 
@@ -774,7 +777,13 @@ export interface InternalRender {
 export type RenderImages = Ctx["images"]
 
 /** 렌더할 구역 DOM — HWPX section*.xml 또는 HWP5 어댑터가 합성한 동형 DOM (hwp5-scene) */
-export interface SectionRoot { root: Element; index: number }
+export interface SectionRoot {
+  root: Element
+  index: number
+  masterPages?: Element[]
+  /** False only when the source XML proved no deletion markers; custom DOMs default to scanning. */
+  hasDeletionMarkers?: boolean
+}
 
 export interface SectionRenderInput {
   styles: RenderStyles
@@ -791,7 +800,7 @@ export interface SectionRenderInput {
  * 전 구역에 누적된다 — 이미지 심볼 dataURI 중복 방지·전역 페이지 번호·결정적 region id.
  */
 export function renderSectionRoots(sections: SectionRoot[], input: SectionRenderInput): InternalRender {
-  const ctxBase: Omit<Ctx, "pages" | "page" | "geom" | "pageH"> = {
+  const ctxBase: Omit<Ctx, "pages" | "page" | "geom" | "pageH" | "paintJobs" | "regionRotations"> = {
     styles: input.styles, images: input.images, defs: [],
     highlights: (input.highlights ?? []).map(s => s.trim().toLowerCase()).filter(s => s.length > 0),
     warnings: input.warnings, warned: new Set(), stats: { texts: 0, images: 0, tables: 0, shapes: 0 },
@@ -799,9 +808,9 @@ export function renderSectionRoots(sections: SectionRoot[], input: SectionRender
     regions: new RegionCollector(), parentStack: [], pageBase: 0,
   }
   const rendered: RenderedSection[] = []
-  for (const { root, index } of sections) {
+  for (const { root, index, masterPages, hasDeletionMarkers } of sections) {
     const geom = readSectionGeom(root)
-    const { pages, pageH } = renderSectionToPages(root, geom, ctxBase, input.reflow, input.reflowMode)
+    const { pages, pageH } = renderSectionToPages(root, geom, ctxBase, input.reflow, input.reflowMode, masterPages, hasDeletionMarkers)
     rendered.push({ pages, PW: geom.PW, pageH, clipId: `pgclip${index}` })
     ctxBase.pageBase += pages.length
   }
@@ -849,6 +858,18 @@ async function renderHwpxInternal(input: ArrayBuffer | Uint8Array, options?: Ren
     secXmls.push(xml)
   }
 
+  const masterPages = new Map<string, Element>()
+  const masterXmls: string[] = []
+  for (const file of zip.file(/Contents\/masterpage[^/]*\.xml$/i)) {
+    const xml = await file.async("string")
+    if (xml.length > MAX_DECOMPRESS_SIZE) throw new KordocError("바탕쪽 XML이 허용 크기를 초과")
+    const root = createXmlParser().parseFromString(xml, "text/xml").documentElement as unknown as Element
+    if (root && ln(root) === "masterPage") {
+      masterPages.set(root.getAttribute("id") || file.name.replace(/^.*\/|\.xml$/g, ""), root)
+      masterXmls.push(xml)
+    }
+  }
+
   // BinData 매니페스트 (id → href) — content.hpf 우선, 파일명 휴리스틱 폴백
   const binmap = new Map<string, string>()
   const hpf = zip.file(/content\.hpf$/i)[0]
@@ -864,7 +885,7 @@ async function renderHwpxInternal(input: ArrayBuffer | Uint8Array, options?: Ren
   const MAX_TOTAL_IMAGE_BYTES = 128 * 1024 * 1024
   const images: Ctx["images"] = new Map()
   const refs = new Set<string>()
-  for (const xml of secXmls) for (const m of xml.matchAll(/binaryItemIDRef="([^"]+)"/g)) refs.add(m[1])
+  for (const xml of [...secXmls, ...masterXmls]) for (const m of xml.matchAll(/binaryItemIDRef="([^"]+)"/g)) refs.add(m[1])
   let totalImgBytes = 0
   for (const ref of refs) {
     if (images.size >= MAX_IMAGE_REFS) {
@@ -908,7 +929,9 @@ async function renderHwpxInternal(input: ArrayBuffer | Uint8Array, options?: Ren
     const doc = createXmlParser().parseFromString(secXml, "text/xml")
     const root = doc.documentElement as unknown as Element
     if (!root) { warnings.push(`구역 ${si} XML 파싱 실패 — 생략`); continue }
-    roots.push({ root, index: si })
+    const secPr = findFirst(root, "secPr")
+    const referenced = secPr ? elements(secPr).filter(el => ln(el) === "masterPage").map(el => masterPages.get(el.getAttribute("idRef") || "")).filter((el): el is Element => !!el) : []
+    roots.push({ root, index: si, masterPages: referenced, hasDeletionMarkers: secXml.includes("deleteBegin") || secXml.includes("deleteEnd") })
   }
 
   if (roots.length === 0) {

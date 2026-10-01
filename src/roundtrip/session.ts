@@ -93,7 +93,7 @@ async function buildState(bytes: Uint8Array): Promise<SessionState> {
   // 확장자와 속이 다른 문서(.hwpx 이름의 HWP 5.x 등)는 "손상된 HWPX" 로 오보하지 말고 포맷을 밝힌다 (patchHwpx 0단계 참조)
   const format = detectFormat(new Uint8Array(bytes.subarray(0, 512)).buffer)
   if (format !== "hwpx") throw new Error(`HWPX 세션은 HWPX 문서만 엽니다 (감지된 포맷: ${format}) — HWP 5.x 는 patchHwp 로 패치하세요`)
-  const parsed = await parseHwpxDocument(u8ToArrayBuffer(bytes))
+  const parsed = await parseHwpxDocument(u8ToArrayBuffer(bytes), { layoutTables: "keep" })
   const zip = await JSZip.loadAsync(bytes)
   const sectionPaths = await resolveSectionEntryNames(zip)
   if (sectionPaths.length === 0) {

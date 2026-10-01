@@ -17,7 +17,7 @@ import { stripChapterNumber } from "./gaejosik.js"
 
 export type OutlineNode =
   | { kind: "title"; text: string }
-  | { kind: "chapter"; text: string; index: number }
+  | { kind: "chapter"; text: string; index: number; /** 작성자가 쓴 장 번호("Ⅰ"·"1"·"가") — 서울 방침서 장 상자 번호칸 */ label?: string }
   | { kind: "item"; depth: number; text: string; /** 명시 법정 부호(개조식 문서 안 소제목) */ legalMarker?: string; /** 헤딩(h3+)에서 온 항목 — 사이 문단이 번호를 끊지 않는다 */ fromHeading?: boolean; /** 보존할 선두 부호(❶➊⇒↳ — 업무보고 9대 과제·결론 줄) */ marker?: string }
   /** h3~h6 헤딩을 항목이 아니라 서식 틀(절 띠·소제목 박스·항목 띠)로 남긴 것 — headingFrames 옵션 */
   | { kind: "heading"; level: number; text: string }
@@ -40,15 +40,20 @@ const LEGAL_RE = /^(\d{1,2}\.|[가-힣]\.|\d{1,2}\)|[가-힣]\)|\(\d{1,2}\)|\([�
  * 부호를 그대로 남기는 선두 글리프 — 중앙부처 업무보고 실측: 9대 과제 ❶~❿(U+2776~)·➊~➓(U+278A~) 0단계,
  * ⇒ 결론 0단계, ↳ 부연 1단계. 스킴 marker 로 바꾸지 않고 depth 만 강제한다(keepMarkers 옵션).
  */
-const KEEP_MARKERS: Record<string, number> = { "⇒": 0, "↳": 1, "☞": 0 }
-const KEEP_RE = /^([❶-❿➊-➓⇒↳☞])\s*/u
+const KEEP_MARKERS: Record<string, number> = { "⇒": 0, "↳": 1, "☞": 0, "▸": 3 }
+/** ▸ — 서울 방침서 4단계(- 아래 사례·수치 나열, 한컴돋움 13) */
+const KEEP_RE = /^([❶-❿➊-➓⇒↳☞▸])\s*/u
 const BOX_RE = /^([□■❑❏ㅁ○ㅇ◦●❍◎\-–―—ㅡ‣▪▫ㆍ·•∙])\s+/u
+/** 부호에 여는 부호가 바로 붙은 항목("ㅇ『2024 …』에 따르면", "ㅇ「법」") — 자모 ㅇ 뒤에 낫표·괄호·따옴표가 오면 낱말일 수 없다 */
+const BOX_TIGHT_RE = /^([□■ㅇ○])(?=[「『‘“(（[【])/u
 /** ※·＊ 선두, 또는 '* ' (별표 뒤 공백). `**굵게**:` 로 시작하는 항목의 `**` 는 참고 부호가 아니다 */
 const REF_RE = /^(※|＊|\*(?=\s))\s*/u
 const BUNIM_RE = /^붙\s*임(?:\s|:|$)/
 /** 출처·자료·근거 표기 항목 — 본문 항목이 아니라 ※ 참고(작은 글씨)로 */
 const SOURCE_RE = /^(출처|자료|근거|참고)\s*[:：]/
 /** 법령 인용 뒤 붙는 법제처 MST·ID 코드 "(282791)" — 공문에 쓰지 않는 내부 식별자라 벗긴다 */
+/** 장 제목 선두 번호 "Ⅰ. " "1. " "가. " — 서울 방침서 장 상자 번호는 작성자마다 다르다(상자 있는 15건: 로마 숫자 8·아라비아 숫자 6·가나다 1) */
+export const CHAPTER_LABEL_RE = /^([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ]+|\d{1,2}|[가-하])[.)]\s+/u
 const LAW_CODE_RE = /((?:법률|기본법|특별법|법|령|규칙|조례|규정|고시|훈령|예규|지침)[」』]?)\s*\((\d{5,8})\)/gu
 
 /**
@@ -80,18 +85,42 @@ export function legalMarkerDepth(marker: string): number {
 
 /** 선두 명시 부호 해석 — {kind, depth, marker, rest}. keep = ❶⇒↳ 등 글리프 보존 부호(keepMarkers 옵션일 때만) */
 export function parseLeadingMarker(text: string, keepMarkers = false): { kind: "box" | "legal" | "ref" | "keep" | null; depth: number; marker: string; rest: string } {
+  // 굵게가 부호를 감싼 줄("**ㅇ 전문가 자문회의** (4회)") — 부호를 굵게 밖으로 꺼낸다(항목 굵기는 스킴이 정한다)
   const t = text.replace(/^[\s　]+/, "")
+    .replace(/^(\*\*|__)([□■ㅇ○◦●❍◎▸※-])\1(?=\s|$)/u, "$2")
+    .replace(/^(\*\*|__)([□■ㅇ○◦●❍◎▸※-])\s*(?=\S)/u, "$2 $1")
   const ref = REF_RE.exec(t)
   if (ref) return { kind: "ref", depth: 0, marker: ref[1], rest: t.slice(ref[0].length).trim() }
   if (keepMarkers) {
     const keep = KEEP_RE.exec(t)
     if (keep) return { kind: "keep", depth: KEEP_MARKERS[keep[1]] ?? 0, marker: keep[1], rest: t.slice(keep[0].length).trim() }
   }
-  const box = BOX_RE.exec(t)
+  const box = BOX_RE.exec(t) ?? BOX_TIGHT_RE.exec(t)
   if (box) return { kind: "box", depth: BOX_MARKERS[box[1]] ?? 3, marker: box[1], rest: t.slice(box[0].length).trim() }
   const legal = LEGAL_RE.exec(t)
   if (legal) return { kind: "legal", depth: legalMarkerDepth(legal[1]), marker: legal[1], rest: t.slice(legal[0].length).trim() }
   return { kind: null, depth: 0, marker: "", rest: t }
+}
+
+/** 숫자 부호 갈래 — "3." → "1.", "2)" → "1)", "②" → "①", "나." → "가.", "(나)" → "(가)" */
+function numberClass(marker: string): string {
+  return marker.replace(/\d{1,2}/, "1").replace(/[가-힣]/, "가").replace(/[①-⑳]/u, "①").replace(/[㉮-㉻]/u, "㉮")
+}
+
+/**
+ * 숫자 위계 원고(서울 방침서 16건 중 1: "1." → "1)" → "①" → "-") — □·ㅇ 부호가 없고 숫자 부호 갈래가 둘 이상이면
+ * 갈래가 처음 나온 순서를 단계로 삼는다(1.→0 1)→1 ①→2). 한 갈래뿐인 번호 목록은 위계가 아니라 목록이라 null.
+ */
+function numberRanks(blocks: MdBlock[]): Map<string, number> | null {
+  const order: string[] = []
+  for (const b of blocks) {
+    if (b.type !== "list_item" && b.type !== "paragraph") continue
+    const lm = parseLeadingMarker((b.text ?? "").trim())
+    if (lm.kind === "box" && lm.depth <= 1) return null
+    const m = b.type === "list_item" && b.ordered ? b.marker : lm.kind === "legal" ? lm.marker : null
+    if (m && !order.includes(numberClass(m))) order.push(numberClass(m))
+  }
+  return order.length >= 2 ? new Map(order.map((c, i) => [c, i])) : null
 }
 
 export interface OutlineOptions {
@@ -107,6 +136,11 @@ export interface OutlineOptions {
   headingFrames?: boolean
   /** ❶➊⇒↳ 선두 글리프를 보존한 항목으로 (업무보고형) */
   keepMarkers?: boolean
+  /** 부호 없는 마크다운 리스트를 직전 명시 부호 항목의 한 단계 아래로 ("ㅇ …" 뒤 "- …" → -) — 서울 방침서.
+   *  업무보고(headingFrames)는 이 동작을 늘 켠다 */
+  listUnderMarker?: boolean
+  /** 숫자 위계 원고(numberRanks)면 숫자 부호를 보존한 항목으로 — 서울 방침서 */
+  numbered?: boolean
 }
 
 export interface Outline {
@@ -114,6 +148,8 @@ export interface Outline {
   nodes: OutlineNode[]
   /** 본문에 □/ㅇ 명시 부호가 있었는지 — 기안문 개조식형 자동감지 */
   hasBoxMarkers: boolean
+  /** 숫자 위계 원고(1. → 1) → ①) — numbered 옵션일 때만 */
+  numbered: boolean
   /** 장(h2) 수 */
   chapters: number
 }
@@ -140,6 +176,7 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
     if (explicit) { lastExplicitDepth = depth; listBase = -1 }
   }
   const keep = !!opts.keepMarkers
+  const ranks = opts.numbered ? numberRanks(blocks) : null
 
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]
@@ -149,7 +186,8 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
         const raw = stripLawCodes((b.text ?? "").trim())
         if (lvl === 1 && title === null && opts.consumeTitle) { title = stripChapterNumber(raw) || raw; break }
         if (lvl <= 2) {
-          nodes.push({ kind: "chapter", text: stripChapterNumber(raw) || raw, index: ++chapters })
+          const label = CHAPTER_LABEL_RE.exec(raw)?.[1]
+          nodes.push({ kind: "chapter", text: stripChapterNumber(raw) || raw, index: ++chapters, ...(label ? { label } : {}) })
           lastExplicitDepth = -1; listBase = -1
           // 법정 스킴: h2가 1단계(1.)를 차지하므로 아래 리스트는 가.부터 (개조식은 장이 별도 층)
           headingDepth = opts.gaejosik ? -1 : 0; lastItemDepth = opts.gaejosik ? -1 : 0; seenBody = true
@@ -175,11 +213,12 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
         if (SOURCE_RE.test(lm.kind === "box" || lm.kind === "legal" ? lm.rest : text)) { nodes.push({ kind: "ref", depth: lastItemDepth + 1, text: lm.kind ? lm.rest : text }); break }
         if (b.marker === "*" && !/^\*/.test(text) && opts.gaejosik) { nodes.push({ kind: "ref", depth: lastItemDepth + 1, text }); break }
         if (lm.kind === "ref") { nodes.push({ kind: "ref", depth: lastItemDepth + 1, text: lm.rest }); break }
+        if (ranks && b.ordered && b.marker) { pushItem(Math.min(ranks.get(numberClass(b.marker)) ?? 0, 7), text, undefined, false, b.marker); break }
         if (lm.kind === "box") { hasBoxMarkers = true; pushItem(lm.depth, lm.rest); break }
         if (lm.kind === "keep") { pushItem(lm.depth, lm.rest, undefined, false, lm.marker); break }
         if (lm.kind === "legal" && opts.gaejosik) { pushItem(Math.max(lastItemDepth, 0), lm.rest, lm.marker); break }
         let base = headingDepth >= 0 ? headingDepth + 1 : 0
-        if (opts.headingFrames) {
+        if (opts.headingFrames || opts.listUnderMarker) {
           if (listBase < 0) listBase = lastExplicitDepth + 1
           base = listBase
         }
@@ -187,7 +226,8 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
         break
       }
       case "paragraph": {
-        const text = stripLawCodes((b.text ?? "").trim())
+        // 줄 전체를 굵게로 감싼 붙임("**붙임 운영기준 1부.  끝.**") — 붙임 서식이 굵기를 정한다
+        const text = stripLawCodes((b.text ?? "").trim()).replace(/^\*\*(붙\s*임[^*]*)\*\*$/, "$1")
         if (!text) break
         if (BUNIM_RE.test(text) || (nodes.length && nodes[nodes.length - 1].kind === "attach" && /^\s/.test(b.text ?? ""))) {
           nodes.push({ kind: "attach", text: b.text ?? "" }); break
@@ -202,7 +242,8 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
         if (lm.kind === "box") { hasBoxMarkers = true; pushItem(lm.depth, lm.rest); break }
         if (lm.kind === "keep") { pushItem(lm.depth, lm.rest, undefined, false, lm.marker); break }
         if (lm.kind === "legal") {
-          if (opts.gaejosik) pushItem(Math.max(lastItemDepth, 0), lm.rest, lm.marker)
+          if (ranks) pushItem(Math.min(ranks.get(numberClass(lm.marker)) ?? 0, 7), lm.rest, undefined, false, lm.marker)
+          else if (opts.gaejosik) pushItem(Math.max(lastItemDepth, 0), lm.rest, lm.marker)
           else pushItem(lm.depth, lm.rest)
           break
         }
@@ -224,5 +265,5 @@ export function buildOutline(blocks: MdBlock[], opts: OutlineOptions): Outline {
         seenBody = true
     }
   }
-  return { title, nodes, hasBoxMarkers, chapters }
+  return { title, nodes, hasBoxMarkers, numbered: !!ranks, chapters }
 }

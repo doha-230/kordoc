@@ -11,7 +11,8 @@
 //   글    : 참조 문단·셀·글상자 글을 markdown 평문에 정렬(align.mjs) — 재현율(빠진 글), 가짜 글 비율(참조에 없는 본문 문자),
 //           읽기 순서(고유 본문 유닛 위치의 최장 증가 부분열 비율)
 //   표    : markdown 의 파이프 표·HTML 표(colspan·rowspan·중첩)를 같은 파서로 격자화해 score.mjs 와 같은 scoreTables 로 대조 —
-//           표 완전 일치(칸 짜임)·칸 F1. 1열 표(1×1 포함)는 양쪽 모두 뺀다(꾸밈 틀 — 문단/표는 표현 선택, --include-single-col 로 포함)
+//           표 완전 일치(칸 짜임)·칸 F1. 1열 표(1×1 포함)는 양쪽 모두 뺀다(꾸밈 틀 — 문단/표는 표현 선택, --include-single-col 로 포함).
+//           정답 표는 보이는 표(v4.17.0 채점 기준 변경, ref/visible-tables.mjs) — 선이 안 보이는 틀 표는 글, 칸 분수는 수식이라 글 모수 밖
 // 출력: bench/out/compare-<name>.json + 콘솔 요약
 
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises"
@@ -20,7 +21,8 @@ import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { parse } from "../dist/index.js"
 import { extractRef } from "./ref/hwpx-ref.mjs"
-import { normKey, mdToPlain, unescapeMd } from "./lib/normalize.mjs"
+import { normKey, mdToPlain } from "./lib/normalize.mjs"
+import { mdTables } from "./lib/md-tables.mjs"
 import { alignUnits, lisLength } from "./lib/align.mjs"
 import { collectIrGrids, scoreTables } from "./lib/table-score.mjs"
 
@@ -44,114 +46,6 @@ async function* walk(dir) {
     if (e.isDirectory()) yield* walk(p)
     else if (/\.(hwpx|hwp)$/i.test(e.name)) yield p
   }
-}
-
-// ─── markdown 표 → IR 표 (두 파서 공용) ─────────────────
-
-// 칸 글 정규화는 본문 채점(mdToPlain)과 같은 규칙이다. 참조 칸 글은 이미지·수식을 빼고 링크는 보이는 글만이라
-// 이미지 참조·수식 스팬·링크 문법을 걷고, 태그는 영문자로 시작하는 진짜 태그만 지운다(칸 글 "<비온 후 1일차>" 보존).
-// 종전엔 \| 만 풀고 "<…>" 를 모두 지워 마스킹 별표 칸 "\*\*\*"·꺾쇠 캡션 칸이 참조와 교집합 0 → 같은 표를 못 짝지었다
-const HTML_ENTITY = { lt: "<", gt: ">", quot: "\"", "#39": "'", amp: "&" }
-const stripArtifacts = s => s.replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/<img\b[^>]*>/gi, " ")
-  .replace(/\$\$[^$]+\$\$/g, " ").replace(/(^|[^\\$])\$(?!\s)((?:\\.|[^$\n\\])+?)\$/g, "$1 ")
-  .replace(/\[([^\[\]]*)\]\((?:https?:|mailto:|tel:|#)[^)\s]*\)/gi, "$1")
-// HTML 칸: 원시 HTML 이라 백슬래시 이스케이프는 글이고(CommonMark §4.6) 글은 엔티티로 나온다
-const htmlCellText = s => stripArtifacts(s).replace(/<br\s*\/?>/gi, "\n").replace(/<\/?[A-Za-z][^>]*>/g, "")
-  .replace(/&(lt|gt|quot|#39|amp);/g, (_m, e) => HTML_ENTITY[e]).trim()
-// 파이프 칸: 이스케이프되지 않은 강조 부호(* ~~)를 걷고 이스케이프를 푼다
-const pipeCellText = s => unescapeMd(stripArtifacts(s).replace(/(?<!\\)<br\s*\/?>/gi, "\n").replace(/(?<!\\)<\/?[A-Za-z][^>]*>/g, "")
-  .replace(/\\\*/g, "\x02").replace(/\*/g, "").replace(/\x02/g, "\\*")
-  .replace(/\\~/g, "\x02").replace(/~~/g, "").replace(/\x02/g, "\\~")).trim()
-
-/** HTML 표 한 개(중첩 포함) → IR 표. 칸 안의 중첩 표는 칸 blocks 로 */
-function htmlTable(html) {
-  const re = /<(\/?)(table|tr|td|th)\b([^>]*)>/gi
-  const stack = [] // { rows: [[{ text, colSpan, rowSpan, blocks }]], cell: {start, attrs} | null, innerTables: [] }
-  let top = null
-  let m
-  while ((m = re.exec(html)) !== null) {
-    const close = m[1] === "/", tag = m[2].toLowerCase(), attrs = m[3]
-    const cur = stack[stack.length - 1]
-    if (tag === "table") {
-      if (!close) stack.push({ rows: [], cell: null, start: m.index })
-      else {
-        const done = stack.pop()
-        const table = toIr(done.rows)
-        if (stack.length === 0) { top = table; break }
-        const parent = stack[stack.length - 1]
-        if (parent.cell) parent.cell.blocks.push({ type: "table", table })
-      }
-    } else if (!cur) continue
-    else if (tag === "tr" && !close) cur.rows.push([])
-    else if ((tag === "td" || tag === "th") && !close) {
-      const span = k => Math.max(1, parseInt((new RegExp(`${k}\\s*=\\s*["']?(\\d+)`, "i").exec(attrs) ?? [])[1] ?? "1", 10))
-      cur.cell = { from: re.lastIndex, colSpan: span("colspan"), rowSpan: span("rowspan"), blocks: [] }
-      if (!cur.rows.length) cur.rows.push([])
-    } else if ((tag === "td" || tag === "th") && close && cur.cell) {
-      // 칸 글 = 칸 원문에서 중첩 표를 뺀 글
-      const raw = html.slice(cur.cell.from, m.index).replace(/<table\b[\s\S]*<\/table>/gi, " ")
-      cur.rows[cur.rows.length - 1].push({ text: htmlCellText(raw), colSpan: cur.cell.colSpan, rowSpan: cur.cell.rowSpan, blocks: cur.cell.blocks })
-      cur.cell = null
-    }
-  }
-  return top
-}
-
-/** 행마다 (colSpan·rowSpan 을 가진) 칸 목록 → 가려진 자리를 채운 격자 IR 표 */
-function toIr(rows) {
-  const grid = []
-  let cols = 0
-  rows.forEach((row, r) => {
-    grid[r] = grid[r] ?? []
-    let c = 0
-    for (const cell of row) {
-      while (grid[r][c]) c++
-      for (let dr = 0; dr < cell.rowSpan; dr++) for (let dc = 0; dc < cell.colSpan; dc++) {
-        grid[r + dr] = grid[r + dr] ?? []
-        grid[r + dr][c + dc] = dr === 0 && dc === 0 ? { text: cell.text, colSpan: cell.colSpan, rowSpan: cell.rowSpan, ...(cell.blocks.length ? { blocks: cell.blocks } : {}) } : "covered"
-      }
-      c += cell.colSpan
-      cols = Math.max(cols, c)
-    }
-  })
-  const out = grid.slice(0, Math.max(rows.length, 1)).map(row => Array.from({ length: cols }, (_, c) => {
-    const v = row?.[c]
-    return v && v !== "covered" ? v : { text: "", colSpan: 1, rowSpan: 1 }
-  }))
-  return { rows: out.length, cols, cells: out, hasHeader: true }
-}
-
-function splitPipeRow(line) {
-  const t = line.trim().replace(/^\|/, "").replace(/\|$/, "")
-  return t.split(/(?<!\\)\|/).map(c => pipeCellText(c))
-}
-
-/** markdown → 표 블록 목록 (문서 순서) */
-function mdTables(md) {
-  const blocks = []
-  const lines = md.split("\n")
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    if (/^\s*<table\b/i.test(line)) {
-      // HTML 표 — 여는 태그부터 짝이 맞는 닫는 태그까지
-      let depth = 0, j = i, buf = ""
-      for (; j < lines.length; j++) {
-        buf += lines[j] + "\n"
-        depth += (lines[j].match(/<table\b/gi) ?? []).length - (lines[j].match(/<\/table>/gi) ?? []).length
-        if (depth <= 0) break
-      }
-      const t = htmlTable(buf)
-      if (t) blocks.push({ type: "table", table: t })
-      i = j
-    } else if (/^\s*\|/.test(line) && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1] ?? "")) {
-      const rows = [splitPipeRow(line)]
-      let j = i + 2
-      for (; j < lines.length && /^\s*\|/.test(lines[j]); j++) rows.push(splitPipeRow(lines[j]))
-      blocks.push({ type: "table", table: toIr(rows.map(r => r.map(text => ({ text, colSpan: 1, rowSpan: 1, blocks: [] })))) })
-      i = j - 1
-    }
-  }
-  return blocks
 }
 
 // ─── 한 문서 채점 ──────────────────────────────────────

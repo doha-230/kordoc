@@ -6,6 +6,7 @@
 import type { IRSpan } from "../types.js"
 import { extractTextFromNode, type WalkCtx } from "./parser-shared.js"
 import { escapeLiteralDollar } from "../table/builder.js"
+import { wrapScript, tidyScriptTags } from "../script-tags.js"
 
 /** kordoc 생성 default 레이아웃의 인라인 코드 charPr id (gen-ids CHAR_CODE와 동기) */
 const KORDOC_CHAR_CODE = "4"
@@ -82,6 +83,7 @@ export function extractRunSpans(para: Element, ctx: WalkCtx, mode: SpanMode, req
     const span: IRSpan = { text }
     if (mode !== "foreign" && prId === KORDOC_CHAR_CODE) span.code = true
     else {
+      if (cp?.script) span.text = wrapScript(text, cp.script) // 첨자 — 평문 경로(section-walker)와 같은 태그
       if (cp?.bold) span.bold = true
       if (cp?.italic) span.italic = true
       if (cp?.strike) span.strike = true
@@ -105,6 +107,7 @@ export function extractRunSpans(para: Element, ctx: WalkCtx, mode: SpanMode, req
   // requireMixed(구조적 서식 억제)는 bold/italic 에만 적용 — 취소선·밑줄은 전체 문단이
   // 통째로 그어진 경우(법령 개정문 삭제 조문·개정 표시)가 정상 패턴이라 억제하지 않는다
   if (requireMixed && !merged.some((s) => s.strike || s.underline) && !merged.some((s) => !(s.bold || s.italic || s.code))) return null
+  for (const s of merged) s.text = tidyScriptTags(s.text)
   return merged
 }
 

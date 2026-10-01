@@ -8,6 +8,7 @@
 
 import { buildTable, convertTableToText, MAX_COLS, MAX_ROWS } from "../table/builder.js"
 import type { CellContext, IRBlock, IRTable, InlineStyle } from "../types.js"
+import { CELL_EDGES, type Edges } from "../table/layout-frames.js"
 
 /** 글자처럼 취급 표 자리 표지 — 문단 글을 표 앞뒤로 나눈다 (HWPX section-walker 와 같은 문자) */
 export const INLINE_TABLE_MARK = "\x1E"
@@ -181,6 +182,8 @@ export function cellTextFromBlocks(blocks: IRBlock[]): { text: string; hasStruct
 export interface AddressedCell extends CellContext {
   blocks?: IRBlock[]
   isHeader?: boolean
+  /** 칸의 보이는 변 (셀 borderFillId → DocInfo BORDER_FILL) — IR 칸의 CELL_EDGES 로 */
+  edges?: Edges
 }
 
 /**
@@ -239,6 +242,11 @@ export function buildAddressedTable(cells: AddressedCell[], rows: number, cols: 
   const table = buildTable(byRow, { keepAnchoredEmptyCols })
   if (table.rows === 0) return null
   for (const c of placed) {
+    // 보이는 변은 글 대조 없이 좌표 자리 칸에 — 빈 칸도 테두리를 가진다
+    if (c.edges) {
+      const at = table.cells[c.rowAddr ?? 0]?.[c.colAddr ?? 0]
+      if (at) CELL_EDGES.set(at, c.edges)
+    }
     if (!c.blocks?.length && !c.isHeader) continue
     const target = table.cells[c.rowAddr ?? 0]?.[c.colAddr ?? 0]
     // 겹친 앵커로 합쳐진 셀·잘린 열의 앵커는 텍스트가 달라 붙지 않는다

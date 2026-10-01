@@ -42,7 +42,7 @@ export interface Seg { textpos: number; vertpos: number; horzpos: number; horzsi
 export interface ParaChar { ch: string; prId: string | null; tab?: boolean; tabW?: number; nb?: boolean }
 
 /** 렌더 대상 개체 태그 — 이 외(도형류)는 경고 후 생략 */
-export const OBJ_TAGS = new Set(["tbl", "pic", "container", "equation", "rect", "ellipse", "polygon", "curv", "line", "arc", "ole", "textart"])
+export const OBJ_TAGS = new Set(["tbl", "pic", "container", "equation", "rect", "ellipse", "polygon", "curv", "curve", "line", "arc", "ole", "textart"])
 
 /** omL/omR: TAC 인라인 표의 outMargin 좌/우(HWPUNIT) — 한글은 TAC 표를 "outMargin 포함
  * 폭의 문자"로 배치한다: 가로 전진폭 = om좌 + 표폭 + om우, 괘선(표 자체)은 pen + om좌
@@ -94,10 +94,53 @@ export function pushTextSlots(t: Element, chars: ParaChar[], prId: string | null
   }
 }
 
+// Each section/subList is a separate text story. Keep deletion ranges across its
+// paragraphs without removing DOM nodes: cached lineseg.textpos still counts them.
+const deletedStarts = new WeakMap<Element, number>()
+const deletedControls = new WeakMap<Element, boolean>()
+export function isDeletedControl(el: Element): boolean { return deletedControls.get(el) === true }
+function deletionDelta(ctrl: Element, depth: number, xmlDepth = 0): number {
+  if (xmlDepth > 64) return depth
+  if (ln(ctrl) === "deleteBegin") return depth + 1
+  if (ln(ctrl) === "deleteEnd") return Math.max(0, depth - 1)
+  if (ln(ctrl) === "ctrl") for (const ch of elements(ctrl)) depth = deletionDelta(ch, depth, xmlDepth + 1)
+  return depth
+}
+export function prepareDeletedRanges(root: Element, depth = 0): void {
+  if (depth > 64) return
+  let deleted = 0
+  for (const p of elements(root)) {
+    if (ln(p) !== "p") continue
+    deletedStarts.set(p, deleted)
+    const scan = (el: Element, xmlDepth: number): void => {
+      if (xmlDepth > 64) return
+      if (ln(el) === "ctrl") for (const ch of elements(el)) scan(ch, xmlDepth + 1)
+      else {
+        if (ln(el) === "deleteBegin" || ln(el) === "deleteEnd") deleted = deletionDelta(el, deleted)
+        deletedControls.set(el, deleted > 0)
+      }
+    }
+    for (const ch of elements(p)) {
+      if (ln(ch) === "run") for (const el of elements(ch)) scan(el, depth + 2)
+      else if (ln(ch) === "deleteBegin" || ln(ch) === "deleteEnd") scan(ch, depth + 1)
+    }
+  }
+  // Nested table cells, headers, and shape text have independent deletion state.
+  function nested(el: Element, depth: number): void {
+    if (depth > 64) return
+    for (const ch of elements(el)) {
+      if (ln(ch) === "subList") prepareDeletedRanges(ch, depth + 1)
+      else nested(ch, depth + 1)
+    }
+  }
+  nested(root, depth)
+}
+
 export function buildPara(p: Element): ParaModel {
   const chars: ParaChar[] = []
   const objs: ParaObj[] = []
   let segs: Seg[] = []
+  let deleted = deletedStarts.get(p) ?? 0
   for (const runEl of elements(p)) {
     const tag = ln(runEl)
     if (tag === "run") {
@@ -105,7 +148,9 @@ export function buildPara(p: Element): ParaModel {
       for (const ch of elements(runEl)) {
         const cn = ln(ch)
         if (cn === "t") {
+          const start = chars.length
           pushTextSlots(ch, chars, prId, 0)
+          if (deleted) for (let i = start; i < chars.length; i++) chars[i] = { ch: "", prId }
         } else if (OBJ_TAGS.has(cn)) {
           const sz = findChildByLocalName(ch, "sz")
           const pos = findChildByLocalName(ch, "pos")
@@ -115,7 +160,7 @@ export function buildPara(p: Element): ParaModel {
           const inline = pos?.getAttribute("treatAsChar") === "1"
           // TAC 표만 outMargin 좌/우를 가로 배선 (ParaObj.omL 주석 — rhwp #3396 동종)
           const om = inline && cn === "tbl" ? findChildByLocalName(ch, "outMargin") : null
-          objs.push({
+          if (!deleted) objs.push({
             el: ch, tag: cn, index: chars.length,
             inline,
             width: w, height: h,
@@ -125,10 +170,14 @@ export function buildPara(p: Element): ParaModel {
           // 멀티라인 문단에서 textpos 가 8슬롯 블록 중간에 걸린 경계 0건
           pushFillers(chars, 8, prId)
         } else {
+          if (cn === "ctrl" || cn === "deleteBegin" || cn === "deleteEnd") deleted = deletionDelta(ch, deleted)
           // secPr·ctrl(구역/단 정의)·필드 등 나머지 run 자식도 확장/인라인 컨트롤 8슬롯
           pushFillers(chars, 8, prId)
         }
       }
+    } else if (tag === "deleteBegin" || tag === "deleteEnd") {
+      // These compatibility markers live outside the run's character stream.
+      deleted = deletionDelta(runEl, deleted)
     } else if (tag === "linesegarray") {
       segs = elements(runEl).filter(s => ln(s) === "lineseg").map(s => ({
         textpos: num(s, "textpos"), vertpos: num(s, "vertpos"), horzpos: num(s, "horzpos"),

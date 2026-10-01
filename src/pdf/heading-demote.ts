@@ -50,15 +50,29 @@ export function demoteNonHeadingRoles(blocks: IRBlock[], pageHeights: Map<number
   // The page's prose style (face + size carrying most paragraph text): a sentence-long
   // block set in it has no typographic distinction left to make it a title.
   const bodyStyle = new Map<number, string>()
+  const bodySizes = new Map<number, number>()
   for (const [pageNumber, page] of byPage) {
     const chars = new Map<string, number>()
+    const sizes = new Map<number, number>()
+    let proseChars = 0
     for (const b of page) {
       if ((b.type !== "paragraph" && b.type !== "heading") || !b.text || !b.style?.fontName || !b.style.fontSize) continue
       const key = `${b.style.fontName}:${b.style.fontSize}`
       chars.set(key, (chars.get(key) ?? 0) + b.text.length)
+      if (b.type === "paragraph" && b.style.fontName === "ocr") {
+        sizes.set(b.style.fontSize, (sizes.get(b.style.fontSize) ?? 0) + b.text.length)
+        proseChars += b.text.length
+      }
     }
     const [key, count] = [...chars].sort((a, b) => b[1] - a[1])[0] ?? []
     if (key && count! >= 300) bodyStyle.set(pageNumber, key)
+    if (proseChars >= 300) {
+      let cumulative = 0
+      for (const [size, count] of [...sizes].sort((a, b) => a[0] - b[0])) {
+        cumulative += count
+        if (cumulative > proseChars / 2) { bodySizes.set(pageNumber, size); break }
+      }
+    }
   }
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
@@ -123,9 +137,11 @@ export function demoteNonHeadingRoles(blocks: IRBlock[], pageHeights: Map<number
       i -= 2
       continue
     }
-    // 쪽 맨 위, 바로 아래 더 큰 제목 위에 붙은 작은 머리표(슬라이드 키커 "Recommendation Pack: Track Record")는 제목이 아니다
+    // OCR 본문 두 배 크기의 표시 제목은 아래에 더 큰 제목이 있어도 작은 머리표가 아니다.
+    // 텍스트층의 실제 글자 크기는 이 보정에서 제외한다 — 슬라이드의 작은 주석은 본문 기준이 아니다.
     const box = block.bbox, size = block.style?.fontSize ?? 0
     const kicker = !!box && size > 0 && next?.type === "heading" && next.pageNumber === block.pageNumber && !!next.bbox &&
+      (block.style?.fontName !== "ocr" || size < (bodySizes.get(block.pageNumber ?? 0) ?? Infinity) * 2) &&
       (next.style?.fontSize ?? 0) >= size * 1.3 && box.y - (next.bbox.y + next.bbox.height) <= size * 3 &&
       Math.min(box.x + box.width, next.bbox.x + next.bbox.width) - Math.max(box.x, next.bbox.x) >= Math.min(box.width, next.bbox.width) * 0.5 &&
       !page.some(o => o !== block && o.bbox && o.bbox.y > box.y + box.height && o.type !== "image")
@@ -138,7 +154,14 @@ export function demoteNonHeadingRoles(blocks: IRBlock[], pageHeights: Map<number
     // 글자가 둘 미만이거나, 일곱 어절 넘는 문장이면 제목이 아니다 (ODL 141 ". Uploading you … llection", "C")
     const ocrFragment = block.style?.fontName === "ocr" && (/^[.,;:…·•-]/.test(text) || text.includes("…") ||
       (text.match(/\p{L}/gu)?.length ?? 0) < 2 || text.split(/\s+/).length > 7)
-    if (ocrFragment || tocEntry || proseStyle || kicker || byline || tiny || !/\p{L}/u.test(text) && !chapterNumber || /^[a-z]/.test(text) || CAPTION.test(text) || EQUATION_NUMBER.test(block.text) || DISPLAY_MATH.test(text) ||
+    // OCR 높이는 글자 크기의 근사다. 양쪽 본문 줄과 겹치는 같은 열의 상자는 독립 제목의 크기 증거가 아니다.
+    const crowdedOcr = block.style?.fontName === "ocr" && !!box &&
+      [prev, next].every(o => o?.type === "paragraph" && o.pageNumber === block.pageNumber &&
+        o.style?.fontName === "ocr" && !!o.bbox && (o.text?.length ?? 0) >= 15 &&
+        Math.abs(o.bbox.x - box.x) <= size * 0.25 &&
+        Math.min(o.bbox.y + o.bbox.height, box.y + box.height) - Math.max(o.bbox.y, box.y) >= o.bbox.height * 0.2) &&
+      prev!.bbox!.y > box.y && next!.bbox!.y < box.y
+    if (ocrFragment || crowdedOcr || tocEntry || proseStyle || kicker || byline || tiny || !/\p{L}/u.test(text) && !chapterNumber || /^[a-z]/.test(text) || CAPTION.test(text) || EQUATION_NUMBER.test(block.text) || DISPLAY_MATH.test(text) ||
         // 닫는 괄호가 여는 괄호보다 많으면 앞 줄에서 이어진 문장 조각이다 ("Fact-checking) and is used …") — "1)"·"가)" 앞머리 번호는 빼고 센다
         unbalancedClose(text.replace(/^\s*[\dA-Za-z가-힣ⅰ-ⅹ]{1,3}\)\s*/, "")) ||
         isRunningHead(block, page, pageHeights.get(block.pageNumber ?? 0))) {

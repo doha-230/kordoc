@@ -161,6 +161,41 @@ describe("bodyLineJoins — 본문 꺾임 기하", () => {
     assert.deepEqual(bodyLineJoins([base, line("○ 둘째 항목", 72, 200, 684)]), ["\n"])
     assert.deepEqual(bodyLineJoins([base, line("열었다.", 72, 120, 684)]), [" "])
   })
+
+  it("왼쪽 정렬 묶음은 다음 줄 첫 어절이 남은 자리에 못 들어간 줄을 잇고 늘 띄운다", () => {
+    // Chromium 인쇄 왼쪽 정렬 A4 실측 오른끝 — 11pt, 줄 간격 16.5pt, 문단 사이 24.5pt. 찬 줄은 가장 긴 1.1 첫 줄뿐
+    const joins = bodyLineJoins([
+      line("1.1 이 문서는 왼쪽 정렬 문단에서 자동 줄바꿈이 어떻게 처리되는지 확인하기 위해 작성한", 72, 517.3, 700, 11),
+      line("예시 문서이며, 각 항목은 여러 줄에 걸쳐 이어집니다.", 90, 355, 683.5, 11),
+      line("2.1 문서 담당자는 작성한 문서를 검토자에게 전달하고 검토 의견을 반영하여 최종본을", 72, 499.7, 659, 11),
+      line("확정할 책임이 있으며, 확정된 문서는 지정된 보관 장소에 보관합니다.", 90, 435.2, 642.5, 11),
+      line("2.2 검토자는 전달받은 문서의 내용이 관련 기준에 맞는지 확인하고 필요한 경우 수정", 72, 492, 618, 11),
+      line("사항을 기록하여 담당자에게 돌려보내야 합니다.", 90, 330.8, 601.5, 11),
+    ])
+    assert.deepEqual(joins, [" ", "\n", " ", "\n", " "])
+  })
+
+  it("왼쪽 정렬 묶음에서 다단계 번호(\"5.1 \")로 여는 줄은 새 조항이라 잇지 않는다", () => {
+    // SOP 실측: 짧은 줄만 모인 묶음이라 오른끝이 229 — "5 …기계장치"(223) 끝에 "5.1" 이 못 들어간다
+    const joins = bodyLineJoins([
+      line("5 사용 원자재 또는 기계장치", 70, 223, 700, 11),
+      line("5.1 채취용기(1.5L 유리병)", 90, 229, 681, 11),
+      line("5.2 배수용 물통", 90, 176, 662, 11),
+    ])
+    // 둘째 자리("5.1 …" → "5.2 …")는 묶음에서 가장 넓은 찬 줄이라 기존 full 판정이 잇는다 — 이 규칙의 몫이 아니다
+    assert.equal(joins[0], "\n")
+  })
+
+  it("양쪽 정렬 묶음의 덜 찬 줄은 문단 끝줄이라 잇지 않는다 (ODL 188 \"e.g., H6.\" ⏎ \"Model merging.\")", () => {
+    const joins = bodyLineJoins([
+      line("et al., 2021). We utilize these datasets as benchmarks for", 72, 290, 700),
+      line("evaluation and also report the average scores for the", 72, 290, 688),
+      line("six tasks in the table below and in the appendix, e.g., H6.", 72, 280, 676),
+      line("Model merging. Model merging methods such as Yadav", 72, 290, 664),
+      line("et al. (2023) can boost model performance without further", 72, 290, 652),
+    ])
+    assert.deepEqual(joins, [" ", " ", "\n", " "])
+  })
 })
 
 function ti(text: string, x: number, y: number, w: number, fontSize = 10): TextItem {

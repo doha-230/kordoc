@@ -117,7 +117,9 @@ const round = (x, d = 6) => (x === null || x === undefined ? null : +x.toFixed(d
 // 모수 변경에 따른 전체 플로어 재잠금, 중첩 매칭 .920455·exact .892045는 상향.
 // 2026-09-28 채점 기준 변경: 정답지 부족 쌍(PDF 텍스트층이 HWPX 글의 3배 초과 — pdf-text-gt 와 같은 모수 규칙) 1쌍 39표를 빼 모수 하한 715/2654,
 // 같은 날 텍스트층 글 누락 쌍(정답 글자의 93% 미만 — pdf-text-gt 와 같은 규칙) 7쌍 22표를 더 빼 708/2632
-const GATES = { matchedRate: 0.985, exactRate: 0.932, cellF1: 0.959, cellExactRate: 0.935, contentNED: 0.891, parseErrors: 0, reorderedMax: 17, minPairs: 708, minRefTables: 2632, nestedMatchedRate: 0.92, nestedExactRate: 0.892 }
+// 2026-09-30 v4.17.0 채점 기준 변경: 정답 HWPX 파싱이 보이지 않는 틀 표를 풀어(layoutTables visual) 정답 표가 2632 → 2331.
+// 새 정답 실측 matched 0.9974·exact 0.9730·cellF1 0.9893·cellExact 0.9707·NED 0.9720·중첩 exact 0.9307 — 비율 플로어는 그대로 위
+const GATES = { matchedRate: 0.985, exactRate: 0.932, cellF1: 0.959, cellExactRate: 0.935, contentNED: 0.891, parseErrors: 0, reorderedMax: 17, minPairs: 708, minRefTables: 2331, nestedMatchedRate: 0.92, nestedExactRate: 0.892 }
 /** 텍스트층 없음: PDF 텍스트층 한글 / HWPX 한글 이 이 값 미만 (머리 주석 모수 정책) */
 const NO_TEXT_LAYER_RATIO = 0.01
 const hangulCount = s => (s?.match(/[가-힣]/g) ?? []).length

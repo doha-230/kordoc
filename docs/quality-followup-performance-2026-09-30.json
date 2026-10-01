@@ -1,0 +1,108 @@
+{
+  "baselineCommit": "a4158ee88e461a23b17c9590ac17405dbf058b69",
+  "sourceSHA256": {
+    "src/hwp5/body.ts": "01eea86b183137c7000a452fa731ea0ae6b01c09d0d26b40c1b4910365dc6982",
+    "src/hwpx/styles.ts": "fc05c1edd6c34a5f3c14788fa8f81207af0d19ec662d18c41f06fa2163edf263",
+    "src/hwpx/text-metrics.ts": "844c9391144dd0d5fe06763707168d852632c282184a65cd258581aa2313553f",
+    "src/hwpx/font-metrics.ts": "0bef92a1f330c47f5ac29d6a85d9e5476b36910e2514eb8b060e8da11e222f45",
+    "src/hwpx/outline.ts": "7a1b530c7ab5cff3743960b000d6a06ad039e02a6350d8eab6535533d43ed56a",
+    "src/pdf/image-regions.ts": "f47fc343e9056b48889c8f5c51cb3871000993f6b4c11f8cc3c943d815f51355",
+    "src/pdf/image-panels.ts": "699722ac7acf1977859f7ef141a113fc566b57834ef21214c7406251c965028c",
+    "src/pdf/page-blocks.ts": "208d07285c795693db1d1103752bba9582ea4d4d0b60dd68364711a1c6851765",
+    "src/pdf/formula/models.ts": "b2ddd72a6552870ed4d99cdfaefa2b1fdd3f6e117614fc93d669ccc7b8a1b61f",
+    "src/pdf/formula/model-partials.ts": "aa640946352ccdf8182511ccf95a6e35ed73ec90cded9863ec4b65a53996992c",
+    "dist/index.js": "e6aab45b10cee65c978904c2f84080a4fde290d1524470b1d2b60f94b0e57c40"
+  },
+  "standalone": true,
+  "results": {
+    "generation": {
+      "paragraphs": 200,
+      "zipEntriesEqual": true,
+      "medianMs": [
+        26.87624999999997,
+        21.072124999999915
+      ]
+    },
+    "pdfParse": [
+      {
+        "file": "01030000000125.pdf",
+        "bytes": 16426,
+        "sha256": "2183cb0d11b4e22a1fd54f2e79e9d91b280e63c24da91c4164d52a89732dd1b0",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          3.171416000000022,
+          3.1411659999999983
+        ]
+      },
+      {
+        "file": "01030000000188.pdf",
+        "bytes": 114941,
+        "sha256": "61070c2fe64a690c7c9cc97d12b76380e7a134feda3c5315f779306699a89a1b",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          16.050500000000056,
+          16.179374999999936
+        ]
+      },
+      {
+        "file": "01030000000189.pdf",
+        "bytes": 71529,
+        "sha256": "2f972daaa81cb3949db12a39cf6910c4f9952135f7eb3850e1f60ef7d8b5aaf9",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          11.638042000000041,
+          11.654999999999973
+        ]
+      }
+    ],
+    "cellMap": [
+      {
+        "cells": 500,
+        "medianMs": [
+          0.37750000000005457,
+          0.37279199999966295
+        ]
+      },
+      {
+        "cells": 2500,
+        "medianMs": [
+          2.079207999999653,
+          1.7488750000002256
+        ]
+      },
+      {
+        "cells": 5000,
+        "medianMs": [
+          3.997541000000183,
+          4.001874999999927
+        ]
+      }
+    ],
+    "equivalentCases": 768,
+    "fit1000Ms": [
+      13.918875000000071,
+      10.846540999999888
+    ]
+  }
+}

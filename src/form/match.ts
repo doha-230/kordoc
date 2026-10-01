@@ -162,7 +162,8 @@ export class ValueCursor {
 
 /** 라벨 정규화 — 콜론/공백/특수문자 제거, 비교용 */
 export function normalizeLabel(label: string): string {
-  return label.trim().replace(/[:：\s()（）·]/g, "")
+  // 첨자 태그(<sup>·<sub>, 파서가 칸 글에 넣음)는 걷는다 — 이름표 "면적(m<sup>2</sup>)" 가 입력 키 "면적(m2)" 와 맞게
+  return label.trim().replace(/<\/?su[bp]>/g, "").replace(/[:：\s()（）·]/g, "")
 }
 
 /**

@@ -5,8 +5,10 @@
  * w:p → paragraph/heading, w:tbl → table, w:drawing → image.
  */
 
+import { wrapScript, tidyScriptTags } from "../script-tags.js"
 import JSZip from "jszip"
 import { ListCounter } from "./numbering.js"
+import { symbolChar } from "./symbol-font.js"
 import { DOMParser } from "@xmldom/xmldom"
 import type {
   CellContext, IRBlock, DocumentMetadata, InternalParseResult,
@@ -19,6 +21,8 @@ import { detectImageMime } from "../hwp5/images.js"
 
 /** ZIP 압축 해제 누적 최대 크기 (100MB) — ZIP bomb 방지 */
 const MAX_DECOMPRESS_SIZE = unzipLimitBytes(100 * 1024 * 1024)
+/** 그림·개체 파트 — images:false 면 풀지 않으니 ZIP 상한에서도 뺀다 (#108) */
+const MEDIA_PART_RE = /^word\/(?:media|embeddings)\//
 
 // ─── XML 헬퍼 ──────────────────────────────────────────
 
@@ -47,8 +51,8 @@ function effectiveChildElements(parent: Element | Document): Element[] {
           result.push(...effectiveChildElements(c as Element))
         }
       }
-    } else if (matchesLocal(el, "ins") || matchesLocal(el, "smartTag")) {
-      // w:ins(변경추적 삽입)·w:smartTag도 자식 run을 그대로 노출 — 안 펼치면 run 전량 소실.
+    } else if (matchesLocal(el, "ins") || matchesLocal(el, "smartTag") || matchesLocal(el, "dir") || matchesLocal(el, "bdo")) {
+      // w:ins(변경추적 삽입)·w:smartTag·w:dir·w:bdo(양방향 글 조각, #107)도 자식 run을 그대로 노출 — 안 펼치면 run 전량 소실.
       // w:del은 삭제된 텍스트이므로 계속 제외.
       result.push(...effectiveChildElements(el))
     } else {
@@ -323,12 +327,13 @@ interface RunResult {
 }
 
 function extractRun(r: Element): RunResult {
-  // t/br/cr/tab을 문서 순서대로 수집 — br·cr은 줄바꿈, tab은 공백 (무시하면 텍스트 융합)
+  // t/br/cr/tab/sym을 문서 순서대로 수집 — br·cr은 줄바꿈, tab은 공백 (무시하면 텍스트 융합), sym은 기호 글꼴 글자(°·×·μ, #105)
   let text = ""
   for (const el of effectiveChildElements(r)) {
     if (matchesLocal(el, "t")) text += el.textContent ?? ""
     else if (matchesLocal(el, "br") || matchesLocal(el, "cr")) text += "\n"
     else if (matchesLocal(el, "tab")) text += " "
+    else if (matchesLocal(el, "sym")) text += symbolChar(getAttr(el, "font"), getAttr(el, "char"))
   }
 
   let bold = false
@@ -337,6 +342,10 @@ function extractRun(r: Element): RunResult {
   if (rPrEls.length > 0) {
     bold = getChildElements(rPrEls[0], "b").length > 0
     italic = getChildElements(rPrEls[0], "i").length > 0
+    // 위·아래첨자 — w:vertAlign(직접 서식). 글자 스타일(rStyle)로 건 첨자는 보지 않는다
+    const va = getChildElements(rPrEls[0], "vertAlign")[0]
+    const v = va ? getAttr(va, "val") : null
+    if (v === "superscript" || v === "subscript") text = wrapScript(text, v === "superscript" ? "sup" : "sub")
   }
 
   return { text, bold, italic }
@@ -415,7 +424,23 @@ function collectInline(
     fieldDisplay = ""
   }
 
+  // OMML 수식 — 문단 직속(sdt·ins·dir 펼침 포함) <m:oMath>/<m:oMathPara> 는 제자리에 (#104).
+  // 인라인은 `$...$`, display 는 `$$...$$`
+  const placedMath = new Set<Element>()
+  const mathText = (om: Element): string => {
+    const latex = ommlElementToLatex(om)
+    return !latex ? "" : isDisplayMath(om) ? " $$" + latex + "$$ " : "$" + latex + "$"
+  }
+
   for (const el of effectiveChildElements(p)) {
+    if (matchesLocal(el, "oMath") || matchesLocal(el, "oMathPara")) {
+      placedMath.add(el)
+      const m = mathText(el)
+      if (fieldActive && fieldStage === "display") fieldDisplay += m
+      else parts.push(m)
+      continue
+    }
+
     if (matchesLocal(el, "hyperlink")) {
       const rId = getAttr(el, "id")
       const anchor = getAttr(el, "anchor")
@@ -471,17 +496,14 @@ function collectInline(
   }
   flushField() // 닫히지 않은 필드 방어
 
-  // OMML 수식 — <m:oMath> / <m:oMathPara> 를 LaTeX 로 변환해 덧붙임.
-  // 인라인 수식은 `$...$`, display 는 `$$...$$`. 순서는 run 뒤로 몰리지만
-  // 대부분 한 단락 내 수식/텍스트가 분리돼 있어 실용상 무해.
+  // 더 깊이 든 수식(mc:AlternateContent·링크 안 등)은 제자리를 모르니 종전대로 문단 끝에 덧붙인다
   for (const om of collectOmmlRoots(p)) {
-    const latex = ommlElementToLatex(om)
-    if (!latex) continue
-    if (isDisplayMath(om)) parts.push(" $$" + latex + "$$ ")
-    else parts.push(" $" + latex + "$ ")
+    if (placedMath.has(om)) continue
+    const m = mathText(om)
+    if (m) parts.push(isDisplayMath(om) ? m : " " + m + " ")
   }
 
-  const text = parts.join("").replace(/[ \t]{2,}/g, " ").trim()
+  const text = tidyScriptTags(parts.join("")).replace(/[ \t]{2,}/g, " ").trim()
   return { text, bold, italic, footnoteText }
 }
 
@@ -717,6 +739,8 @@ async function buildImageMap(
   rels: Map<string, string>,
   doc: Document,
   warnings: ParseWarning[],
+  /** false(images:false) 면 그림 바이트를 풀지 않고 자리 표시 파일명만 정한다 (#108) */
+  readBytes: boolean,
 ): Promise<{ imageMap: Map<string, string>; images: ExtractedImage[] }> {
   const imageMap = new Map<string, string>()
   const images: ExtractedImage[] = []
@@ -747,7 +771,9 @@ async function buildImageMap(
     if (!imgFile) continue
 
     try {
-      const data = await imgFile.async("uint8array")
+      // 삼항 안 await 는 CJS 빌드(sucrase)가 못 읽는다 — if 로
+      let data: Uint8Array | null = null
+      if (readBytes) data = await imgFile.async("uint8array")
       imgIdx++
       const ext = imgPath.split(".").pop()?.toLowerCase() ?? "png"
       const mimeMap: Record<string, string> = {
@@ -756,9 +782,11 @@ async function buildImageMap(
         tif: "image/tiff", tiff: "image/tiff", svg: "image/svg+xml",
       }
       const filename = `image_${String(imgIdx).padStart(3, "0")}.${ext}`
-      // 미지 확장자를 image/png 로 단정하던 폴백 제거 — 매직바이트 실측 후 그래도 모르면 octet-stream (#70)
-      const mimeType = mimeMap[ext] ?? detectImageMime(data) ?? "application/octet-stream"
-      images.push({ filename, data, mimeType, source: imgPath })
+      if (data) {
+        // 미지 확장자를 image/png 로 단정하던 폴백 제거 — 매직바이트 실측 후 그래도 모르면 octet-stream (#70)
+        const mimeType = mimeMap[ext] ?? detectImageMime(data) ?? "application/octet-stream"
+        images.push({ filename, data, mimeType, source: imgPath })
+      }
       imageMap.set(embedId, filename)
     } catch (err) {
       warnings.push({
@@ -880,7 +908,8 @@ export async function parseDocxDocument(
   options?: ParseOptions,
 ): Promise<InternalParseResult> {
   // ZIP bomb 사전 검사
-  precheckZipSize(buffer, MAX_DECOMPRESS_SIZE)
+  const readImages = options?.images !== false
+  precheckZipSize(buffer, MAX_DECOMPRESS_SIZE, undefined, { re: MEDIA_PART_RE, skip: !readImages })
 
   const zip = await JSZip.loadAsync(buffer)
   const warnings: ParseWarning[] = []
@@ -949,7 +978,7 @@ export async function parseDocxDocument(
   }
 
   // 6. 이미지 맵 — 본문 워크에서 문단 위치에 맞춰 인라인 방출하려면 먼저 구성
-  const { imageMap, images } = await buildImageMap(zip, rels, doc, warnings)
+  const { imageMap, images } = await buildImageMap(zip, rels, doc, warnings, readImages)
   const linkedImages = new Set<string>()
 
   const blocks: IRBlock[] = []

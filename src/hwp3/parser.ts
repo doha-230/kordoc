@@ -48,9 +48,6 @@ const OBJ_EQUATION = 2
 /** ch=10 기타 옵션(info[14]) bit 4 — 하이퍼텍스트 개체 */
 const OPT_HYPERTEXT = 0x10
 
-/** 채움(점끌기) 탭 표지 — 뒤는 목차 쪽번호라 문단 글을 여기서 자른다 (HWPX \x1F·HWP5 LEADER_TAB_MARK 와 같은 정책) */
-const LEADER_TAB_MARK = "\x1F"
-
 /**
  * 개요 번호(ch=28) 수준별 모양 — 한글 97 기본 개요 (rhwp ensure_hwp3_default_outline_numbering 과 같은 표).
  * 한컴 HWP3→HWPX 변환본 실측(SO-SUEOP): Ⅰ. / 1) / (1) / 가. / 가) / (가) / ①
@@ -292,11 +289,9 @@ function parseParagraphList(reader: Reader, ctx: ParaContext, sink: IRBlock[]): 
   }
 }
 
-/** 파싱을 마친 문단 → IR 블록 (HWP5 와 같은 조립기: 리더 절단 → 개요 번호 → 표 자리 분할) */
+/** 파싱을 마친 문단 → IR 블록 (HWP5 와 같은 조립기: 개요 번호 → 표 자리 분할) */
 function emitHwp3Paragraph(para: Hwp3Para): IRBlock[] {
   let text = para.text
-  const leaderAt = text.indexOf(LEADER_TAB_MARK)
-  if (leaderAt >= 0) text = text.slice(0, leaderAt)
   let headMarker: string | null = null
   if (para.outline) {
     const { level, numbers } = para.outline
@@ -334,12 +329,11 @@ function parseCharStream(reader: Reader, charCount: number, ctx: ParaContext, pa
       continue
     }
     if (ch === 9) {
-      // 탭 — hunit 탭폭 + word 점끌기 + hchar 닫기. 점끌기(채움)가 있으면 목차 쪽번호 탭
-      reader.skip(2)
-      const leader = reader.readU16()
-      reader.skip(2)
+      // 탭 — hunit 탭폭 + word 점끌기 + hchar 닫기. 점끌기(채움) 탭도 보통 탭 — 채움선은 글이 아니고 뒤 글(목차 쪽 번호 등)은
+      // 남긴다 (HWPX·HWP5 와 같은 정책)
+      reader.skip(6)
       i += 3
-      para.text += leader ? LEADER_TAB_MARK : "\t"
+      para.text += "\t"
       continue
     }
     if (ch === 18) {

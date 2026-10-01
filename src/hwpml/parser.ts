@@ -258,9 +258,12 @@ function collectCharText(node: Element, parts: string[], depth: number = 0): voi
     const tag = localName(el)
 
     if (tag === "CHAR") {
-      // textContent — 자식 텍스트 노드 직접 수집
-      const t = textContent(el)
-      if (t) parts.push(t)
+      // 자식 텍스트 노드 직접 수집. <TAB/>(채움 탭 포함)은 탭 — 빠뜨리면 목차 "사업 개요 및 추진체계<TAB/>3" 의 쪽 번호가
+      // 글에 붙는다("추진체계3", formats/hml mof-*. HWPX·HWP5 채움 탭과 같은 정책)
+      for (const c of Array.from(el.childNodes)) {
+        const t = c.nodeType === 1 ? (localName(c as Element) === "TAB" ? "\t" : textContent(c)) : c.nodeType === 3 || c.nodeType === 4 ? c.nodeValue ?? "" : ""
+        if (t) parts.push(t)
+      }
     } else if (tag === "TABLE" || tag === "PICTURE" || tag === "SHAPEOBJECT") {
       // 단락 내 테이블/이미지는 별도 블록으로 처리되므로 스킵
     } else if (tag === "AUTONUM") {

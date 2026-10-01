@@ -4,7 +4,7 @@
 //
 // 유닛 추출 (파서와 코드 0% 공유):
 //   docx : word/document.xml 본문 w:p 문단 (w:t 연결, w:instrText 등 필드코드 제외,
-//          mc:Fallback 스킵 — Choice 이중 렌더, 텍스트박스 문단은 별도 유닛) + 본문 sectPr 이 참조하는
+//          mc:Fallback 스킵 — Choice 이중 렌더, 텍스트박스 문단은 별도 유닛, w:sym 은 유닛 경계) + 본문 sectPr 이 참조하는
 //          header·footer 파트 문단(같은 글은 한 번, 쪽 번호 필드 표시값·쪽 번호만 남는 파트 제외 — HWPX 머리말 정책 미러)
 //   xlsx : xl/worksheets/*.xml 셀 — 문자열 셀(s/inlineStr/str)은 str 유닛,
 //          숫자 셀은 num 유닛으로 분리 채점 (서식 적용 숫자·날짜는 표기 차이가 정상이라
@@ -72,6 +72,8 @@ function textOf(node, out = []) {
 
 // 쪽 번호 필드 — 표시값은 마지막으로 그린 쪽의 캐시라 파서가 내지 않는다(HWPX 쪽 번호 컨트롤과 같은 정책, whitelist: page-field)
 const PAGE_FIELD_RE = /^\s*(?:PAGE|NUMPAGES|SECTIONPAGES)\b/i
+/** docx w:sym 자리 — 유닛을 여기서 끊는다 */
+const SYM_BREAK = "\u0000"
 
 /** docx: 본문 w:p → 유닛. 필드 코드(instrText)·삭제 추적(delText)은 제외.
  *  파서 경계 미러: mc:Fallback은 Choice와 같은 텍스트박스의 이중 렌더라 스킵,
@@ -104,6 +106,10 @@ async function docxUnits(buf) {
         // OMML 수식 — 파서는 $LaTeX$로 방출·mdToPlain이 수식 span 제거 (HWPX 수식
         // whitelist와 동일 정책) → GT도 수식 서브트리를 recall 모수에서 제외
         else if (c.tag === "omath" || c.tag === "omathpara") continue
+        // w:sym(기호 삽입 글자) — 파서는 Symbol 글꼴 표로 글자를 내고 그림 글꼴은 건너뛴다. 정답엔 그 표가 없으니(파서와 공유 0)
+        // 기호 자리는 유닛 경계로만 두고 채점하지 않는다(수식과 같은 모수 제외). 경계가 없으면 출력에 낀 기호가
+        // 앞뒤 짧은 조각을 MIN_FRAG 아래로 잘라 거짓 miss(이력서 양식 "신체.건강상" 의 "신체")
+        else if (c.tag === "sym") parts.push(SYM_BREAK)
         else if (c.tag === "fallback" || c.tag === "txbxcontent") continue
         else walkRun(c)
       }
@@ -111,16 +117,14 @@ async function docxUnits(buf) {
     walkRun(p)
     return parts.join("").trim()
   }
+  const addUnits = t => { for (const u of t.split(SYM_BREAK)) if (u.trim()) units.push(u.trim()) }
   // 텍스트박스 문단 — 파서 collectTextboxParagraphs 미러 (txbxContent 하위 p만, Fallback 스킵)
   const walkTxbx = (node, inTx) => {
     for (const ch of node.children) {
       if (typeof ch === "string") continue
       if (ch.tag === "fallback") continue
       const now = inTx || ch.tag === "txbxcontent"
-      if (now && ch.tag === "p") {
-        const t = paraText(ch)
-        if (t) units.push(t)
-      }
+      if (now && ch.tag === "p") addUnits(paraText(ch))
       walkTxbx(ch, now)
     }
   }
@@ -129,8 +133,7 @@ async function docxUnits(buf) {
       if (typeof ch === "string") continue
       if (ch.tag === "fallback") continue
       if (ch.tag === "p") {
-        const t = paraText(ch)
-        if (t) units.push(t)
+        addUnits(paraText(ch))
         walkTxbx(ch, false) // 문단 안 텍스트박스 문단 — 별도 유닛
       } else walkP(ch)
     }

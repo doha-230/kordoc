@@ -1,0 +1,1181 @@
+{
+  "baselineCommit": "2065b45d9e6a86dd8605684d289fca0959d0110b",
+  "finalSnapshot": "G",
+  "environment": {
+    "node": "v26.10.0",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4"
+  },
+  "evaluators": [
+    {
+      "file": "bench/pdf-table-gt.mjs",
+      "sha256": "a03ef50d30d6bcb3876b020b579d5c6edce9b25d52b63f775a8de6d381c2e36d",
+      "unchanged": true
+    },
+    {
+      "file": "bench/pdf-text-gt.mjs",
+      "sha256": "cdac2c73964a058ecbb39af61d582fe1023df6e60f4a915032e583a0a648deea",
+      "unchanged": true
+    },
+    {
+      "file": "bench/annex-gt.mjs",
+      "sha256": "d6abda36ca8e8baa409c7c253c6c3581e51f986536471001e00ee3ab017a54eb",
+      "unchanged": true
+    },
+    {
+      "file": "bench/ocr-accuracy.mjs",
+      "sha256": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60",
+      "unchanged": true
+    },
+    {
+      "file": "bench/score.mjs",
+      "sha256": "bd3d269e1127ab1c9c6f9fe526e5897fe450038cee30d0ad926c4c26173f59ba",
+      "unchanged": true
+    }
+  ],
+  "buildSha256": "2d83663e2af4500db9a9d1a499f034cc60906d72c8fc6a38942dee5b66c77244",
+  "unitTests": {
+    "tests": 2745,
+    "suites": 809,
+    "pass": 2745,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "pdfTable": {
+    "baseline": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.997426,
+      "exactRate": 0.972973,
+      "cellF1": 0.989295,
+      "cellExactRate": 0.970744,
+      "contentNED": 0.972048,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "final": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "regressions": [],
+    "nestedChanged": 0
+  },
+  "odl": {
+    "evaluatorSha256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "counts": {
+      "default": {
+        "documents": 200,
+        "failures": 0,
+        "missingPredictions": 0
+      },
+      "plainHtml": {
+        "documents": 200,
+        "failures": 0,
+        "missingPredictions": 0
+      }
+    },
+    "comparison": {
+      "default": {
+        "aggregate": {
+          "overall_mean": {
+            "baseline": 0.9601440557272316,
+            "final": 0.9601440557272316,
+            "delta": 0
+          },
+          "nid_mean": {
+            "baseline": 0.9606531073059388,
+            "final": 0.9606531073059388,
+            "delta": 0
+          },
+          "nid_s_mean": {
+            "baseline": 0.96452056034587,
+            "final": 0.96452056034587,
+            "delta": 0
+          },
+          "teds_mean": {
+            "baseline": 0.9789524108694445,
+            "final": 0.9789524108694445,
+            "delta": 0
+          },
+          "teds_s_mean": {
+            "baseline": 0.9906982529854047,
+            "final": 0.9906982529854047,
+            "delta": 0
+          },
+          "mhs_mean": {
+            "baseline": 0.945374975899153,
+            "final": 0.945374975899153,
+            "delta": 0
+          },
+          "mhs_s_mean": {
+            "baseline": 0.9788672478337129,
+            "final": 0.9788672478337129,
+            "delta": 0
+          }
+        },
+        "counts": {
+          "baseline": {
+            "nid": 200,
+            "teds": 42,
+            "mhs": 107,
+            "missing": 0
+          },
+          "final": {
+            "nid": 200,
+            "teds": 42,
+            "mhs": 107,
+            "missing": 0
+          }
+        },
+        "perMetric": {
+          "overall": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "nid": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "nid_s": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "teds": {
+            "comparable": 42,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 42,
+            "availabilityChanged": 0
+          },
+          "teds_s": {
+            "comparable": 42,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 42,
+            "availabilityChanged": 0
+          },
+          "mhs": {
+            "comparable": 107,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 107,
+            "availabilityChanged": 0
+          },
+          "mhs_s": {
+            "comparable": 107,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 107,
+            "availabilityChanged": 0
+          }
+        }
+      },
+      "plainHtml": {
+        "aggregate": {
+          "overall_mean": {
+            "baseline": 0.9716006951421311,
+            "final": 0.9716006951421311,
+            "delta": 0
+          },
+          "nid_mean": {
+            "baseline": 0.9761737170247906,
+            "final": 0.9761737170247906,
+            "delta": 0
+          },
+          "nid_s_mean": {
+            "baseline": 0.9759776702104048,
+            "final": 0.9759776702104048,
+            "delta": 0
+          },
+          "teds_mean": {
+            "baseline": 0.9827577018320368,
+            "final": 0.9827577018320368,
+            "delta": 0
+          },
+          "teds_s_mean": {
+            "baseline": 0.9908039556438265,
+            "final": 0.9908039556438265,
+            "delta": 0
+          },
+          "mhs_mean": {
+            "baseline": 0.9547216929875645,
+            "final": 0.9547216929875645,
+            "delta": 0
+          },
+          "mhs_s_mean": {
+            "baseline": 0.9788672478337129,
+            "final": 0.9788672478337129,
+            "delta": 0
+          }
+        },
+        "counts": {
+          "baseline": {
+            "nid": 200,
+            "teds": 42,
+            "mhs": 107,
+            "missing": 0
+          },
+          "final": {
+            "nid": 200,
+            "teds": 42,
+            "mhs": 107,
+            "missing": 0
+          }
+        },
+        "perMetric": {
+          "overall": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "nid": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "nid_s": {
+            "comparable": 200,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 200,
+            "availabilityChanged": 0
+          },
+          "teds": {
+            "comparable": 42,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 42,
+            "availabilityChanged": 0
+          },
+          "teds_s": {
+            "comparable": 42,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 42,
+            "availabilityChanged": 0
+          },
+          "mhs": {
+            "comparable": 107,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 107,
+            "availabilityChanged": 0
+          },
+          "mhs_s": {
+            "comparable": 107,
+            "improved": 0,
+            "regressed": 0,
+            "unchanged": 107,
+            "availabilityChanged": 0
+          }
+        }
+      }
+    },
+    "markdownChanged": {
+      "default": [],
+      "plainHtml": []
+    },
+    "htmlTableEquality": {
+      "baseline": {
+        "documentsWithHtmlTable": 44,
+        "tableOpenTags": 56
+      },
+      "final": {
+        "documentsWithHtmlTable": 44,
+        "tableOpenTags": 56
+      },
+      "allMarkdownBytesEqual": true
+    }
+  },
+  "unchangedPathChecks": {
+    "score": {
+      "generatedAt": "2026-09-29T22:43:07.044Z",
+      "overallPass": true,
+      "population": {
+        "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+        "threshold": "≥ 2286/1911/1120",
+        "pass": true
+      },
+      "hwpx": {
+        "docs": 2286,
+        "refChars": 5548157,
+        "gates": {
+          "recallMicro": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "recallDoc": {
+            "value": 1,
+            "threshold": 1,
+            "failDocs": 0,
+            "pass": true
+          },
+          "missRun": {
+            "failDocs": 0,
+            "threshold": "<20자",
+            "pass": true
+          },
+          "phantom": {
+            "value": 0,
+            "threshold": 0,
+            "pass": true
+          },
+          "blacklist": {
+            "failDocs": 0,
+            "pass": true
+          },
+          "tableExact": {
+            "value": 0.996351,
+            "threshold": 0.9963,
+            "pass": true
+          },
+          "cellF1": {
+            "value": 0.997668,
+            "threshold": 0.9976,
+            "pass": true
+          },
+          "contentNED": {
+            "value": 0.999545,
+            "threshold": 0.9995,
+            "pass": true
+          },
+          "cellExact": {
+            "value": 0.999588,
+            "threshold": 0.9995,
+            "pass": true
+          },
+          "orderAvg": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "orderDoc": {
+            "failDocs": 0,
+            "threshold": 1,
+            "pass": true
+          },
+          "eqPresence": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "fnPresence": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "headerPolicy": {
+            "violations": 0,
+            "pass": true
+          }
+        },
+        "tableCount": 9865,
+        "exactCount": 9829,
+        "pass": true
+      },
+      "hwp5": {
+        "pairs": 1120,
+        "ok": 1120,
+        "avgCrossNED": 0,
+        "avgHwpxToHwp": 1,
+        "tables": {
+          "ref": 4249,
+          "exact": 4249
+        },
+        "gates": {
+          "pairSimilarity": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairTableExact": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairCellF1": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairCellExact": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairContentNED": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairCoverage": {
+            "value": 1,
+            "threshold": 1,
+            "pass": true
+          },
+          "pairErrors": {
+            "value": 0,
+            "threshold": 0,
+            "pass": true
+          }
+        },
+        "pass": true
+      }
+    },
+    "roundtrip": {
+      "fwdCovMicro": 1,
+      "bwdCovMicro": 1,
+      "tables": {
+        "ref": 68,
+        "exact": 68,
+        "cellTotal": 1897,
+        "cellExact": 1897,
+        "cellExactRate": 1
+      }
+    }
+  },
+  "pdfText": {
+    "baseline": {
+      "pairs": 744,
+      "refChars": 2857823,
+      "recall": 0.99826,
+      "precision": 0.99582,
+      "order": 0.99134,
+      "spaceF1": 0.98795,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "final": {
+      "pairs": 744,
+      "refChars": 2857823,
+      "recall": 0.99826,
+      "precision": 0.99582,
+      "order": 0.99146,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "regressions": [],
+    "improvements": [
+      {
+        "pair": "korea-kr-pairs2/156775650_260827(참고) 대규모유통업법 시행령 및 고시 입법 행정예고",
+        "k": "spaceF1",
+        "before": 0.98244,
+        "after": 0.98345
+      },
+      {
+        "pair": "lo-pairs/web003_service_report",
+        "k": "recall",
+        "before": 0.99937,
+        "after": 0.99968
+      },
+      {
+        "pair": "lo-pairs/web003_service_report",
+        "k": "precision",
+        "before": 0.96821,
+        "after": 0.96822
+      },
+      {
+        "pair": "lo-pairs/web003_service_report",
+        "k": "order",
+        "before": 0.98141,
+        "after": 0.98148
+      },
+      {
+        "pair": "lo-pairs/web017_붙임3_신청인의_개인정보_처리_동의서",
+        "k": "spaceF1",
+        "before": 0.95509,
+        "after": 0.95702
+      },
+      {
+        "pair": "rhwp/issue1891/80168_regulatory_analysis",
+        "k": "spaceF1",
+        "before": 0.98986,
+        "after": 0.98999
+      },
+      {
+        "pair": "rhwp/issue3637/regulatory_impact_nested_table_escape",
+        "k": "spaceF1",
+        "before": 0.98576,
+        "after": 0.98622
+      },
+      {
+        "pair": "rhwp/task2097/75544_pii_bunseok",
+        "k": "recall",
+        "before": 0.96696,
+        "after": 0.9676
+      },
+      {
+        "pair": "rhwp/task2097/75544_pii_bunseok",
+        "k": "precision",
+        "before": 0.99332,
+        "after": 0.99335
+      },
+      {
+        "pair": "rhwp/task2097/75544_pii_bunseok",
+        "k": "order",
+        "before": 0.95484,
+        "after": 0.96945
+      },
+      {
+        "pair": "rhwp/task2097/75544_pii_bunseok",
+        "k": "spaceF1",
+        "before": 0.93434,
+        "after": 0.94133
+      }
+    ]
+  },
+  "annex": {
+    "baseline": {
+      "hwp": {
+        "docs": 272,
+        "recall": 1,
+        "phantom": 0.00001,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 346,
+        "tableExact": 1,
+        "cellF1": 1,
+        "eqRef": 11,
+        "eqHit": 11
+      },
+      "pdf": {
+        "docs": 272,
+        "recall": 0.99965,
+        "phantom": 0.00053,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 335,
+        "tableExact": 0.96821,
+        "cellF1": 0.99529,
+        "eqRef": 11,
+        "eqHit": 7
+      }
+    },
+    "final": {
+      "hwp": {
+        "docs": 272,
+        "recall": 1,
+        "phantom": 0.00001,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 346,
+        "tableExact": 1,
+        "cellF1": 1,
+        "eqRef": 11,
+        "eqHit": 11
+      },
+      "pdf": {
+        "docs": 272,
+        "recall": 0.99965,
+        "phantom": 0.00053,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 335,
+        "tableExact": 0.96821,
+        "cellF1": 0.99529,
+        "eqRef": 11,
+        "eqHit": 7
+      }
+    }
+  },
+  "auxGates": [
+    {
+      "name": "pages",
+      "code": 0,
+      "seconds": 0.9357111250000001
+    },
+    {
+      "name": "roundtrip",
+      "code": 0,
+      "seconds": 1.5528832909999999
+    },
+    {
+      "name": "formats",
+      "code": 0,
+      "seconds": 30.855972124999997
+    },
+    {
+      "name": "reflow",
+      "code": 0,
+      "seconds": 1.7977360830000033
+    },
+    {
+      "name": "redact",
+      "code": 0,
+      "seconds": 0.49975704199999743
+    },
+    {
+      "name": "gen-sweep",
+      "code": 0,
+      "seconds": 0.1289457079999993
+    },
+    {
+      "name": "gen-repro",
+      "code": 0,
+      "seconds": 2.581653625,
+      "initialCode": 1,
+      "initialFailure": "isolated snapshot missing scripts/style-digest.mjs"
+    }
+  ],
+  "generationSweep": {
+    "entries": 36,
+    "baselineEqual": true
+  },
+  "formats": {
+    "files": 88,
+    "pass": true,
+    "gates": {
+      "parseErrors": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      },
+      "docxRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "xlsxStrRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "hmlRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "xlsxNumRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "xlsStrRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "xlsNumRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "bigStrRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "bigNumRecall": {
+        "value": 1,
+        "threshold": 1,
+        "pass": true
+      },
+      "population": {
+        "value": "docx 36/xlsx 28/xls 15/hml 9/큰 시트 8",
+        "threshold": "≥ 4/6/7/5/4 · 정답지 없음 0",
+        "pass": true
+      }
+    },
+    "xlsxNumRecall": 1
+  },
+  "generationReproduction": [
+    {
+      "name": "33586650",
+      "gtParas": 780,
+      "genParas": 850,
+      "matched": 735,
+      "missing": 45,
+      "extra": 67,
+      "props": 0.7959183673469388,
+      "groups": {
+        "결정적": {
+          "ok": 1857,
+          "n": 2205
+        },
+        "강조색": {
+          "ok": 684,
+          "n": 735
+        },
+        "손조정": {
+          "ok": 2139,
+          "n": 2940
+        }
+      },
+      "handCeiling": 0.7921768707482993,
+      "front": {
+        "gt": 95,
+        "gen": 60,
+        "matched": 46,
+        "ok": 352,
+        "n": 368,
+        "det": {
+          "ok": 126,
+          "n": 138
+        }
+      }
+    },
+    {
+      "name": "34906816",
+      "gtParas": 118,
+      "genParas": 128,
+      "matched": 115,
+      "missing": 3,
+      "extra": 9,
+      "props": 0.8184782608695652,
+      "groups": {
+        "결정적": {
+          "ok": 325,
+          "n": 345
+        },
+        "강조색": {
+          "ok": 102,
+          "n": 115
+        },
+        "손조정": {
+          "ok": 326,
+          "n": 460
+        }
+      },
+      "handCeiling": 0.7869565217391304,
+      "front": {
+        "gt": 75,
+        "gen": 56,
+        "matched": 53,
+        "ok": 418,
+        "n": 424,
+        "det": {
+          "ok": 157,
+          "n": 159
+        }
+      }
+    },
+    {
+      "name": "35530133",
+      "gtParas": 368,
+      "genParas": 405,
+      "matched": 360,
+      "missing": 8,
+      "extra": 25,
+      "props": 0.7704861111111111,
+      "groups": {
+        "결정적": {
+          "ok": 910,
+          "n": 1080
+        },
+        "강조색": {
+          "ok": 330,
+          "n": 360
+        },
+        "손조정": {
+          "ok": 979,
+          "n": 1440
+        }
+      },
+      "handCeiling": 0.8006944444444445,
+      "front": {
+        "gt": 104,
+        "gen": 67,
+        "matched": 64,
+        "ok": 501,
+        "n": 512,
+        "det": {
+          "ok": 191,
+          "n": 192
+        }
+      }
+    },
+    {
+      "name": "36153188",
+      "gtParas": 59,
+      "genParas": 61,
+      "matched": 59,
+      "missing": 0,
+      "extra": 0,
+      "props": 0.864406779661017,
+      "groups": {
+        "결정적": {
+          "ok": 169,
+          "n": 177
+        },
+        "강조색": {
+          "ok": 56,
+          "n": 59
+        },
+        "손조정": {
+          "ok": 183,
+          "n": 236
+        }
+      },
+      "handCeiling": 0.8389830508474576,
+      "front": {
+        "gt": 60,
+        "gen": 49,
+        "matched": 44,
+        "ok": 350,
+        "n": 352,
+        "det": {
+          "ok": 132,
+          "n": 132
+        }
+      }
+    },
+    {
+      "name": "36425365",
+      "gtParas": 62,
+      "genParas": 70,
+      "matched": 61,
+      "missing": 1,
+      "extra": 7,
+      "props": 0.7807377049180327,
+      "groups": {
+        "결정적": {
+          "ok": 174,
+          "n": 183
+        },
+        "강조색": {
+          "ok": 50,
+          "n": 61
+        },
+        "손조정": {
+          "ok": 157,
+          "n": 244
+        }
+      },
+      "handCeiling": 0.8401639344262295,
+      "front": {
+        "gt": 59,
+        "gen": 49,
+        "matched": 43,
+        "ok": 338,
+        "n": 344,
+        "det": {
+          "ok": 127,
+          "n": 129
+        }
+      }
+    }
+  ],
+  "pdfScore": {
+    "docs": 1911,
+    "scored": 1729,
+    "ocrOnly": 114,
+    "weak": 68,
+    "tinyConsensus": 68,
+    "gates": {
+      "coverage": {
+        "value": 0.99774,
+        "threshold": 0.9976,
+        "failDocs": 91,
+        "pass": true
+      }
+    },
+    "pass": true
+  },
+  "ocr": {
+    "baseline": {
+      "generatedAt": "2026-09-29T22:58:01.895Z",
+      "docs": 53,
+      "skipped": 3,
+      "pages": 102,
+      "cerMicro": 0.05188,
+      "cerMedian": 0.0216,
+      "charRecallMicro": 0.99001,
+      "charPrecisionMicro": 0.99355,
+      "charF1": 0.99178,
+      "hangulRecallMicro": 0.99363,
+      "cerMicroStrict": 0.09531,
+      "cerMedianStrict": 0.0719,
+      "secPerPage": 1.63,
+      "tables": {
+        "refTables": 67,
+        "matched": 52,
+        "exact": 22,
+        "matchedRate": 0.7761,
+        "exactRate": 0.3284,
+        "cellF1Mean": 0.5465,
+        "skippedRefTables": 37
+      },
+      "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+    },
+    "final": {
+      "generatedAt": "2026-09-30T00:15:24.582Z",
+      "docs": 53,
+      "skipped": 3,
+      "pages": 102,
+      "cerMicro": 0.05188,
+      "cerMedian": 0.0216,
+      "charRecallMicro": 0.99001,
+      "charPrecisionMicro": 0.99355,
+      "charF1": 0.99178,
+      "hangulRecallMicro": 0.99363,
+      "cerMicroStrict": 0.09542,
+      "cerMedianStrict": 0.0719,
+      "secPerPage": 0.98,
+      "tables": {
+        "refTables": 67,
+        "matched": 52,
+        "exact": 22,
+        "matchedRate": 0.7761,
+        "exactRate": 0.3284,
+        "cellF1Mean": 0.5465,
+        "skippedRefTables": 37
+      },
+      "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+    },
+    "commonSkippedPages": [
+      {
+        "doc": "eval-perf-2024.pdf",
+        "page": 5,
+        "inlineGlyphImages": 10,
+        "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+      },
+      {
+        "doc": "eval-perf-2024.pdf",
+        "page": 4,
+        "inlineGlyphImages": 9,
+        "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+      },
+      {
+        "doc": "nanet-seoul-minutes.pdf",
+        "page": 1,
+        "glyphCoverage": 0.088,
+        "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+      },
+      {
+        "doc": "nanet-seoul-minutes.pdf",
+        "page": 2,
+        "glyphCoverage": 0.071,
+        "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+      }
+    ],
+    "skippedPagesUnchanged": true,
+    "fairChanges": [],
+    "strictChanges": [
+      {
+        "doc": "sbc-budget-review.pdf",
+        "before": 0.0206,
+        "after": 0.0255
+      }
+    ]
+  },
+  "finalPdfGates": [
+    {
+      "name": "table",
+      "code": 0,
+      "seconds": 397.917787584
+    },
+    {
+      "name": "text",
+      "code": 0,
+      "seconds": 285.01535099999995
+    },
+    {
+      "name": "annex",
+      "code": 0,
+      "seconds": 10.445583583
+    },
+    {
+      "name": "pdf-score",
+      "code": 0,
+      "seconds": 515.8319718330001
+    },
+    {
+      "name": "ocr",
+      "code": 0,
+      "seconds": 261.240056875
+    }
+  ],
+  "status": "validation passed; all metrics 99% target not reached",
+  "visual": {
+    "run": false,
+    "reason": "Hancom Office HWP app unavailable"
+  },
+  "sourceHashes": [
+    {
+      "file": "src/hwpx/gen-gongmun.ts",
+      "sha256": "8a43b593eb1cedc3be3ee0e6e7a2d759259ccefd8de5679b6a55c21c34374cb5",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/hwpx/text-metrics.ts",
+      "sha256": "6db37d5af3ac04092809c6039ff6decfa0c4ff6450b1174036533f4107319df1",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/hwpx/fit-line.ts",
+      "sha256": "70548ae119d57810db52b59e882cf7d49e56d969a968ce86eb422c51614c0835",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/cell-text.ts",
+      "sha256": "fa0d3ab89951acd7078e63b9f1d52709ef9dc281fd1f2b7c26ee440a5264257d",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/table-unit-row.ts",
+      "sha256": "de586b94e64f6bad24fd4b92894efb175d83f35f34e56d4abef3687f8b8919b8",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/page-blocks.ts",
+      "sha256": "834b0ae83e6e81d366149fd780732b0ddd4ac2884a1ac6e68b3fe368a9239814",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/cell-edges.ts",
+      "sha256": "546efc14c84db080cdb54b643e928d88d1c6c991bc84c2f9aedd76666c103cf4",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/parser.ts",
+      "sha256": "e999b1868f9cace117201883fc1095365fa3a39ea1ccc0a78ce07c1e15dae5c1",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/underline.ts",
+      "sha256": "3ab03a6484d1d001c35720cb579bb926da3a6839d5d7a54669ed7a327df92302",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/table-parts.ts",
+      "sha256": "67a9c9ead9dce9939771a729b3a7baf0f5e1f2434d599ac71872f7cae3e2c924",
+      "snapshotEqual": true
+    },
+    {
+      "file": "src/pdf/text-line.ts",
+      "sha256": "fa4961fcc3fd7542a314d3b2a84a46ce8fd0c9acedceaebfba69e36360853439",
+      "snapshotEqual": true
+    }
+  ],
+  "fuzz": {
+    "generatedAt": "2026-09-30T00:30:13.599Z",
+    "runs": 23700,
+    "success": 12545,
+    "failed": 11155,
+    "pass": true,
+    "gates": {
+      "crash": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      },
+      "hang": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      },
+      "noCode": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      },
+      "slow": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      },
+      "genInvalid": {
+        "value": 0,
+        "threshold": 0,
+        "pass": true
+      }
+    },
+    "elapsedMs": 884441,
+    "incidents": [],
+    "slowest": [
+      {
+        "file": "pdf/changwon-plan2026.pdf",
+        "variant": "hflip",
+        "ms": 18865,
+        "outcome": "success"
+      },
+      {
+        "file": "pdf/changwon-plan2026.pdf",
+        "variant": "bflip",
+        "ms": 18708,
+        "outcome": "success"
+      },
+      {
+        "file": "korea-kr-pairs2/156775765_20260827_보도자료_기상기후인재개발원 신청사 개원, 국가 기상기후 인재 양성 본격화.pdf",
+        "variant": "hflip",
+        "ms": 12603,
+        "outcome": "success"
+      },
+      {
+        "file": "pdf/gwd-info-plan.pdf",
+        "variant": "bflip",
+        "ms": 11716,
+        "outcome": "success"
+      },
+      {
+        "file": "pdf/gwd-info-plan.pdf",
+        "variant": "hflip",
+        "ms": 11173,
+        "outcome": "success"
+      }
+    ]
+  },
+  "postGates": [
+    {
+      "name": "fuzz",
+      "code": 0,
+      "seconds": 884.622108083
+    },
+    {
+      "name": "perf-quality",
+      "code": 0,
+      "seconds": null,
+      "initialCode": 1,
+      "initialSeconds": 3.1857297920000276,
+      "initialFailure": "PDF.js per-call font document namespace difference; comparison fixed without production changes",
+      "retried": true
+    }
+  ],
+  "generatedAt": "2026-09-30T00:35:55.050Z",
+  "targetAchieved": false,
+  "performanceReport": "quality-performance-2026-09-30.json"
+}

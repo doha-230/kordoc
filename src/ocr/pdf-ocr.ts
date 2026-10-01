@@ -17,7 +17,7 @@ import type { NormItem } from "../pdf/text-line.js"
 import type { LineSegment } from "../pdf/line-types.js"
 import { extractPageBlocksWithLines } from "../pdf/page-blocks.js"
 import { detectRulingLines, rulingToPdfLines } from "./ruling-lines.js"
-import { getOcrEngine, type OcrItem, type OcrPageStats } from "./engine.js"
+import { DEFAULT_OCR_TUNING, getOcrEngine, type OcrItem, type OcrPageStats, type OcrTuning } from "./engine.js"
 import { deskewPage } from "./deskew.js"
 import { ensureOcrModels } from "./models.js"
 import { OPTIONAL_DEP_INSTALL_HINT } from "../utils.js"
@@ -137,7 +137,7 @@ async function ocrOnePage(
     const upright = vectorOps ? rgba : deskewPage(rgba, rw, rh).rgba
     const stats: OcrPageStats = { droppedLowConf: 0 }
     const ruling = vectorOps ? undefined : detectRulingLines(upright, rw, rh, rh / pdfH)
-    const items = await engine!.recognizePage(upright, rw, rh, stats, undefined, ruling?.cellDividers)
+    const items = await engine!.recognizePage(upright, rw, rh, stats, regions ? REGION_TUNING : undefined, ruling?.cellDividers)
     if (stats.droppedLowConf > 0) {
       warnings.push({
         page: pageNo,
@@ -207,6 +207,9 @@ function halve(src: Uint8Array, w: number, h: number): { rgba: Uint8Array; width
   return { rgba: out, width: W, height: H }
 }
 
+/** 그림 영역만 읽을 때 — 끝자락 지우기를 끈다 (engine OcrTuning.trimEdges 주석) */
+const REGION_TUNING: Readonly<OcrTuning> = Object.freeze({ ...DEFAULT_OCR_TUNING, trimEdges: false })
+
 function meanConfidence(items: OcrItem[]): number {
   let n = 0, sum = 0
   for (const it of items) { const len = [...it.text].length; n += len; sum += it.confidence * len }
@@ -226,7 +229,7 @@ async function closerReads(
     if (cw < 16 || ch < 16) { out.push(null); continue }
     const crop = new Uint8Array(cw * ch * 4)
     for (let y = 0; y < ch; y++) crop.set(rgba.subarray(((y0 + y) * rw + x0) * 4, ((y0 + y) * rw + x0 + cw) * 4), y * cw * 4)
-    const items = await engine.recognizePage(crop, cw, ch)
+    const items = await engine.recognizePage(crop, cw, ch, undefined, REGION_TUNING)
     out.push(items.map(it => ({ ...it, x: (it.x + x0) / 2, y: (it.y + y0) / 2, w: it.w / 2, h: it.h / 2 })))
   }
   return out

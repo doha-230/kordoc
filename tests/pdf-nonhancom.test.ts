@@ -8,7 +8,7 @@ import assert from "node:assert/strict"
 import { OPS } from "pdfjs-dist/legacy/build/pdf.mjs"
 import { normalizeItems, mergeLineSimple, type PdfTextItem, type NormItem } from "../src/pdf/text-line.js"
 import { detectColumns } from "../src/pdf/columns.js"
-import { dropShadingClipGrids } from "../src/pdf/table-grid.js"
+import { dropShadingClipGrids, dropHeadBandClipGrids } from "../src/pdf/table-grid.js"
 import type { TableGrid } from "../src/pdf/line-types.js"
 import { parsePdfDocument } from "../src/pdf/parser.js"
 import { extractLines, chainShortSegments } from "../src/pdf/line-extract.js"
@@ -334,5 +334,29 @@ describe("mapTextToCells — 괘선 없는 경계를 걸친 낱말", () => {
 describe("cleanPdfText — 균등배분 후처리와 마크다운 표지", () => {
   it("헤딩·목록 표지는 한 글자 토큰으로 세지 않는다 (\"# 목 차\" 가 \"#목차\" 로 헤딩이 깨지던 것, K-water 제안요청서)", () => {
     assert.equal(cleanPdfText("# 목 차\n\n- 가 나 다\n\n홍 보 담 당 관"), "# 목 차\n\n- 가나다\n\n홍보담당관")
+  })
+})
+
+describe("dropHeadBandClipGrids — 선 표 윗변의 되풀이 머리 행 클립 띠", () => {
+  const cell = (row: number, col: number, x1: number, y1: number, x2: number, y2: number) => ({ row, col, rowSpan: 1, colSpan: 1, bbox: { x1, y1, x2, y2 } })
+  // 국제기능올림픽 선수단 명단 4쪽 실측: 쪽 넘김 머리 행(+첫 행 번호 칸)만 클립, 선 격자는 30행 5열
+  const colXs = [58, 87.8, 188.7, 308.6, 397.8, 531.8]
+  const rowYs = [768.8, 742.7, 719.7, ...Array.from({ length: 28 }, (_, k) => 696.7 - k * 23)]
+  const line: TableGrid = { rowYs, colXs, bbox: { x1: 58, y1: rowYs[rowYs.length - 1], x2: 531.8, y2: 768.8 }, vertexRadius: 1 }
+  const band: TableGrid = {
+    rowYs: [768.8, 742.7, 719.7], colXs, bbox: { x1: 58, y1: 719.7, x2: 531.8, y2: 768.8 }, vertexRadius: 1,
+    cells: [...colXs.slice(0, -1).map((x, k) => cell(0, k, x, 742.7, colXs[k + 1], 768.8)), cell(1, 0, 58, 719.7, 87.8, 742.7)],
+  }
+  it("윗변에 붙은 행 띠 클립은 버리고 선 격자에 맡긴다", () => {
+    assert.equal(dropHeadBandClipGrids([band], [line]).length, 0)
+  })
+  it("열 경계가 다르거나, 윗변에서 떨어졌거나, 선 격자 나머지를 다른 클립이 덮으면 둔다", () => {
+    assert.equal(dropHeadBandClipGrids([{ ...band, colXs: [58, 120, 531.8] }], [line]).length, 1)
+    const mid: TableGrid = { ...band, rowYs: [719.7, 696.7], bbox: { ...band.bbox, y1: 696.7, y2: 719.7 } }
+    assert.equal(dropHeadBandClipGrids([mid], [line]).length, 1)
+    const rest: TableGrid = { ...band, rowYs: [696.7, 673.7], bbox: { ...band.bbox, y1: 673.7, y2: 696.7 } }
+    assert.equal(dropHeadBandClipGrids([band, rest], [line]).length, 2)
+    // 중첩표(틀 칸 안 클립)는 대상이 아니다
+    assert.equal(dropHeadBandClipGrids([{ ...band, clipParent: band.bbox }], [line]).length, 1)
   })
 })

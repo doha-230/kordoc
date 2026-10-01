@@ -108,6 +108,8 @@ export function precheckZipSize(
   buffer: ArrayBuffer,
   maxUncompressedSize = 256 * 1024 * 1024, // parser-shared MAX_DECOMPRESS_SIZE 와 동기
   maxEntries = 500,
+  /** 그림·개체 파트(엔트리 이름 re) — skip 이면 합계에서 뺀다(파서가 풀지 않는다), 아니면 한도 초과 메시지에 크기를 적는다 (#108) */
+  media?: { re: RegExp; skip: boolean },
 ): { totalUncompressed: number; entryCount: number } {
   try {
     const data = new DataView(buffer)
@@ -129,18 +131,27 @@ export function precheckZipSize(
     if (cdOffset + cdSize > len) return { totalUncompressed: 0, entryCount }
 
     let totalUncompressed = 0
+    let mediaUncompressed = 0
     let pos = cdOffset
     for (let i = 0; i < entryCount && pos + 46 <= cdOffset + cdSize; i++) {
       if (data.getUint32(pos, true) !== 0x02014b50) break
-      totalUncompressed += data.getUint32(pos + 24, true)
+      const size = data.getUint32(pos + 24, true)
       const nameLen = data.getUint16(pos + 28, true)
       const extraLen = data.getUint16(pos + 30, true)
       const commentLen = data.getUint16(pos + 32, true)
+      // 이름이 버퍼 밖이면 그림 파트로 치지 않는다(합계에서 빠지지 않게)
+      const isMedia = !!media && pos + 46 + nameLen <= len &&
+        media.re.test(new TextDecoder().decode(new Uint8Array(buffer, pos + 46, nameLen)))
+      if (isMedia) mediaUncompressed += size
+      if (!(isMedia && media?.skip)) totalUncompressed += size
       pos += 46 + nameLen + extraLen + commentLen
     }
 
     if (totalUncompressed > maxUncompressedSize) {
-      throw new KordocError(`ZIP 비압축 크기 초과: ${(totalUncompressed / 1024 / 1024).toFixed(1)}MB (최대 ${maxUncompressedSize / 1024 / 1024}MB)`)
+      const mb = (n: number) => (n / 1024 / 1024).toFixed(1)
+      const mediaNote = media && !media.skip && mediaUncompressed > 0
+        ? ` — 그림·개체 파트가 ${mb(mediaUncompressed)}MB, 이미지 추출을 끄면(images: false·--no-images) 세지 않는다` : ""
+      throw new KordocError(`ZIP 비압축 크기 초과: ${mb(totalUncompressed)}MB (최대 ${maxUncompressedSize / 1024 / 1024}MB)${mediaNote}`)
     }
 
     return { totalUncompressed, entryCount }

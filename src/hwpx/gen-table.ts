@@ -13,7 +13,7 @@ import { parseHtmlTable, htmlCellInnerToLines, splitCellByTopLevelTables, type H
 import { MAX_COLS, MAX_ROWS } from "../table/builder.js"
 import { clampSpan } from "./parser-shared.js"
 import { CHAR_NORMAL, CHAR_BOLD, CHAR_TABLE_HEADER, PARA_NORMAL, escapeXml, escapeTextXml, type ResolvedTheme } from "./gen-ids.js"
-import { generateRuns } from "./md-runs.js"
+import { generateRuns, parseInlineMarkdown } from "./md-runs.js"
 import { measureTextWidth } from "./text-metrics.js"
 import { TableBfRegistry, dataCellSpec } from "./gen-table-bf.js"
 import { takeProfile, normalizeAnchor, normalizeRowAnchor, type ProfileRemap, type TableRemap } from "./gen-profile.js"
@@ -126,10 +126,29 @@ function profileColWidths(tp: TableRemap | null, colCnt: number): number[] | nul
 // 좁게 배분돼 한 글자씩 세로로 갈라졌다 (v4.0.2 실렌더 QA 확인)
 const CELL_PAD = 1200
 
-/** 셀 텍스트 실폭 — 인라인 마크다운 부호·이미지 참조 제거, <br> 분리 후 최장 줄 기준 */
-function cellContentWidth(text: string, charHeight: number): number {
+/** GFM 셀 표시문자 — XML 방출과 같은 인라인 파서. 이미지는 별도 pic run이라 폭에서 제외. */
+function markdownCellLines(text: string): string[] {
+  return text.split(/<br\s*\/?>/i).map((seg) => {
+    // 평문은 인라인 파서의 모든 전처리·강조·링크 패턴과 무관하다.
+    if (!/[\\`*_!\[<~\x00]/.test(seg)) return seg.trim()
+    return parseInlineMarkdown(seg.replace(/!\[[^\]]*\]\([^)]*\)/g, "")).map((span) => span.text).join("").trim()
+  })
+}
+
+/** 한 표 안의 반복 셀(구분·담당·비고 등)은 표시문자 분해를 한 번만 한다. */
+function markdownTableLines(rows: string[][]): string[][][] {
+  const cache = new Map<string, string[]>()
+  return rows.map((row) => row.map((cell) => {
+    let lines = cache.get(cell)
+    if (!lines) { lines = markdownCellLines(cell); cache.set(cell, lines) }
+    return lines
+  }))
+}
+
+/** 셀 텍스트 실폭 — 표시문자 줄 중 최장 줄 기준 */
+function cellContentWidth(lines: string[], charHeight: number): number {
   let max = 0
-  for (const seg of text.replace(/!\[[^\]]*\]\([^)\s]+\)/g, "").replace(/\*\*|__|`/g, "").split(/<br\s*\/?>/i)) {
+  for (const seg of lines) {
     const w = measureTextWidth(seg.trim(), charHeight, 100, { faceClass: curFace })
     if (w > max) max = w
   }
@@ -137,9 +156,9 @@ function cellContentWidth(text: string, charHeight: number): number {
 }
 
 /** 셀 최장 '어절' 폭 — 열 하한의 기준. 이보다 좁으면 어절이 글자 단위로 세로 분해된다 */
-function cellMinWordWidth(text: string, charHeight: number): number {
+function cellMinWordWidth(lines: string[], charHeight: number): number {
   let max = 0
-  for (const seg of text.replace(/!\[[^\]]*\]\([^)\s]+\)/g, "").replace(/\*\*|__|`/g, "").split(/<br\s*\/?>/i)) {
+  for (const seg of lines) {
     // 일반 공백에서만 끊는다 — 묶음 빈칸(U+00A0, 날짜·금액)은 JS \s 에 걸리지만 한 어절이다
     for (const word of seg.trim().split(/[ \t]+/)) {
       const w = measureTextWidth(word, charHeight, 100, { faceClass: curFace })
@@ -161,8 +180,10 @@ const REMARK_SHARE = 0.25
 /** 내용류 열 비례 배분 가중 — 3열 all-short 표에서 25/50/25(실측 중앙값 51%) */
 const CONTENT_WEIGHT = 2
 
-export function colRoles(headers: string[]): ColRole[] {
-  const clean = headers.map((h) => (h ?? "").replace(/!\[[^\]]*\]\([^)\s]+\)/g, "").replace(/\*\*|__|`|\s+/g, ""))
+export function colRoles(headers: string[], markdown = true): ColRole[] {
+  const clean = headers.map((h) => markdown
+    ? markdownCellLines(h ?? "").join("").replace(/\s+/g, "")
+    : (h ?? "").replace(/!\[[^\]]*\]\([^)\s]+\)/g, "").replace(/\*\*|__|`|\s+/g, ""))
   const roles: ColRole[] = clean.map((h) => (REMARK_HEAD.test(h) ? "remark" : h.length <= 12 && CONTENT_HEAD.test(h) ? "content" : null))
   // 내용 열이 있는 3열+ 표의 마지막 열(근거·일정 등)은 비고처럼 좁게 — 실측 마지막 열 중앙값 26%
   const last = roles.length - 1
@@ -261,14 +282,12 @@ export function computeColWidths(colMax: number[], totalWidth: number, colMinWor
 }
 
 /** 행 높이 추정 — 각 셀의 줄바꿈 수 시뮬레이션(최다 줄 기준) */
-function estimateRowHeight(cells: string[], widths: number[], charHeight: number): number {
+function estimateRowHeight(cellWidths: number[][], widths: number[], charHeight: number): number {
   let maxLines = 1
-  cells.forEach((cell, c) => {
+  cellWidths.forEach((cell, c) => {
     const usable = Math.max((widths[c] ?? widths[widths.length - 1]) - CELL_PAD, 1000)
     let lines = 0
-    for (const seg of cell.replace(/\*\*|__|`/g, "").split(/<br\s*\/?>/i)) {
-      lines += Math.max(1, Math.ceil(measureTextWidth(seg.trim(), charHeight, 100, { faceClass: curFace }) / usable))
-    }
+    for (const w of cell) lines += Math.max(1, Math.ceil(w / usable))
     if (lines > maxLines) maxLines = lines
   })
   return maxLines * Math.round(charHeight * 1.6) + 282
@@ -285,7 +304,7 @@ export function requiredTableWidth(rows: string[][], charHeight: number, faceCla
   curFace = faceClass
   const colCnt = Math.max(...rows.map((r) => r.length), 1)
   const colMax = Array<number>(colCnt).fill(0)
-  for (const row of rows) row.forEach((cell, c) => { const w = cellContentWidth(cell, charHeight); if (w > colMax[c]) colMax[c] = w })
+  for (const row of markdownTableLines(rows)) row.forEach((cell, c) => { const w = cellContentWidth(cell, charHeight); if (w > colMax[c]) colMax[c] = w })
   curFace = prev
   return colMax.reduce((a, w) => a + Math.round((w + CELL_PAD) * colSlack(faceClass)), 0)
 }
@@ -308,8 +327,12 @@ export function generateTable(rows: string[][], theme: ResolvedTheme, style: Gon
   const colMax = Array(colCnt).fill(0)
   const colMaxBody = Array(colCnt).fill(0)
   const colMinWord = Array(colCnt).fill(0)
-  rows.forEach((row, r) => row.forEach((cell, c) => {
-    const w = cellContentWidth(cell, measureH)
+  // 동일 표시문자를 폭·어절 하한·행높이에서 재사용 — 문법 정규화를 각각 반복하지 않는다.
+  const cellLines = markdownTableLines(rows)
+  const cellWidths = cellLines.map((row) => row.map((lines) =>
+    lines.map((line) => measureTextWidth(line, measureH, 100, { faceClass: curFace }))))
+  cellLines.forEach((row, r) => row.forEach((cell, c) => {
+    const w = cellWidths[r][c].reduce((max, width) => Math.max(max, width), 0)
     if (w > colMax[c]) colMax[c] = w
     if (r > 0 && w > colMaxBody[c]) colMaxBody[c] = w
     const mw = cellMinWordWidth(cell, measureH)
@@ -335,7 +358,7 @@ export function generateTable(rows: string[][], theme: ResolvedTheme, style: Gon
     ? (id: number) => (id === CHAR_NORMAL ? style.charPr : id === CHAR_BOLD ? style.boldCharPr : id)
     : undefined
 
-  const rowHeights = rows.map((row) => style ? estimateRowHeight(row, colWidths, measureH) : 1500)
+  const rowHeights = cellWidths.map((row) => style ? estimateRowHeight(row, colWidths, measureH) : 1500)
 
   const trElements = rows.map((row, rowIdx) => {
     // 부족한 셀은 빈 문자열로 채워 colCnt 맞춤
@@ -502,7 +525,9 @@ export function generateHtmlTableXml(rawHtml: string, theme: ResolvedTheme, tota
   placed.forEach((cell, i) => {
     const w = Math.max(...cellLines[i].map((l) => measureTextWidth(l.trim(), measureH, 100, { faceClass: curFace })), 0) / cell.colSpan
     // 최장 어절(열 하한) — 병합 셀은 첫 열에만 기여 (분할 배분 시 하한 과대 방지)
-    const mw = cell.colSpan === 1 ? Math.max(...cellLines[i].map((l) => cellMinWordWidth(l, measureH)), 0) : 0
+    // HTML 경로의 어절 하한 정규화는 유지 — GFM 인라인 측정 변경을 HTML 리터럴에 확장하지 않는다.
+    const mw = cell.colSpan === 1 ? cellMinWordWidth(cellLines[i].flatMap((line) =>
+      line.replace(/!\[[^\]]*\]\([^)\s]+\)/g, "").replace(/\*\*|__|`/g, "").split(/<br\s*\/?>/i)), measureH) : 0
     for (let dc = 0; dc < cell.colSpan; dc++) {
       const c = cell.c + dc
       if (w > colMax[c]) colMax[c] = w
@@ -512,7 +537,7 @@ export function generateHtmlTableXml(rawHtml: string, theme: ResolvedTheme, tota
   })
   const headers = Array.from({ length: colCnt }, () => "")
   for (const [i, cell] of placed.entries()) if (cell.r === 0 && cell.c < colCnt) headers[cell.c] = cellLines[i].join(" ")
-  const roles = style ? colRoles(headers) : []
+  const roles = style ? colRoles(headers, false) : []
   const colWidths = profileColWidths(prof, colCnt) ?? computeColWidths(colMax, totalWidth, colMinWord, roles, colSlack(curFace))
   const colCentered = colWidths.map((w, c) => roles[c] !== "content" && colMaxBody[c] + CELL_PAD <= w)
 

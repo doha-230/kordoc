@@ -7,92 +7,109 @@
 
 > *Korea's document hell is second to none. Built by a civil servant who survived seven years in it.*
 
-HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, PPTX, images (PNG/JPG/WebP) — parse, compare, analyze, and generate every document format Korean government offices throw at you.
+HWP 3.x/5.x, HWPX, HWPML, PDF, XLS, XLSX, DOCX, images (PNG/JPG/WebP) — parse, compare and generate the documents Korean government offices run on. [한국어](./README.md)
 
-[한국어](./README.md)
-
-> 📊 **Public PDF benchmark (opendataloader-bench, 200 documents): overall 0.937 (OCR 0.960 · OCR+plain 0.967) — higher than all 12 published PDF parsers (commercial included), at 0.03 s per page.** Korean government documents are scored against their original HWPX files; all 13,041 HWPX tables match cell for cell. → [Performance at a glance](#-performance-at-a-glance)
+- 📊 **#1 on the public PDF benchmark** — opendataloader-bench (200 documents) overall 0.960, above all 12 published parsers (commercial included) (OCR off: 0.937 at 0.04 s per page)
+- 🇰🇷 **Korean tables as they look** — scored against what the original HWPX shows, 99.6% of 9,865 visible tables match cell for cell; invisible-border layout frames become text and cell-built fractions become `$\frac{}{}$`
 
 [![kordoc — watch the demo](./docs/video-demo.jpg)](https://youtu.be/Q13GmgDcIw0)
 
 <sub>▶ Click to play on YouTube. Narration is in Korean.</sub>
 
+**Contents** — [Install](#-install) · [Features](#-features) · [Performance](#-performance) · [Quick Start](#-quick-start) · [CLI](#-cli) · [MCP Server](#-mcp-server) · [API](#-api) · [Supported Formats](#-supported-formats) · [Security](#-security) · [Recent Changes](#-recent-changes)
+
 ---
 
-## ⚡ 30-Second Setup (AI Agent Integration)
+## What's New in v4.18.1
 
-**macOS / Linux / Windows.** All you need is Node.js 20+.
+**PPTX (PowerPoint) is now parsed.** Slides are read in `sldIdLst` order: `a:p` text becomes paragraphs and lists (title placeholders become `##`), tables keep their merges (`gridSpan`/`rowSpan` plus `hMerge`/`vMerge` continuation cells), and charts are read from their **cached** series names, categories and values (`c:tx`/`c:cat`/`c:val`) into a category × series table — the numbers survive without the source workbook or PowerPoint. SmartArt (`dgm:data`) becomes an ordered list of node texts and speaker notes are appended per slide under `## 발표자 노트` (Speaker notes). Slide images are exported to `images` (with the original part path as `source`) and, with `ocr: true`, read by the **same built-in engine** as image input (PP-OCRv5, including raster table reconstruction); the model is used automatically when already cached and never downloaded otherwise (`ocr: false` turns it off). Reading order follows the shape tree, so tables interleaved with text stay in place. `pages`/`pageCount` are slide-based and `--pages 2-4` narrows the parse.
+
+**Closed-network Windows artifacts — portable ZIP and MSI.** `node scripts/pack-offline.mjs --target win32-x64 --format zip` produces a tree that runs straight after extraction (with Windows `bin\kordoc.cmd` / `bin\kordoc-mcp.cmd` launchers and a PowerShell `INSTALL.md`), and `npm run build:msi` bakes the **same staging** with WiX v5 into an OCR engine and model bundled `kordoc-<version>-win-x64.msi` (installs to `%ProgramFiles%\kordoc`, sets system `KORDOC_OFFLINE=1`, appends `bin` to PATH, points to the bundled models, replaces older versions via `MajorUpgrade`). The MSI needs WiX, so it is built on Windows/CI — [`.github/workflows/windows-package.yml`](.github/workflows/windows-package.yml) produces both and attaches OCR bundled artifacts to a GitHub Release on `v*` tags. See [docs/offline-deployment.md](docs/offline-deployment.md).
+
+PPTX support ends the #80 behaviour where PPTX reported an unsupported format — `parse()` now parses it. Tools that edit the original file in place (`fill_form` with `hwpx-preserve`, `patch_document`) still refuse by name with `감지된 포맷: pptx`.
+
+## ⚡ Install
+
+All you need is Node.js 20+ (macOS / Linux / Windows).
+
+### AI agent integration (MCP) — 30 seconds
 
 ```bash
 npx -y kordoc setup
 ```
 
-An interactive wizard:
-1. Pick your AI client (Claude Desktop / Cursor / Claude Code / Windsurf / VS Code / Gemini CLI / Zed / Antigravity / Codex — installed ones show `[detected]`)
-2. Patches the config file automatically → restart the client
+Pick your installed AI client (Claude Desktop · Cursor · Claude Code · Windsurf · VS Code · Gemini CLI · Zed · Antigravity · Codex) and the settings are written for you. Restart it and the [17 document tools](#-mcp-server) are on.
 
-Windows gets automatic `cmd /c npx` wrapping. No manual JSON editing. After restart, 15 document tools (`parse_document`, `parse_table`, `fill_form`, `patch_document`, `generate_document`, `place_seal`, …) are live.
-
-> **CLI-only usage** needs no install at all: `npx kordoc <file>`. See [CLI](#cli) below.
-
-> **If you hit `MODULE_NOT_FOUND` / `Cannot find module ...\dist\cli.js`**: a broken global install is lingering. Fix with:
-> ```powershell
-> npm uninstall -g kordoc
-> npx -y kordoc@latest setup
-> ```
-
-> **If Windows PowerShell blocks `npx.ps1` (`PSSecurityException`)**: that's PowerShell's default policy blocking unsigned `.ps1` scripts (not kordoc). Either run the same command in **cmd** instead, or relax the policy once from an admin PowerShell: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
-
-> **PNG rendering / image OCR fail with `MISSING_DEPENDENCY` (sharp) on network-restricted linux/x64** (#99): the optional `onnxruntime-node` install script downloads CUDA binaries from `api.nuget.org`; when that fails npm also drops `sharp` and `@huggingface/transformers` (kordoc only uses CPU inference). Skip the CUDA download — `npm install sharp` does not fix an npx cache:
-> ```bash
-> ONNXRUNTIME_NODE_INSTALL=skip npx -y kordoc@^4 <command> ...
-> ```
-
-### Install as a Claude Code plugin
-
-Prefer a skill (SKILL.md) over MCP registration:
+### Claude Code plugin
 
 ```
 /plugin marketplace add chrisryugj/kordoc
 /plugin install kordoc@kordoc
 ```
 
-The kordoc skill auto-activates on `.hwp`/`.hwpx` mentions and Korean official-document generation/form-filling requests (it calls the `npx -y kordoc@^3` CLI internally — no separate install).
+The skill turns on by itself for `.hwp`/`.hwpx` files and official-document requests (no separate install).
+
+### Library · CLI
+
+```bash
+npm install kordoc        # CLI only? no install needed: npx kordoc <file>
+```
+
+PDF and OCR dependencies are installed by default (`--omit=optional` slims the install but drops PDF and OCR). Only PDF print rendering (`markdownToPdf`) needs `puppeteer-core` installed separately.
+
+<details>
+<summary>Troubleshooting</summary>
+
+- **`MODULE_NOT_FOUND` / `Cannot find module ...\dist\cli.js`** — a broken global install is lingering.
+  ```powershell
+  npm uninstall -g kordoc
+  npx -y kordoc@latest setup
+  ```
+- **PowerShell `npx.ps1 … PSSecurityException`** — PowerShell's default policy. Run `npx -y kordoc setup` in cmd, or `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` and reopen PowerShell.
+- **PNG rendering / image OCR fail with `MISSING_DEPENDENCY` (sharp) on network-restricted linux/x64** (#99) — onnxruntime's CUDA download failed and took sharp with it.
+  ```bash
+  ONNXRUNTIME_NODE_INSTALL=skip npx -y kordoc@^4 <command> ...
+  ```
+- **Air-gapped networks** — see [Security](#-security).
+
+</details>
 
 ---
 
-## 💡 What can you do with kordoc?
+## 💡 Features
 
-Beyond plain text extraction, kordoc automates the **entire lifecycle of Korean official documents**.
-
-*   **📄 Any document to Markdown**: Convert `HWP3` (legacy), `HWP` (5.x), `HWPX`, `HWPML`, `PDF`, `XLS`, `XLSX`, `DOCX`, `PPTX` — and `PNG`/`JPG`/`WebP` images (automatic OCR) — to `Markdown` instantly — the ideal shape for LLMs to read and reason about.
-*   **📊 Faithful table reconstruction**: Borderless PDF tables and heavily merged HWP tables are analyzed structurally and restored as accurate markdown tables. Old-vs-new clause comparison tables in legislative amendment PDFs survive intact (v3.16.2).
-*   **🔍 Automatic redline (diff)**: Compare two documents and see exactly what changed — including cross-format comparison (HWP vs HWPX).
-*   **📝 Markdown back to HWPX**: Turn AI-written content back into report-form `HWPX`. No more copy-paste drudgery.
-*   **🏛️ Government-standard document generation (v4.0)**: An official-document engine built by exhaustively decoding 16 real government templates plus 60 actually-approved drafts. Gaejosik reports (cover, TOC banner, Roman-numeral chapter headers, page numbers, approval box), draft documents (statutory head/foot blocks, automatic "끝."), public-notice and press-release presets, 8-level Korean item numbering, and a 13-rule notation linter (`kordoc lint`) — all verified down to the typeset output via Hancom COM rendering.
-*   **🔄 Lossless format-preserving roundtrip (v3.0)**: Edit the converted markdown and hand it to `patchHwpx` (HWPX) / `patchHwp` (HWP 5.x binary) — only the changed paragraph/cell text is swapped in place, **without touching a single byte of the original formatting**. Row insertion/deletion inherits neighboring-row formatting (v3.7); filling originally-empty HWP 5.x cells works too (v3.8).
-*   **🖼️ Layout-preserving render (v3.10–3.17)**: Reproduce the original layout as SVG from Hancom's saved typesetting cache; files without a cache (AI-generated HWPX, edited output) are typeset directly by a **pure-TS reflow engine**. Multi-page, multi-section, per-run fonts, landscape pages, tables, drawing shapes, search-term highlighting — HWPX previews on a server with no Hancom installed.
-*   **📊 Chart generation (v3.16)**: A markdown ```chart fence (type/cat/series lines) becomes a native Hancom chart (OOXML chartSpace) — 20 types including bar/line/pie/donut/area/scatter/radar, with per-series colors.
-*   **🔴 Stamp/signature placement (v3.16)**: Finds anchor phrases like "(인)" ("seal here") and places a stamp PNG as a floating object in front of text. Tables and pages never grow, so stamping doesn't shift the layout (`kordoc seal`).
-*   **✏️ Form auto-fill**: Feed values into official form templates (applications, reports) and every blank is filled — preserving 100% of the original formatting (font, size, alignment).
-*   **🤖 AI agent integration (MCP)**: Let `Claude Desktop`, `Cursor`, `Codex`, and friends call `kordoc` directly to read and produce documents.
+| Feature | What it does |
+| --- | --- |
+| 📄 **Document → Markdown** | HWP · HWPX · PDF · DOCX · XLS(X) · images to Markdown + structured IR (`IRBlock[]`) |
+| 📊 **Tables** | As they look in the original: ruled tables keep merges and nesting, invisible-border layout frames become text, cell-built fractions become equations. Borderless PDF tables and clause comparison tables too |
+| 🔍 **Redline** | Block- and cell-level differences between two documents (HWP ↔ HWPX works) |
+| 📝 **Markdown → HWPX** | AI-written text back to HWPX, with tables, equations and charts |
+| 🏛️ **Official documents** | Gaejosik reports, draft documents, press releases and Seoul policy-plan presets, plus a 19-rule notation linter (`kordoc lint`) |
+| 🔄 **Format-preserving edits** | Apply edited Markdown to the original — only changed text is swapped (`patchHwpx`/`patchHwp`) |
+| ✏️ **Form fill** | Fill blanks and click-here fields without touching formatting; two built-in draft templates |
+| 🔴 **Stamps** | Float a stamp image over "(인)" (`kordoc seal`) |
+| 🖼️ **Render** | SVG/PNG/PDF previews exactly as laid out, without Hancom |
+| 📈 **Charts** | A Markdown fence becomes a native Hancom chart (20 types) |
+| 👓 **Built-in OCR** | Scanned PDFs and images on local CPU — no API key |
+| 📑 **RAG · citations** | Breadcrumb chunks and real page numbers for citations |
+| 🕶️ **PII masking** | Finds resident numbers, phones, accounts and more; masks HWPX/HWP in place (a human check before publishing is required) |
+| 🤖 **MCP** | Call the document tools from Claude, Cursor or Codex |
 
 ---
 
-## 📊 Performance at a glance
+## 📊 Performance
 
-### PDF → Markdown: ahead of the 12 engines on the public benchmark
+Every number is reproduced by `npm run bench:gate`, which every release must pass. Scoring rules, reproduction steps and per-option numbers: [docs/benchmarks-en.md](docs/benchmarks-en.md).
 
-[opendataloader-bench](https://github.com/opendataloader-project/opendataloader-bench) scores 200 PDFs (papers, reports, slides, posters, scans) against human-made ground truth for **reading order (NID), table structure (TEDS) and heading hierarchy (MHS)**. 1.0 means identical to the ground truth.
+### PDF → Markdown (opendataloader-bench, 200 documents)
+
+200 PDFs (papers, reports, slides, scans) scored against human-made ground truth for reading order, table structure and heading hierarchy (1.0 = identical).
 
 | Rank | Engine | Overall | Reading order | Tables | Headings | Time / page |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| **1** | **kordoc (default)** | **0.937** | **0.938** | **0.936** | **0.933** | **0.03 s** |
-| ref. | kordoc `plain: true` (no image placeholders or link URLs) | 0.946 | 0.947 | 0.937 | 0.940 | 0.03 s |
-| ref. | kordoc `ocr: true` (text inside images too) | 0.960 | 0.960 | 0.979 | 0.949 | 0.46 s |
-| ref. | kordoc `ocr: true, plain: true` | 0.967 | 0.968 | 0.981 | 0.956 | 0.46 s |
-| ref. | kordoc `plain: true, htmlTables: true` | 0.949 | 0.954 | 0.940 | 0.943 | 0.03 s |
-| ref. | kordoc `ocr: true, plain: true, htmlTables: true` | 0.971 | 0.975 | 0.983 | 0.958 | 0.46 s |
+| **1** | **kordoc default** | **0.960** | **0.961** | **0.979** | **0.945** | **0.52 s** |
+| ref. | kordoc `ocr: false` (fastest) | 0.937 | 0.938 | 0.936 | 0.933 | 0.04 s |
+| ref. | kordoc `ocr: true, plain: true, htmlTables: true` | 0.973 | 0.977 | 0.983 | 0.959 | 0.58 s |
 | 2 | opendataloader-hybrid | 0.907 | 0.934 | 0.928 | 0.821 | 0.46 s |
 | 3 | nutrient (commercial) | 0.885 | 0.925 | 0.708 | 0.819 | 0.01 s |
 | 4 | docling | 0.882 | 0.898 | 0.887 | 0.824 | 0.76 s |
@@ -106,27 +123,28 @@ Beyond plain text extraction, kordoc automates the **entire lifecycle of Korean 
 | 12 | markitdown | 0.589 | 0.844 | 0.273 | 0.000 | 0.11 s |
 | 13 | liteparse | 0.576 | 0.866 | 0.000 | 0.000 | 1.06 s |
 
-- The default is **first on all four columns** — no GPU, cloud API or LLM, just Node.js.
-- Other engines' scores are the benchmark repository's published results (Apple M4 32GB); kordoc was measured on the same PDFs and ground truth with the **unmodified evaluator** (Apple M4 24GB, 200 documents in one process, 8 s). Re-scoring the repository's opendataloader-hybrid predictions with the same evaluator gives 0.9066, matching its published score. Reproduce: `node bench/odl-bench.mjs <bench clone>`, then the benchmark's `src/evaluator.py`.
-- LM-Kit One (commercial; results-only PR #34, not merged) reports 0.948 without OCR and 0.963 with OCR. Most of the no-OCR gap is table markup: it writes table cells in the ground truth's HTML shape (`<td> text </td>`, header rows as `<td>`); normalised to the same markup, kordoc `plain` scores 0.951 vs 0.948, and with `htmlTables` (every table as indented HTML) kordoc leads both rows: 0.949 without OCR, 0.971 with OCR. `plain: true` drops image placeholders, link URLs and underline/bold marks for indexing and RAG.
+- The default alone is first on all four columns — no GPU, cloud API or LLM, just Node.js. `ocr: false` is also first on all four.
+- When the OCR model is cached, the default reads scanned pages and text inside large images. Image-heavy documents get slower; use `ocr: false` when speed matters.
 
-### Korean government documents: scored against the original HWPX
+### Korean government documents — scored against the original HWPX
+
+Real government documents (press releases, approval documents, statutory forms, budgets) that exist both as HWPX and as a PDF export. The table ground truth is the **visible** table, i.e. what the cell borders draw (v4.17.0 scoring).
 
 | Area | Size | Result |
 | --- | --- | --- |
-| HWPX text and tables | 2,286 documents, 13,041 tables | 0 missing text · all 13,041 tables match cell for cell · reading order 100% |
+| HWPX text & tables | 2,286 documents, 9,865 visible tables | 0 missing text · 99.6% of tables match cell for cell · reading order 100% |
 | HWP 5.x | 1,120 HWP/HWPX pairs | identical to the HWPX result |
-| PDF text | 751 pairs (HWPX ground truth) | recall 99.5% · precision 97.0% · order 98.3% |
-| PDF tables | 716 pairs, 2,692 tables (HWPX ground truth) | found 98.9% · exact cell match 94.2% · cell F1 0.966 |
-| Built-in OCR (local CPU) | 54 documents, 104 pages | char recall 98.1% · Hangul recall 99.3% · precision 97.5% · 0.9 s/page |
+| PDF text | 744 pairs | char recall 99.8% · precision 99.6% · reading order 99.1% · word F1 98.8% |
+| PDF tables | 708 pairs, 2,331 visible tables | found 99.7% · exact cell match 97.3% · cell F1 0.989 |
+| Statute annexes (HWP · Hancom PDF) | 272 annexes, 346 visible tables | HWP all tables match · PDF 96.8% · cell-built fractions 11/11 (HWP) |
+| PDF overall | 1,911 documents | text coverage 99.8% |
+| Scanned OCR (local CPU) | 53 documents, 102 pages | char recall 99.0% · precision 99.4% · about 1 s/page |
 | DOCX · XLSX · XLS · HML | 88 documents | 0 missing text or numbers |
 | Markdown → HWPX → Markdown | 83 runs | no loss of text, tables, headings or equations |
 
-Every number is reproduced by `npm run bench:gate`, which every `npm publish` must pass.
+### HWP · HWPX → Markdown — against HwpForge
 
-### HWP · HWPX → Markdown: against HwpForge with the same scorer
-
-The same corpus converted to Markdown by [HwpForge](https://github.com/ai-screams/HwpForge) 0.16.6 (`to_md`, lossy) and by kordoc, both scored against the **original HWPX XML** (tables from both outputs go through the same Markdown table parser; single-column tables are excluded from table scoring for both).
+The same corpus scored against the original HWPX XML with the same scorer (single-column tables excluded). Measured at v4.16 against the previous ground truth (HWPX table structure as is).
 
 | | kordoc | HwpForge 0.16.6 |
 | --- | ---: | ---: |
@@ -139,370 +157,11 @@ The same corpus converted to Markdown by [HwpForge](https://github.com/ai-scream
 | HWP — exact tables (3,111) | **100%** | 27.0% |
 | HWP — cell F1 | **1.000** | 0.349 |
 
-HwpForge focuses on generation and editing; its Markdown uses pipe tables only, so merged cells cannot be expressed, which accounts for most of the table gap. Single-column tables (1,288 in the corpus) are decorative frames: 43% title or body boxes, 28% blank spacer frames, 3% lists. Whether to emit them as a table or as lines is a presentation choice, and their text is still scored by text recall. With single-column tables included: HWPX 10,392 tables, kordoc 90.6% vs HwpForge 36.0%; HWP 3,500 tables, 92.8% vs 32.1%. The HWP count excludes one pair whose HWPX is distribution-encrypted (no ground truth). Reproduce: `bench/hwpforge-bench.py`, then `node bench/compare-md-parsers.mjs <output dir>` (add `--include-single-col` to score single-column tables).
+Most of the table gap comes from HwpForge's pipe tables, which cannot express merged cells.
 
 ---
 
-## What's New in v4.18.1
-
-**PPTX (PowerPoint) is now parsed.** Slides are read in `sldIdLst` order: `a:p` text becomes paragraphs and lists (title placeholders become `##`), tables keep their merges (`gridSpan`/`rowSpan` plus `hMerge`/`vMerge` continuation cells), and charts are read from their **cached** series names, categories and values (`c:tx`/`c:cat`/`c:val`) into a category × series table — the numbers survive without the source workbook or PowerPoint. SmartArt (`dgm:data`) becomes an ordered list of node texts and speaker notes are appended per slide under `## 발표자 노트` (Speaker notes). Slide images are exported to `images` (with the original part path as `source`) and, with `ocr: true`, read by the **same built-in engine** as image input (PP-OCRv5, including raster table reconstruction); the model is used automatically when already cached and never downloaded otherwise (`ocr: false` turns it off). Reading order follows the shape tree, so tables interleaved with text stay in place. `pages`/`pageCount` are slide-based and `--pages 2-4` narrows the parse.
-
-**Closed-network Windows artifacts — portable ZIP and MSI.** `node scripts/pack-offline.mjs --target win32-x64 --format zip` produces a tree that runs straight after extraction (with Windows `bin\kordoc.cmd` / `bin\kordoc-mcp.cmd` launchers and a PowerShell `INSTALL.md`), and `npm run build:msi` bakes the **same staging** with WiX v5 into an OCR engine and model bundled `kordoc-<version>-win-x64.msi` (installs to `%ProgramFiles%\kordoc`, sets system `KORDOC_OFFLINE=1`, appends `bin` to PATH, points to the bundled models, replaces older versions via `MajorUpgrade`). The MSI needs WiX, so it is built on Windows/CI — [`.github/workflows/windows-package.yml`](.github/workflows/windows-package.yml) produces both and attaches OCR bundled artifacts to a GitHub Release on `v*` tags. See [docs/offline-deployment.md](docs/offline-deployment.md).
-
-PPTX support ends the #80 behaviour where PPTX reported an unsupported format — `parse()` now parses it. Tools that edit the original file in place (`fill_form` with `hwpx-preserve`, `patch_document`) still refuse by name with `감지된 포맷: pptx`.
-
-## What's New in v4.16.0
-
-PDF text and table recovery went up alongside a scoring cleanup. Against the original HWPX/DOCX, PDF text scores 99.8% character recall, 99.5% precision, 99.1% reading order and 98.7% word F1; Korean PDF tables match cell-for-cell 96.7%. Page-bottom footnotes and document-end endnotes move next to their references, and TOC leader dots, book-edge index tabs, underlined form blanks, Chinese/Japanese line wraps and press-release contact tables are fixed. Pages without a text layer (scans, glyphs drawn as curves) are OCR'd automatically when the OCR model is already cached — ODL 200 default 0.940 (`ocr: false` turns it off; without a cached model nothing is downloaded and the warning stays as before). DOCX numbered lists now carry their real labels ("[3]", "5.1", "A.1") instead of "1.". Images saved with `-o`/`-d` go to a per-document `images/<document name>/` folder, so converting several documents into one folder no longer overwrites images (#98 — the image path changed). Also: `render --reflow` compatibility (#97), install guidance for network-restricted linux/x64 (#99), and webhook / MCP output / HTML rendering hardening (#100).
-
-## What's New in v4.15.7
-
-Nested tables and PDF text recovery went wider. HWP5 tables now come out the same shape as the same document's HWPX (only page-spanning body boxes are flattened), and 3- to 8-level nested tables keep every level in HWPX, HWP5 and PDF. HWP/HWPX → Markdown tables match 3,111/3,111 (HWP) and 9,122/9,123 (HWPX) with single-column frames excluded. PDF gains occluded-text removal, vertical text boxes, letter-spaced Latin, TeX math font symbols, chapter-number headings and per-line number lists in cells: ODL 200 default 0.937, `ocr: true` 0.960. New `plain` (text-first Markdown without image placeholders, link URLs or emphasis marks) and `htmlTables` (every table as indented HTML) options reach 0.949 without OCR and 0.971 with OCR. Issues #91–#95 are fixed (sparse XLSX, field placeholders, encrypted HWPX hang on Windows, `-o` image links, non-ASCII `generate --image-dir` names).
-
-## What's New in v4.15.6
-
-PDF structure recovery went up another step: the public ODL 200-document overall rose from 0.905513 (4.15.5) to **0.934509** (reading order 0.938 · tables 0.931 · headings 0.926). `ocr: true` now also reads text inside charts and logos region by region (0.952); in the default path, pages that need OCR get a warning telling you to re-parse with `ocr: true` / `--ocr`.
-
-## What's New in v4.15.0
-
-An expanded real-document corpus and fixes from a production review of parsing, security and performance.
-
-- **Large spreadsheets**: XLSX/XLS no longer silently stop at 10,000 rows; exceeding the cell budget produces a warning. Batched XLSX XML parsing reduces memory use, and XLS uses sparse grids. East Asian date formats and DOCX headers/footers are also handled more accurately.
-- **PDF text**: fixes for word spacing, fragmented table-cell text, blank date fields and paragraph joins with wide line spacing.
-- **Security**: HTML table text is escaped. Printing and PDF rendering disable JavaScript and block requests other than `data:` and `about:`. IPv6 webhook SSRF checks and MCP write-path confinement are strengthened.
-- **Reliability and speed**: diagnostics go to stderr to keep CLI, MCP and parse-worker JSON clean. Lossless patching detects the actual format, and document comparison and batch splicing avoid repeated work.
-- **Name/address masking**: broader opt-in coverage for meeting speakers, officials, sign-off blocks and road-name variants, with false-positive fixes.
-- **Directory watching**: `watch -d` preserves subdirectories, preventing same-name files from overwriting each other. Thanks to @ROTl24 for [PR #82](https://github.com/chrisryugj/kordoc/pull/82).
-- **Corpus**: 300 additional policy-briefing HWPX/PDF pairs, 36 DOCX/LibreOffice PDF pairs and an XLS ground-truth track. See [CHANGELOG](CHANGELOG.md) for measurements.
-
-## What's New in v4.14.4
-
-A second reading-quality pass. A new benchmark scores PDF text against the source HWPX, including word spacing and reading order, and PDF tables, OCR and PII masking were fixed.
-
-- **📊 PDF tables**: split rows and repeated header rows across page breaks, a single cell that runs over several pages, pictures or text boxes laid over a table, and tables with cell spacing. Exact match on 430 hwpx↔pdf pairs (1,784 tables) 90.1% → 92.9%, tables inside cells 63.7% → 72.0%. On the 417 pairs that have a text layer: 94.5%, cell text in the right cell (NED) 0.768 → 0.903.
-- **✍️ PDF word spacing and line joins**: body text is rebuilt as paragraphs instead of visual lines. When Hangul wraps mid-word, lines are now joined without a stray space, judged from particles, endings and the document's own vocabulary. Word F1 0.925 → 0.971.
-- **🧮 PDFs not made by Hancom**: letter-spaced numbers in budget PDFs ("2 0 , 7 7 5" → "20,775"), ruling lines drawn in short pieces, and numbers overlaid on blank runs. PDF text coverage 0.99569 → 0.99760.
-- **🔎 PDFs that draw text as outlines**: pages whose Hangul is drawn as filled curves have no Hangul in the text layer and used to lose it silently. They are now detected (`ocrReason: "vector_text"`): read by OCR when OCR is on, flagged otherwise, with tables rebuilt from the page's real vector lines.
-- **👓 OCR**: dotted ruling lines, shaded-cell edges, table-of-contents leader dots and the △ before numbers. Character error rate 0.171 → 0.096 (includes fixes to the text-layer answer key), OCR table cell F1 0.440 → 0.618.
-- **🕶️ PII masking: names and addresses** (opt-in, `--rules …,name,address`): names are found from role words, honorifics, labels and table headers; addresses from road-name and lot-number grammar (province and city/district are kept). External answer set (473 sentences): names 354/411, addresses 141/141; 0 false positives in a real-document sample. Officials' names in sign-off blocks are public under disclosure practice, so the rules are not on by default.
-
-## What's New in v4.14.3
-
-A full reading-quality pass: a wider corpus (1,351 rhwp samples and 200 policy-briefing hwpx+pdf pairs), fresh ground-truth benchmarks per format, and fixes to tables, PDF, OCR and PII masking. Plus two additions for callers that only need the text, such as search indexers.
-
-- **📊 PDF tables**: tables that run across pages are joined and tables inside tables go into their frame cell. Exact match on 1,784 tables from 430 hwpx↔pdf pairs 64.1% → 90.1%, cell F1 0.790 → 0.945.
-- **🧾 HWP, HWP3 and HWPX tables and notes**: HWP tables are laid out by the same rules as HWPX, so all 3,593 tables in hwp↔hwpx pairs now match exactly (0.824 → 1). HWP3 table grids are rebuilt, and HWPX footnote/endnote numbers and document info (title, author, …) are read.
-- **👓 OCR**: skew correction, splitting of tall stacked text boxes and restoration of official-document symbols (○, △, quotes). Character error rate 0.201 → 0.171, 3° skewed scans 57.6% → 22.0%.
-- **🕶️ PII masking**: every text store in the file (headers, footnotes, text boxes, fields, preview, document info, …) is masked with same-length replacements and the output is re-scanned. False positives on 5,081 documents 387 → 0.
-- **💲 A literal `$` no longer turns into math**: in Hangul documents (HWPX, HWP, HWP3) a literal `$` is emitted as `\$` and `$…$` is reserved for equations, so text like "echo $HOME $PATH" is no longer rendered as math. A backslash before punctuation ("C:\.Pls") is no longer lost either.
-- **📝 Unfilled click-here guide text is dropped**: HWPX guide text that Hangul only shows greyed out on screen and never prints is left out of the markdown (it stays in the block text). Filling a click-here field now sets its modified flag.
-- **🖼️ Skip images** (`images: false` / `--no-images`): image bytes are left out of the result. Image placeholders (`![image](…)`) and the text stay the same, so image positions are still known. PDFs skip PNG encoding. Measured on an image-heavy PDF: JSON output 200MB → 9.5MB, 30% less CPU time.
-- **🧹 Text-first output** (`plain: true` / `--plain`): drops image placeholders, link URLs and underline/bold marks, keeping headings, lists, tables and text. For indexing and RAG when image files are not saved.
-- **🧾 HTML tables** (`htmlTables: true` / `--html-tables`): every table, pipe tables included, as HTML with one tag per indented line (header row `<th>`). For consumers that only handle HTML tables.
-- **🚀 Persistent parse worker** (`kordoc parse-worker`): the process stays up and answers each stdin request line with one JSON line, so bulk indexing no longer starts a new node per file. Each response carries memory usage (`rss`) so the host can decide when to recycle the worker.
-
-## What's New in v4.14.2
-
-Official-document output re-checked against a Hangul 2024 rendered PDF and polished to read like a real government document.
-
-- **📐 Continuation lines now align exactly with the first line's text**: item markers (□ ○ - ※ 1. 가.) are followed by a tab instead of a space, using Hangul's hanging-indent auto tab stop. Justification can no longer stretch the gap after the marker, and squeezed lines no longer pull their text left. Applies to every official-document preset.
-- **✂️ No more words split at line ends**: body text uses word-level line breaking ("동대/문" → "동대문") with widow/orphan control. Dates and amounts are bound with non-breaking spaces so "2026. 1. 22." never splits; straight quotes become ‘ ’ “ ”.
-- **📏 Layout simulated with real Hangul font metrics**: advance widths of 8 bundled Hancom fonts reproduce all 154 line breaks of the reference PDF. A short last line (half the line width or less) is pulled up by tightening letter spacing and width by up to 15%, and every one-line fit keeps a 2% safety margin so it still fits in Hangul. Paragraphs containing a word longer than a line (e.g. a space-free list "구(강남·강서·…·종로)가") switch to character-level breaking that only breaks after middle dots or commas, so the line before it no longer stretches.
-- **🧩 PPTX detection** (#80, PR #81 @LimePencil): PPTX input now reports an unsupported format instead of a misleading "HWPX section not found".
-- **🧹 Tech debt**: the four files over 1,200 lines (`mcp.ts`, `cli.ts`, `hwp5/parser.ts`, `svg-render.ts`) were split into feature modules; the parser no longer drops non-breaking spaces, and `kordoc render` previews honor tab stops and trailing-space justification.
-
-## What's New in v4.14.0
-
-- **🏛️ Central-government business-report preset `업무보고` (`ministry`)**: built by exhaustively measuring the Ministry of Economy and Finance's written report to the National Assembly (2026-07-15, 17 pages) — fonts, sizes, colors and shape coordinates. Cover (red "대외주의" box via `--cover-label`, two blue bars), TOC box, `##` chapter band (gradient + blue double rule, one chapter per page), `###` blue numbered section box, `####` navy sub-heading box, `#####` ① sky-blue item band, `> ▪ …` pale-yellow summary box, `## 별첨 …` appendix band. Body 함초롬바탕 15, footnotes 맑은 고딕 12, tables 맑은 고딕 12; **`(keyword)`/`[keyword]` right after □ is rendered blue bold** (black bold after ㅇ); leading ❶⇒↳ glyphs are kept. `kordoc generate report.md --preset 업무보고 --date "2026. 7. 15." --cover-label 대외주의`. Verified against the original with Hancom COM rendering.
-- **🎨 Per-edge border color/width for table cells** (blue double rule, sky-blue 0.4 mm …) and LINEAR gradients — 3-color gradients render black in Hangul, so gradients are clamped to 2 colors.
-
-## What's New in v4.13.1
-
-- **🖼️ HWP (5.x) renders as typeset too**: `kordoc render doc.hwp --format png -d ./pages`, `renderDocument("doc.hwp", …)`, and the MCP tools `render_document`/`crop_regions` accept `.hwp`. The layout cache Hancom saves in HWP5 (line positions, cell grid, object anchors) goes through the same renderer as HWPX, so for 10 documents saved as both hwp and hwpx the page count, table positions and border widths match the HWPX render. Table region ids are document ordinals (`t1`, `t2`, …) and equal the parser's `sourceId`, so `kordoc tables doc.hwp --visual all -d ./tables` crops org charts from HWP as well. Headers/footers/equations are not rendered, same as HWPX.
-- **🧭 MCP `extract_tables`**: table classification (data table / layout-like / uncertain) + page·bbox + crops, now over MCP. Up to 8 crops inline, tables.json in `output_dir`.
-- **🖨️ MCP `render_document` formats**: `format: jpeg|html|pdf` added (html/pdf/svg are written to `output_path`), plus `max_width_px`.
-- **🎨 Chapter band colors**: `--band-color #DFE6F7 --band-text-color #000000` (the light band used by education offices). Default stays the most common navy #003366 with white numerals.
-- **📏 Outline paragraph spacing re-verified**: 428 real approval documents re-measured from `hp:case` (the value Hancom actually renders): space-before 0 for □/ㅇ/- in 84–96% of paragraphs, engine values unchanged. Section 2.8 of `docs/gongmunseo-reference.md` now documents the 10pt gap before □.
-- **🔧 Crops no longer cut to the top-left quarter**: recent sharp/libvips apply the `density` factor squared to pt-sized SVGs, so rasters came out at twice the reported scale. Pixel size and scale are now read from the actual image, and `render_document` PNGs honor `max_width_px` (the v4.13.0 HWPX `crop_regions`/`kordoc crop` had the same defect).
-
-## What's New in v4.13.0
-
-The official-document generator was redesigned (v5). **629 real approval documents** from the Seoul open-government archive were measured exhaustively, the hierarchy/fonts/indents/frames were put into one scheme, and 기안문·보고서·계획서·통지·회의록 now go through a new engine. Any markdown shape (`#/##/###`, lists, explicit □ ㅇ - 1. 가. markers) yields the same hierarchy.
-
-- **📐 Hierarchy as measured**: bullet style □ HY견고딕 17pt bold (0 ta) → ㅇ 한컴돋움 15pt bold (1 ta) → - 휴먼명조 14pt (3 ta) → ㆍ, ※ 한컴돋움 14. Statutory style 굴림체 12pt 160%, `1.` 0 ta → `가.` 2 ta → `1)` 4 ta, hanging indent = marker width + 1 ta. Tables 한컴돋움 12 (bold header, #DFE6F7). Evidence: `docs/gongmunseo-reference.md` 2.8.
-- **📏 □ items and titles never wrap**: ratio → letter-spacing → point size are reduced in that order (the observed practice); a warning is emitted if it still overflows. Table cells shrink 12→11→10pt automatically.
-- **📋 기안문 header/footer tables**: exactly the e-approval layout — slogan, agency name (굴림 20 bold, letter-spaced), 수신/(경유)/제목; sender, gray band, approval line (title/name/date), cooperators, 시행/접수, address, phone/fax/email/disclosure. Sender is omitted for 내부결재. `--doc-head "org=…,slogan=…,to=…,title=…"` `--doc-foot "sender=…,drafter=주무관 홍길동,…,zip=…"`.
-- **📑 Reports (Seoul working-level form)**: title table (HY헤드라인M 25 bold, 0.4mm/0.15mm rules) + contact row (`--report-info`) + summary box (`--summary` or a blockquote right after the title) + `Ⅰ. Ⅱ.` chapters (h2) + □/ㅇ/- body. `--cover --dept … --doc-info "docNum=…"` adds a cover page (document-info table, approval line, blue-band title, agency name).
-- **✍️ Working-level details**: lines starting with `출처:`/`자료:`/`근거:` become ※ notes (13pt), items whose second line is ≤20% of a line get tighter letter-spacing to fit one line (the Shift+Alt+N habit), wrapping is character-based + justified as in 76% of real approval documents (word-keeping was rejected: a long word pushed to the next line stretched the line above; Latin words and numbers are still kept whole), and law.go.kr codes after statute names `(282791)` are stripped. A one-sentence blockquote right after the title (≤3 lines, "…하고자 함") becomes the report summary box (warned if missing or too long).
-- **⚙️ Default changes**: 기안문 body 굴림체 12 (`--font myeongjo` for 함초롬바탕), report/plan margins 13/13/18/18, line spacing 180%, level-2 bullet ㅇ (○ only for the central-government `개조식` preset), h2 = chapter (`--h2-marker roman|number|box|none`). `개조식` and 보도자료 are unchanged.
-- **🏷️ Chapter band headings**: report/plan `##` chapters now render as a table band (roman numeral in a filled cell + underlined title), the practice found in 37–39% of real plan documents; `--h2-marker roman` keeps the plain `Ⅰ. Title` text. Also fixes the empty font box and English style names shown by Hancom Office for generated files (all seven language font slots unified, `langID`).
-- **📊 Column widths by importance**: `비고`/`근거`/`참고`/`담당`/`연락처` columns, and the last column of a table that has a content column, are capped at 25% (median 21% for 비고 across 462 real tables); `내용`/`사항`/`실적`/`계획`-type columns get double weight (median 51%) and left alignment. Fixes long citation text taking the widest column while the content column wrapped. The summary box gets 1000 HWPUNIT paragraph side margins (55% of real boxes) so text no longer touches the border.
-- **📊 Corpus**: `bench/corpus-gen/opengov-2609/` 280 documents across 7 filters.
-- **💰 Korean amount spelling**: amounts missing the Korean spelling (`금113,560원`) are flagged with the actual value to insert, `금113,560원(금일십일만삼천오백육십원)` (Enforcement Rule art. 2). Hyphenated dates (`2026-07-18`) are flagged with the dotted form `2026. 7. 18.` (URLs, file names and table cells excluded).
-- **🔣 More bullet glyphs**: `❑ ❏ ㅁ` (top), `◎` (second) and `ㅡ ‣ ▪ ▫` (third) are read at the same levels as □/ㅇ/-.
-- **🖼️ Unified rendering layer (#75)**: `renderDocument(file, { format: "svg"|"html"|"png"|"jpeg"|"pdf", pages: "2-4" })` produces per-page SVG, a self-contained layout HTML, per-page PNG/JPEG and PDF (Chromium required). Every render exposes **page-local pt bounding boxes with deterministic ids** for paragraphs, tables, images and shapes (`RenderScene.regions`, `data-kordoc-id` in SVG); `extractRenderedRegions()` / `kordoc crop doc.hwpx --target table -d ./regions` crops them at the rasterizer's real scale. `kordoc render --format png --pages 2-4 -d ./pages`, MCP `render_document` gains `pages`, plus a `crop_regions` tool. HWP5 rendering is a follow-up.
-- **🧭 Table classification and visual extraction (#76)**: `parse(file, { classifyTables: true })` tags each table as `semantic-table`, `non-tabular-layout` (org charts / contact diagrams built from cells) or `uncertain` (heuristic, no network or LLM, nested tables classified independently). `extractTables(file)` / `kordoc tables doc.hwpx --visual non-tabular-and-uncertain -d ./tables` returns classification + render regions + crops in one pass, so pipelines can send diagrams to a vision model and data tables to structured consumers. Also fixes images inside simple unmerged tables being dropped from Markdown.
-
-## What's New in v4.12.3
-
-A document-authoring round. Per-level fonts were measured on 206 real approval documents and 337 reports, giving a **level typography option**, and the colon/date notation rules were narrowed on the basis of statutory forms. A third annex-table corpus (183 pairs) brings the gate population to ~1,390 hwpx / ~950 pdf / ~860 hwp pairs.
-
-- **🔤 Level typography `levels`**: set font, size and weight per item level (0–7) — `--levels "0=HY견고딕/17/bold,1=한컴돋움/15/bold,2=휴먼명조/14"`, MCP `levels`. Measured: the statutory 8-level numbering (1. 가. 1)) uses the body font in 90% of documents, so defaults are unchanged; e-approval documents with □/ㅇ/- bullets predominantly use □ HY견고딕 +2–3pt bold · ㅇ 한컴돋움 bold · - 휴먼명조 (`docs/gongmunseo-reference.md` 2.7). Hanging indents follow the level's own size. Output is byte-identical when unset.
-- **📝 Narrower notation lint**: `COLON_SPACE` skips table rows — statutory annex forms themselves use "성 명 :" label cells (all 801 table hits in 595 forms were labels), so they are outside the rule. Body text "일 시 : 값" (414 hits in 100 of 206 approval documents) does violate the manual and is still flagged. Colons followed by an HTML tag or a closing markdown emphasis ("성명:</td>", "과정:** 붙임") no longer fire. `DATE_NO_SPACE` exempts the law.go.kr revision notation (`<개정 2012.2.14>`, `삭제 <2016.2.29.>`, `[시행일:2017.9.8.]`; 156 → 10 hits in forms); document-number citations "○○과-123(2026.7.1.)호" (103 hits) remain violations.
-- **📄 PDF middle dot**: Hancom PDFs emit the middle dot (ㆍ) as the conjoining jamo araea (U+119E); it is normalised back (340 characters in 41 of 573 form pairs).
-- **📄 PDF 1×1 tables keep their lines**: a 1×1 table without nested tables (the inner box of an oath form) becomes one paragraph per line, so a title line no longer merges into the body ("선 서 나는 헌법을 …"), consistent with the cell line-break policy.
-- **📄 PDF frames below a title**: the "clip repeated on every page" hypothesis for border-less single-cell frames was refuted (the body-area clip differs per page and annex tables are single-page). Instead a container whose top edge is ≥ 20% down the page, spans ≥ 60% of the page width and has text above it is treated as a frame; two-column recruitment boxes are excluded by the width rule (pdf-table-gt gate unchanged).
-- **🖋️ One more HWP seal glyph**: the boxed "인" (U+F00E1, folded to A0E1 in HWP5), verified against the Hancom PDF rendering, now reads "(인)". The HWP5 hyphen control (0x18) is no longer emitted as "-" because Hancom does not draw it ("60g/㎡").
-- **📊 Third annex-table corpus**: `licbyl-byl2/` 183 pairs (seed 20260907). The 30 lowest HWP↔PDF documents break down into 8 undetected 1×1 frames, 15 HWP layout-flattening vs PDF single-column asymmetries and 7 structural differences (equation cells, page-boundary cell splits, line breaks — no parser defect). Cell agreement: tables 0.728 → 0.746, third corpus 0.772 → 0.787, forms 0.965 unchanged.
-
-
-## What's New in v4.12.2
-
-Annex-form round two. The corpus grew by 279 form pairs and 90 table-annex pairs (1,995 files in total), and the HWP, HWPX and PDF parsers now emit the **same IR shape** for single-cell frames. HWP↔PDF cell-text agreement rose from 0.927 to 0.965 and the PDF table ground-truth cellExact from 0.945 to 0.980; the gate floors were raised to those figures.
-
-- **🪆 Nested tables inside PDF frames**: certificates, receipts and oath forms put an "issuer | seal" table inside a single-cell frame. The PDF parser used to emit that table as a separate block after the frame; it now lands inside the frame cell's blocks in reading order, matching the HWPX parser. A lone frame with all four borders stroked becomes a 1×1 table and a lone stroked box inside it a nested table. Border-less outer frames cannot be told apart from Hancom's body-area clip and are left as prose.
-- **🖋️ "(인)" seal marks recovered from HWP**: HWP 5.x stores characters as 16-bit units, so Hancom folds its private symbols (U+F012B) into the U+A000 range. The stray `ꄫ` in signature lines now reads "(인)".
-- **📋 Form frames kept in HWP**: a 3×1 annex frame (title row, frame with a nested seal table, footer row) was treated as a layout table and flattened into paragraphs; it now stays a table. Page-chain layout tables with long text are still flattened.
-- **📝 Sharper notation lint**: false positives were measured on 206 real approval documents and 595 annex forms. `TILDE_SPACE` now fires only on numeric/date/time ranges, and `DUEUM_ERROR` skips fill-in blanks ("    년도", "( 년간)") and single-word table headers.
-- **🧾 Form recognition reaches nested tables**: `extractFormFields` walks tables nested in cell blocks, the same boundary `fillHwpx` uses.
-- **📊 `bench/cmp-hwp-pdf.mjs`**: the HWP↔PDF cell-text Jaccard report is now a first-class bench script. Its `--linebreaks` mode measured that 85% of in-cell PDF line breaks fall on word boundaries and 13% inside words, so line joining stays off.
-
-## What's New in v4.12.1
-
-Statutory **annex forms** (법제처 별지서식) now parse consistently across HWP, HWPX and PDF. We collected 300 forms from the Ministry of Government Legislation OpenAPI as HWP+PDF pairs, added rhwp-converted HWPX, and put the 900-file corpus under the gates: HWP↔PDF cell-text agreement rose from 0.79 to 0.92 and the PDF table ground-truth gate's cellExact from 0.73 to 0.96.
-
-- **📐 PDF cell-clip grids**: Hancom PDF lays a clip rectangle per table cell before drawing its text. Annex forms use border-less outer cells, so the stroke-only line pipeline missed the table and scattered titles and fill-in fields into headings and paragraphs. Groups of adjacent clip rectangles now become tables with **cell geometry fixed up front**, so a pilot-licence application form comes out with the same 23 columns and merges as the HWP parser. Clips are layered by containment, so a certificate's single-cell frame becomes one cell of the outer table (title row, frame, footer) while the inner "issuer | seal" table survives as its own table.
-- **➔ Symbol-font glyph recovery**: process-flow arrows and check boxes typeset in Wingdings used to leak as stray Latin letters (`è`); they are mapped back to Unicode (➔ □ ✔ ☑).
-- **📝 Six more notation-lint rules**: Korean-numeral parenthetical for amounts (`MONEY_NO_HANGUL`), no spaces around the tilde in ranges (`TILDE_SPACE`), initial-sound rule '년도→연도' (`DUEUM_ERROR`), 40 common loanword misspellings with the standard form suggested (`LOANWORD_ERROR`), 25 discriminatory terms with preferred replacements (`DISCRIMINATORY_TERM`), and a missing "끝." after attachments (`END_MARK_MISSING`, `kordoc lint` only). Gaps were identified by comparing against other HWPX document tools (pyhwpxlib, hwpx-skill).
-- **🏛️ Internal-approval documents omit the sender line**: when the recipient is "내부결재", the closing block no longer prints the sender name, per the administrative-work regulation.
-- **🩹 Fill-in blanks preserved**: "년   월   일" / "시   분" no longer collapse into "년월일", and single-column frame tables in claim forms keep one item per line instead of being flattened into one line.
-
-## What's New in v4.12.0
-
-Cleared **all remaining** HWP3 text loss left after v4.11.0. Comparing the nine HWP3 originals in rhwp `samples/` against their Hancom-converted twins by character multiset, the only characters still missing are image alt-texts — everything else is **0**.
-
-- **🖼️ Text boxes inside drawing objects (#73)**: in HWP3, the extension block of the ch=11 (picture) control is a **drawing-object tree**, not an image, when `pic_type` is 3. Cover titles and flowchart labels live in text boxes there, and the block was skipped wholesale, so that text vanished (618 characters in sample16, 86 in sample19). kordoc now walks the frame header and shape tree (sibling/child bits) and reads each text box's paragraph list with the same parser as body text. Non-textbox shapes that carry the same block via "convert to text box" are recovered **only when the surplus length matches spec table 78 exactly**. The whole walk stays inside the extension-block slice, so a failure can't desync the body stream — it falls back to the previous skip-it-all behavior (recursion capped at 256 levels, 4,096 shapes).
-- **🔣 Invisible markers leaked as a replacement character**: the new-number, page-number-position, and page-hide controls emitted `￼` (U+FFFC) into the body, which survived into the Markdown. Hangul renders nothing at those positions — they now follow the same contract as the table-of-contents marker.
-
-## What's New in v4.11.0
-
-Swept the latest rhwp devel (v0.8.3–0.8.4) and folded the findings into kordoc's HWP3 decoder. All four defects **drop characters without a warning** — the conversion "succeeds" and part of the body is simply missing.
-
-- **🈳 Lost HWP3 symbols and hanja (missing coordinate rules)**: HWP3 stores characters as KS X 1001 coordinates — the symbol rows (0xA1–0xAC) with a stride of 96, the hanja rows (0xCA–0xFD) with a stride of 94. When the johab decoder was ported from rhwp, only the hardcoded table came along and **both rules were left behind**, so every code outside that table was dropped: `채권(債權)조서` became `채권()조서`, and symbols like `※ ○ 【】 ∴ ☞ ￦ ━` disappeared entirely. Both rules are ported, plus the two positions where Hancom's notation diverges from the standard mapping (`∼→～`, `⊙→◉`).
-- **🔤 Wider measured table for private codes**: ported the Latin-1 Supplement pass-through (`ü·ö·ä·ß` were deleted, turning "für" into "fr") and the 28 measured codes from rhwp #5860, then added codes that rhwp's table lacks — six box-drawing pieces, the double rule, circled/parenthesized series (`⓪①②`, `ⓐ–ⓕ`, `㉠–㉢`), the `•` bullet. Each was aligned against the Hancom-converted twin of the same document, and **only codes whose occurrence count matches the converted file exactly** were added.
-- **✒️ Lost araea syllables with a filler initial**: a syllable carrying only the araea vowel was treated as having an invalid initial and thrown away. It now survives as the single jamo, matching Hancom's own conversion.
-- **🧱 Formatted runs skipped PUA cleanup (all formats)**: paragraphs with bold/underline go through the span path, which was the one place that skipped PUA substitution and stripping — so Hancom-only bullets and rule fragments landed in the Markdown as **raw PUA (tofu)**. This path is shared by HWP5, HWPX, and HWP3. Also synced the 22 entries missing from kordoc's copy of rhwp's verified Hancom PUA table (`┌┬┐└┘│`, `┈═━`, `⓪①②④–⑨`, `✺◇▸□`, `⊞⊟`).
-
-Verified by comparing character multisets between nine HWP3 originals in rhwp `samples/` and their Hancom-converted twins. Characters present only in the converted file (i.e. lost by the HWP3 path) fell from 189→0 in `hwp3-sample11`, 1,139→618 in `hwp3-sample16`, and 172→11 in `hwp3-sample10`. The remaining 618 live in **text boxes inside drawing objects** (cover titles, flowchart labels), which kordoc still skips.
-
-## What's New in v4.10.0
-
-- **📡 Failure contract in every format (#69)**: the failure JSON (`success:false` + `code`) previously reached stdout only with `--format json`; it now covers **markdown and chunks** too, so headless pipelines branch on the cause code instead of keyword-matching Korean stderr messages. The code set, exit-code rule, and a stability guarantee are documented in the README. (reported by @sorbetsharkroundhand)
-- **🖼️ `images/<document name>/manifest.json` (#70·#98)**: saving images now also emits a `[ { name, mimeType, bytes, source } ]` manifest with magic-byte-verified `mimeType`, removing extension guessing on the consumer side. Also replaces the DOCX fallback that mislabeled unknown image extensions as `image/png`. (reported by @sorbetsharkroundhand)
-- **🩹 patchHwp soft-wrap shrink integrity (#71)**: replacing a soft-wrapped paragraph (2+ LINE_SEG segments) with a shorter single line left trailing segments whose `textpos` pointed beyond the new `nChars`, making **Hangul refuse to open the file with a "damaged/tampered" warning**. Out-of-range trailing segments are now trimmed with `lineSegCount` kept consistent (in-range segments are preserved so soft-wrap rendering survives). Rewritten compressed streams also restore Hancom's 8-byte tail (CRC32 + uncompressed size, verified on 7/7 corpus files). (reported by @heesun-woodi)
-
-## What's New in v4.9.2
-
-Opened a real report whose `<right>` source lines wrap past one line in Hangul, and fixed what showed up.
-
-- **📌 Left-align fallback for multi-line source lines**: when a `<right>` paragraph (source citations, dates) exceeds the body width, right alignment leaves **each line's left edge ragged**, which reads as broken indentation (confirmed in Hangul — a three-line citation). The generator now pre-measures the typeset width: lines that fit stay right-placed (measured GT6/GT7/GT11 practice), overflowing ones are emitted left-aligned.
-- **🔤 Caption style for source lines**: `<right>` lines starting with `출처:`/`자료:` used the body size and did not read as captions. A dedicated charPr renders them **3pt smaller than body** (floor 10pt) — HY Junggodic on the measured presets (gaejosik/report/plan), the body font elsewhere — following the practice of distinguishing table source notes from body text. Other `<right>` lines (e.g. dates) keep the body size.
-
-## What's New in v4.9.1
-
-Generated a real district review report, opened it in Hangul, and checked every visible oddity against a 555-document corpus. All three defects came from the same root cause — **one template file's stored values outranking actual practice**.
-
-- **📐 Paragraph spacing between `○` items**: the default space-before was `□15pt/○10pt/-6pt`, taken from a single template file. The corpus says the opposite — **88%** of 582 `□` paragraphs and **88%** of 799 `○` paragraphs use **zero** space-before, and the old values do not even reach the top six (1.5pt ranks second). Combined with 160% line spacing, 10pt stretched the gap between items to 1.4 lines. Now set to the measured mode, keeping 1.5pt on `□` alone for section separation.
-- **📑 Indentation of `가./나.` subheadings under `□`**: h3/h4 paragraphs had no left margin, so while `□` hung its marker to the left, subheadings started at the body edge and rendered **further left than their parent**, collapsing the hierarchy (confirmed in Hangul). They are now indented by the `□` marker width to align with the parent's title text.
-- **📎 Attachment numbering no longer lost**: an indented `2. …` following `붙임  1. …` was parsed as a Markdown list and replaced with a bullet (`ㆍ`), **dropping the number**. Attachments are now a dedicated block that follows measured practice — one blank line before (95% of 343 samples), numbers `1. 2. 3.` preserved (zero bullet substitutions observed), and leading whitespace on later items kept so they align vertically with the first number (122 of 123 samples).
-- **✍️ Gaejosik prose linter (`kordoc lint --munche`)**: 12 rules on a different axis than notation — declarative `~다` endings (measured 0%), deontic `~해야 한다`, `A-not-B` rhetoric with an abstract B (measured 0), question/exclamation marks in body text (measured 0), couplet slogans, items over 70 chars and conclusions over 60, and lead sentences not ending in `~하고자 함.`. Warnings attach automatically to `generate` for the report/plan/gaejosik presets (generation is never blocked); `kordoc lint` requires `--munche` to opt in. Not applied to drafts/notices/minutes/press releases, whose prose conventions differ. Rules and evidence: [`docs/gaejosik-munche.md`](docs/gaejosik-munche.md). Statistics come from [jkf87/hwpx-skill](https://github.com/jkf87/hwpx-skill) v1.17.0 (15 municipal reports, 2,288 lines).
-
-## What's New in v4.9.0
-
-- **🧹 AI-slop lint for official documents (`AI_*` rules)**: the gongmun style linter now flags stylistic traces that generative-AI drafts leave in official documents — dash usage (`AI_EM_DASH`: — – ―) and three or more bold spans on one line (`AI_BOLD_OVERUSE`). Both are advisory warnings shared by `kordoc lint` and the `generate` warning channel, kept separate from the 13 handbook-derived rules. Distilled from producing a real district review report as official HWPX. Writing guidance (dashes → commas/parentheses, one emphasis per point, loanwords → administrative terms) is reflected in `.claude/skills/gongmunseo/`.
-- **📄 Renderer honors explicit page breaks (`pageBreak="1"`)**: the reflow renderer previously ignored `<hp:p pageBreak="1">` (how Hangul stores a manual page break) and kept flowing; it now starts a new page at that paragraph, so gaejosik chapter banners and post-processed documents render with the same page boundaries as Hangul.
-
-## What's New in v4.8.0
-
-- **📑 Per-page markdown in `--format json` (#68)**: JSON results now carry `pages: [{ pageNumber, markdown }]` by default, built from the real page boundaries introduced in v4.7.3 (`pageMode: "layout"`). Use it for RAG page citations or viewer page sync without re-parsing — the projection reuses the `pageNumber` already on each block, costing under 1% of parse time (24-page PDF: parse 399ms, pages 2.5ms). `--pages 3-5` narrows `pages` to those pages, and formats that do not number pages (DOCX, …) simply omit the field rather than claiming everything is page 1. The library exposes the same projection as `blocksToPages(blocks)`. (suggested by @sorbetsharkroundhand)
-
-  A table spanning several pages is still one block anchored to its starting page, so the continuation pages carry an empty `markdown`. The entries are kept so array length still equals the page count; per-page table splitting is a separate feature.
-
-## What's New in v4.7.3
-
-- **📄 Real page boundaries for HWP/HWPX (#66)**: page boundaries are recovered from Hangul's layout cache (HWPX `linesegarray` / HWP5 `PARA_LINE_SEG`), so `pageCount` and each block's `pageNumber` are real page numbers rather than a section approximation, and `parse(buffer, { pages: "3-5" })` returns actual pages 3–5. Files without a layout cache keep the section approximation, distinguished by the new `metadata.pageMode: "layout" | "section"` (filtering under the approximation raises a `PAGE_BOUNDARY_APPROXIMATE` warning).
-
-## What's New in v4.7.2
-
-- **🔒 Air-gapped deployment**: `KORDOC_OFFLINE=1` blocks every outbound request (OCR model download, watch webhook) *before* it is sent, and `KORDOC_ROOT=<dir>` confines the MCP server's reads and writes to that directory subtree — both opt-in, so unset behaviour is unchanged. Build an offline install bundle with `node scripts/pack-offline.mjs [--with-ocr] [--with-models]`, and move OCR models across the air gap with `kordoc models --export/--import` (SHA-256 verified). See [docs/offline-deployment.md](docs/offline-deployment.md) for the procedure and security-review evidence.
-- **🧹 Dependency hygiene**: `npm audit --omit=dev` reports 0 vulnerabilities (sharp ^0.35.0, adm-zip ^0.6.0 override, MCP SDK chain advisories cleared).
-
-## What's New in v4.7.1
-
-- **✏️ Underline preservation across formats**: the underlines v4.7.0 recovers from PDFs are now emitted from HWPX and HWP 5.x as `<u>…</u>` too. Detection keys on the underline *kind*, not its presence — Hancom writes `type="NONE"` even on non-underlined runs.
-- **🔗 PDF link annotations**: `/Annots` Link entries (`/URI`) are correlated with text and emitted as `[text](url)`, with scheme allowlist sanitization.
-
-## What's New in v4.7.0
-
-- **✏️ PDF underline detection**: thin horizontal lines hugging the baseline are correlated with text and preserved as `<u>…</u>`. PDFs carry no underline font flag, so previous versions dropped them entirely. Five layers of false-positive defense against table rules and decorative badges. Measured: 32 of 48 corpus documents recover emphasis underlines.
-
-## What's New in v4.6.1
-
-- **📰 Two-column reading order fix (#64)**: PDFs typeset in two columns (exam papers, magazine layouts) came out with left/right columns interleaved row by row. A new geometry-only column detector (no prose assumptions like justification or long lines) restores the natural order — full left column, then full right column, with full-width elements (headers, page-number boxes) acting as band boundaries. Applies to the default mode, `--no-tables`, and the OCR path. Measured on the 2026 CSAT papers: with `--no-tables`, Physics I and Ethics both recover 20/20 questions with 0 order inversions (previously 13 questions / 3 inversions), Korean 44/45 with 0. Three row-structure guards (calibrated against the regression corpus) prevent false positives on ordinary documents — the PDF coverage gate stays at baseline. (reported with block dumps by @choa712)
-
-## What's New in v4.6.0
-
-- **🚫 PDF table-detection opt-out (#64)**: `--no-tables` (CLI) / `tables: false` (API·MCP). Visual bordered boxes (instruction/choice boxes on two-column exam papers) were picked up as line-based tables, pulling surrounding body text into cells and reversing reading order — with no way to turn detection off. The opt-out path skips line grids, cluster tables, multi-column alignment and Korean special tables, emitting natural reading-order paragraphs only. Default is unchanged (detection on). (reported by @choa712)
-- **🖼️ JSON output for image-heavy documents (#65)**: HWP files with hundreds of images overflowed the runtime string limit during base64 serialization, so `--format json` ended in **non-JSON** output with no failure contract. Now `--image-refs` keeps only saved paths instead of bytes, oversized runs downgrade to reference mode automatically, and any post-parse failure still emits failure JSON with a cause code (`OUTPUT_TOO_LARGE`, …). (reported by @choa712)
-- **🔤 Nested inline emphasis (#61)**: `**bold *italic* again**` produced literal asterisks, lost bold, and inverted styles — a common pattern in LLM-authored markdown, so the `generate_document` path was heavily exposed. (reported and fixed by @LeeYudok, PR #62)
-- **📄 BOM-prefixed XML parts (#63)**: a UTF-8 BOM before the XML declaration in `[Content_Types].xml`/`.rels` (written by some OpenXML writers, and opened fine by Excel/LibreOffice) made xmldom reject the whole xlsx/docx with `PARSE_ERROR`. (reported by @soyesenna)
-
-## What's New in v4.5.0
-
-- **📄 Page options**: paper size (A4·A3·B4·B5·Letter·custom mm), **landscape orientation**, **multi-column** (1–8), and **header/footer text** — API `page`, CLI `--paper/--landscape/--columns/--header/--footer`, MCP `generate_document` parameters. Headers/footers use the same `<hp:header>`/`<hp:footer>` structure as real Hancom files.
-- **🔗 Hyperlink generation**: `[text](url)` now emits a real 6-param `HYPERLINK` field (clickable in Hancom Office) instead of collapsing to plain text — and round-trips back to `[text](url)` on re-parse. Works inside table cells; dangerous schemes are sanitized.
-- **📎 Footnote objects**: `[^1]` markers with `[^1]: body` definitions emit real `<hp:footNote>` objects that Hancom typesets at the bottom of the page.
-- **🖼️ Real image embedding**: supply bytes via the `images` option, `data:` URIs, or CLI/MCP `--image-dir` to embed PNG/JPEG/GIF/BMP into BinData — pixel dimensions auto-converted (96dpi) and capped to body width. References without bytes keep the previous placeholder round-trip behavior.
-- **🔍 OCR low-confidence observability**: lines silently dropped by the built-in OCR (confidence < 0.5) are now reported via an `OCR_LOW_CONF` warning.
-- **📏 Scanned-table benchmark correction**: reference "tables" that carry no table structure (decorative vector grids from clipart, single-cell text boxes — fewer than 3 non-empty cells) are excluded from the scoring population, with the excluded count reported transparently. Corrected measurement: scanned-table match **71.4%**, cellF1 **0.595** (char recall/CER unchanged from v4.4.1).
-
-## What's New in v4.2.6
-
-- **📐 Left-aligned body for outline/report documents**: Body items (□/○/-) in outline (gaejosik) and report gongmun documents are now left-aligned instead of justified. When word-keeping meets justification, a line that breaks early (e.g. a 25-char line stretched to a 34-char column because the next word is long) got excessively wide inter-word gaps, making paragraphs look broken. This matches the left-aligned convention of the official Korean administrative style guide. Narrative-body justification for official drafts (official preset) is unchanged.
-
-## What's New in v4.2.3
-
-- **Inline table/text order preservation (#49·#50)**: when an inline (treatAsChar) table and text alternate within one paragraph or one cell (date-range form fields like `[date] from [date] to`), text was pulled ahead of the tables, reversing the reading order. Both top-level `blocks` and `IRCell.blocks` now follow document order, and the generator emits cells in the same order for symmetric roundtrips. Floating/page-anchored tables stay out of the text flow as before. (reported by @jumaniac)
-
-## What's New in v4.2.2
-
-- **~~Strikethrough~~ extraction (HWP5·HWPX)**: deletion marks in legislative amendment documents now survive as markdown `~~strikethrough~~`. Detection uses a strike-**shape** whitelist — Hancom stores the strikethrough bits as a default even on non-struck text (measured in upstream rhwp), so only real line kinds count and unknown values fail closed. HWPX supports partial-run strikes; HWP5 works at paragraph level.
-- **ZIP decompression limit 100→256MB**: large real-world documents with a single 75MB section XML (found in rhwp's 10k-document survey) were being rejected as ZIP bombs — limit raised.
-
-## What's New in v4.2.1
-
-- **🖼️ Direct image input (PNG/JPG/WebP)**: convert screenshots and scanned images without wrapping them in a PDF — `kordoc form.png` / `parse(buffer)` / MCP `parse_document`. Images have no text layer, so the built-in OCR is applied automatically (no flag needed; decoding uses the optional dependency `sharp`).
-- **📐 Raster ruling-line detection for scans**: the OCR path now finds horizontal/vertical table rules directly in the page pixels (binarization + run-length, no ML) and feeds them into the line-based table pipeline. Forms with tall merged label cells and multi-line prose cells (Korean government submission forms) are restored as proper tables with rowspan/colspan. The cluster detector remains as the fallback for borderless tables.
-
-## What's New in v4.2.0
-
-- **👓 Built-in text OCR (PP-OCRv5 korean)**: read scanned/image PDFs with **local inference, no API key** — `parse(buffer, { ocr: true })` / CLI `--ocr` / MCP `parse_document`'s `ocr` option. Models (~18MB) auto-download with SHA-256 verification on first use. Only pages flagged by the quality signals (scans, broken font mappings) are OCR'd — clean pages keep their parsed output — and OCR line boxes are fed through the table-detection pipeline, so **tables survive in scans**. Korean dictionary covers all 11,172 precomposed Hangul syllables; ≈1s per page on CPU.
-- **🩹 HWP3 legacy parser conformance ×3**: stream-consumption defects for tab/field-code/bookmark control chars corrupted all following text, and roman numerals (Ⅰ–Ⅹ), circled digits (①–⑩), quotes, and bullet glyphs silently vanished — fixed by porting follow-up patches from the upstream (rhwp) source.
-- **🐛 Formula-OCR page off-by-one**: `--pages` filtering was shifted by one page and formulas attached to the previous page's blocks (pdfium page indices are 0-based). Also fixed: XLSX/XLS `--keep-empty-cols` wiring gap.
-
-## What's New in v4.1.0
-
-- **👁️ `render_document` MCP tool (new)**: renders a generated/patched/filled HWPX exactly as typeset and **returns it as a PNG image in the response** — the AI can visually inspect its own output and fix it, closing the generate→render→verify loop inside MCP (typeset cache for Hancom-saved files, reflow engine for generated ones, search-term highlighting).
-- **🕶️ `kordoc redact` + `redact_document` MCP (new)**: detects PII (resident registration no., phone, email, card, account; passport/driver license opt-in) and outputs a **format-preserving masked** HWPX/HWP (`850315-●●●●●●●`). Birthdate/Luhn validation reduces false positives; the report never contains the original PII. An assistive detector — human review before disclosure is required.
-- **📦 `--format chunks` + `parse_chunks` MCP (new)**: structure-preserving chunk JSON for RAG — heading/outline hierarchy (□○- / 1.·가.·1)) becomes breadcrumb paths, tables become standalone chunks.
-- **📋 Trailing empty column preservation (#47)**: blank input columns in form documents were deleted wholesale during parsing — the new `keepTrailingEmptyCols` parse option (CLI `--keep-empty-cols`) preserves anchored empty columns (phantom span-inflation columns are still trimmed), and **form paths (parse_form / fill) always preserve them**, so fillable fields no longer vanish from field listings. Reported by [@jumaniac](https://github.com/jumaniac).
-- **📅 XLSX/XLS date conversion**: date cells no longer surface as serial numbers ("45306") but as ISO ("2024-01-15") — built-in and custom numFmt detection, date1904 handling.
-- **🛡️ Production-wide review, ~80 fixes**: hostile-file hardening (equation regex ReDoS, HTML table span explosion, HWP3 decompression bomb, XLSX grid blowup), table-only PDFs misjudged as image-based, HWP5 control-char (hyphen/fixed-width space) mapping, DOCX tracked-change insertions lost, four form-fill label mismatch classes, HWP5 patch data remanence zeroed, MCP write-path validation, lined-table PDF performance (62,500 vertices 3.1s→0.2s), and more — see [CHANGELOG](CHANGELOG.md).
-
-## What's New in v4.0.8
-
-- **🖼️ PDF image extraction (new)**: previously only image *region coordinates* were computed and the bytes were silently lost — image XObjects are now decoded and re-encoded as PNG in pure JS (including waiting for pdfjs's async decoding; 731 images across 45 of 52 corpus PDFs). References are emitted at end-of-page positions, cross-page duplicates (logos/watermarks) are deduped, and cross-page table merging is unaffected.
-- **🖼️ HWPX/HWP5 unreferenced-BinData sweep**: images the body walk can't reach — pictures inside headers/footers (press-release photo strips), cell-background images (borderFill imgBrush in approval documents) — are now recovered as image blocks at the end of the document. Corpus recovery: HWPX 686/686, HWP5 92/92 (100%).
-- **🖼️ DOCX `w:object` images**: OLE object previews (`v:imagedata`) were missing from extraction — fixed (mc:Fallback copies remain excluded as duplicates).
-
-## What's New in v4.0.7
-
-- **🔗 DOCX hyperlink mass-loss fix**: paragraphs with multiple links kept only the last one; links are now emitted inline `[text](url)` in document order. **Field-code HYPERLINK** (`fldSimple`/`fldChar`, common in Word/Google Docs exports) and internal anchor links are handled (a measured document went from 176→21 links lost to zero).
-- **🖼️ DOCX image body links**: images were extracted to files but never referenced as `![image](...)` in the markdown — now emitted inline at paragraph positions.
-- **🔍 PDF mis-mapped mojibake detection**: ToUnicode mis-mappings producing valid-but-wrong Hangul passed silently — now detected via final-consonant (batchim) distribution, emitting per-page NEEDS_OCR warnings with reason `garbled_hangul`.
-
-## What's New in v4.0.6
-
-- **📊 PDF border-less band table fragmentation fix**: budget-ledger tables whose summary-row bands omit vertical rules lost department names — broken vertical segments are now bridged with a 4-way guard (637 sites measured in a real district budget).
-- **📝 HWPX nested tables inside captions preserved (#46)**: table content inside a caption vanished wholesale (297 of 304 chars) — now flattened in document order. Report by [@jumaniac](https://github.com/jumaniac), advice by @hiSandog.
-
-## What's New in v4.0.5
-
-- **🖍️ Inline emphasis for any Hancom document**: bold/italic runs in HWPX files **not generated by kordoc** are now restored as markdown `**`/`*` markers (attribute-based detection, with automatic merging of runs split by Hancom's edit history). Structurally-bold cells (e.g. table header rows) are left unmarked.
-- **🏛️ Gongmun-mode emphasis round-trip**: re-parsing an official-document HWPX preserves inline `**emphasis**` inside items, automatically distinguished from structural bold (e.g. fully-bold □ level-1 items in report numbering).
-- **↔️ List-depth round-trip**: `1)` / `-` items parsed back from official documents no longer collapse to level 1 on regeneration ('1)'→'2.', '-'→□) — indentation is inverted into leading spaces, so draft/report/gaejosik double round-trips converge.
-
-## What's New in v4.0.4
-
-- **🖋️ Reflow object-flow model**: floating tables push text below them, page-anchored / behind-text objects don't participate in flow, inline tables advance by effective height + leading — self-consistency **59/59 (100%)** on the real-approval corpus. Mixed-cache documents (Hancom-saved files partially edited programmatically) also render at correct positions.
-- **🎨 Format profile 0.3.0**: cell **font-name round-trip** (`fontName_hangul` — reproduce fonts without the source document), first-row fingerprint `anchor_row`, column widths preserved for tables whose first row is fully merged, and pre-validation of hand-edited border values (type/mm/color).
-- **🧰 CLI/MCP option-surface unification**: gongmun option assembly and value sets share a single SSOT — no more drift between the two interfaces (6 missing MCP preset aliases restored). Byte-identical outputs verified across the refactor.
-- **↔️ Round-trip hardening**: bold/italic/code markers inside table cells, paragraph-indent observation slot (`IRBlock.indent`), circled-number fallback parity beyond 15/51, nested-table height precision, adaptive footer rule width.
-
-## What's New in v4.0.3
-
-- **🛡️ Production hardening**: fixes confirmed by a two-pass adversarial review — explicit rejection of invalid numeric options (NaN / out-of-range), font-name XML escaping, cover/TOC extended to all presets (except press), body-font override no longer ignored when cover/TOC assets are on, heading hierarchy inversion at ≤13pt, and cell-object caption misattribution / false loss warnings.
-- **📏 New defaults from field measurements**: 12pt body for draft documents and □→ㅇ→\* numbering for plans (previous behavior via `--pt 15` / `numbering: 'standard'`).
-
-## What's New in v4.0.2
-
-- **📏 Benchmarked against real approved documents**: 60 actually-approved government drafts (Seoul open-government archive) plus ministry templates were exhaustively decoded and compared against kordoc's output — 17 gaps catalogued, 9 fixed.
-  - **Typesetting-area root fix**: generated documents lacked a column definition (`colPr`), so Hancom narrowed the text area by 10mm on each side and wide tables spilled into the right margin — now zero overflow across all presets (measured via COM rendering).
-  - **Draft-document head/foot blocks** (`--doc-head`/`--doc-foot`, statutory form), **press-release preset** (`press`), **public-notice head** (`--notice-head`), **report-info line** (`--report-info`).
-  - Column-width allocation rewritten (per-column floor = widest word — short columns no longer shatter vertically), 12pt table cells, draft margins matched to the dominant real-world value (20/15/20/15), level-2 bullet ㅇ/○ split by preset (`--bullet2`).
-- Released after passing an eye-QA gate by a working civil servant.
-
-## What's New in v4.0.1
-
-- **✍️ Practitioner QA fixes**: bold text no longer swaps fonts to HY견고딕/Arial Black ("mystery font" bug), h2 section markers via `--h2-marker` (box □ / number / none), and the third-level dash ― corrected to the real-world hyphen `-`.
-- **📝 13-rule official-notation linter**: `kordoc lint <file>` checks dates, times, amounts, attachment notation, etc.; generation also emits warnings inline.
-
-## What's New in v4.0.0
-
-- **🏛️ Government-standard gaejosik report, complete**: built from an exhaustive decode of 16 real government documents — cover page (gradient title box, accent bars), TOC banner, Roman-numeral chapter headers, page numbers ("- 1 -", cover/TOC excluded), approval box, automatic "끝." end mark, body title box. Tables get the measured government grammar automatically (shaded bold header with double rule, 0.4mm outer border hierarchy, content-proportional column widths, right-aligned placement). `--preset 개조식`.
-
-## What's New in v3.18.0
-
-- **🎨 Format profiles**: reproduce a table's **borders, shading, measured column widths, and cell fonts** — not just its merge topology — without shipping the source document. Extract style-only JSON from a reference hwpx with `hwpxToProfile(hwpx)`, then apply it to another document via `markdownToHwpx(md, { profile })` — share and reproduce an organization's formatting without leaking its content (issue #41, schema [`docs/format-profile-spec.md`](docs/format-profile-spec.md)). Schema & samples contributed by [@ai-localgov-officer](https://github.com/ai-localgov-officer) (PR #42).
-
-## What's New in v3.17.0
-
-- **🖼️ Render fidelity**: per-run fonts (gothic titles no longer fall back to the serif root font), full multi-section rendering (cover + body documents render every section), landscape page rotation (wide tables no longer clipped at the right edge), and page splitting for back-to-back full-page table paragraphs (trailing pages no longer pile onto one page).
-- **✍️ Approval-box overlap fixed (reflow)**: In cache-less documents, the approval box's label table and stamp table were printed on top of each other — now placed side by side exactly like Hancom. Nested-table cell heights are measured correctly as well.
-
-## What's New in v3.16
-
-- **📊 Chart generation**: Markdown ```chart fences (type/cat/series lines) become native Hancom charts (OOXML chartSpace) — 20 types, per-series/slice colors; malformed fences fall back to a code block.
-- **🔴 Stamp/signature placement**: `kordoc seal` — finds anchors like "(인)"/"서명 또는 인" and places the stamp PNG as a float in front of text without growing tables/pages (MCP `place_seal` included). Nested tables, text boxes, and tab/multi-line paragraphs are approximate and reported via `warnings` — verify in Hancom and fine-tune with `--dx`/`--dy` (dx_mm/dy_mm).
-- **🔌 Claude Code plugin**: `/plugin marketplace add chrisryugj/kordoc` → the kordoc skill auto-activates for `.hwp`/`.hwpx`/official-document requests.
-- **🩹 3.16.1 patch**: 55 defects from an adversarial production review fixed in one sweep — stamp placement (rowspan/colspan/nested-table origins), chart value parser (thousands separators, CRLF markdown), form-fill guards (`require_unique`), CLI `fill -o` output, and other "success message, silently wrong output" bugs.
-- **🩹 3.16.2 patch**: PDF parser no longer mistakes the `<신 설>` ("newly inserted") notation inside old-vs-new clause comparison tables for a text box — a 30-page amendment comparison table is restored as one intact table instead of being shredded into paragraphs.
-
-<details>
-<summary><b>Version highlights v3.0 – v3.15</b> (click — full details in <a href="./CHANGELOG.md">CHANGELOG</a> and the <a href="./README.md">Korean README</a>)</summary>
-
-- **v3.15** — Reflow render for cache-less HWPX (`renderHwpxToSvg(buf, { reflow: true })`, line-break engine measured 98% match), drawing-shape SVG render, persistent `render-worker` (stdin NDJSON).
-- **v3.14** — Multi-page render (vertical stack, `pageCount`), search-term highlighting (`--highlight`), line-boundary alignment for control-heavy paragraphs, image-crop misread fix.
-- **v3.13** — Prose-box detection (full-width flowing text over fake columns), HML table caption preservation.
-- **v3.12** — Label-header tables no longer demoted to paragraphs; open-edge synthesis for chained borders; PDF table bench 90.3→98.6% match.
-- **v3.11** — Open-sided table restoration (Korean documents love omitting outer borders), text-box shading no longer poisons border detection.
-- **v3.10** — Layout-preserving SVG render from Hancom's typesetting cache (per-run size/weight/color, alignment, cell borders, merged cells, image crop).
-- **v3.9** — Markdown display math → native HWPX equations (`\frac`, `\sqrt`, scripts, Greek, integrals/limits, matrices), equation input guards, statute roundtrip integrity gate.
-- **v3.8.x** — HWP 5.x empty-cell fill, DOCX merged-table/text-box recovery, masking-asterisk protection, 17GB→445MB memory fix for image-heavy docs, rotated-PDF text recovery, two-column transcript de-interleaving, Hancom-Cell XLSX recovery.
-- **v3.7** — Table row add/delete in `patchHwpx` (formatting inherited from adjacent rows), form-fill accuracy on colspan labels and nested tables, honest partial-application reporting.
-- **v3.6** — Measured text metrics from the real Hamchorom TTF (98% line-break match), auto letter-spacing (`autoFit`), HTML table generation (colspan/rowspan/nested), multi-value fill, tamper-warning fix.
-- **v3.5** — In-place "sentence → table" conversion inside existing HWPX, MCP `generate_document`.
-- **v3.2** — Official-document mode `markdownToHwpx(md, { gongmun })`: 8-level Korean item numbering (`1. 가. 1) 가) (1) (가) ① ㉮`), hanging indents, official margins, presets (`official`/`report`/`plan`/`notice`/`minutes`).
-- **v3.1** — `HwpxSession` incremental block-patch API for editors, `extractFormSchema` (field types/required/empty), CJS build fix.
-- **v3.0.1** — `patchHwp`: format-preserving patch for HWP 5.x binaries (sector-level container surgery — byte-identical outside the edit).
-- **v3.0** — `patchHwpx` lossless roundtrip + parser leap on a 324-document government corpus: HWPX text 99.998%, table structure 100%, PDF coverage 99.16%.
-
-</details>
-
----
-
-## Install
-
-```bash
-npm install kordoc
-```
-
-Optional dependencies for PDF parsing (pdfjs-dist), formula OCR, etc. are **installed by
-default** (optionalDependencies). To slim the install, skip them with
-`npm install kordoc --omit=optional` — PDF parsing, formula OCR, and print rendering
-will then be unavailable.
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Parse a document
 
@@ -510,347 +169,379 @@ will then be unavailable.
 import { parse } from "kordoc"
 import { readFileSync } from "fs"
 
-const buffer = readFileSync("business-plan.hwpx")
-const result = await parse(buffer)
+const result = await parse(readFileSync("business-plan.hwpx"))   // a file path string works too
 
 if (result.success) {
-  console.log(result.markdown)       // markdown text
-  console.log(result.blocks)         // IRBlock[] structured data
-  console.log(result.metadata)       // { title, author, createdAt, ... }
+  result.markdown   // markdown
+  result.blocks     // IRBlock[] structured data
+  result.metadata   // { title, author, createdAt, pageMode, ... }
+  result.pages      // [{ pageNumber, markdown }] per-page body
 }
 ```
+
+- `pages` appears only for formats whose blocks carry page numbers (HWP · HWPX · PDF; XLS(X): one sheet = one page). DOCX, which has no page numbering, omits the field.
+- Page-boundary reliability is `metadata.pageMode` — `"layout"` (real pages from the typesetting cache) / `"section"` (section approximation).
+
+**Parse options** (`parse(buffer, options)` · CLI flag)
+
+| Option | CLI | Description |
+| --- | --- | --- |
+| `pages` | `-p, --pages` | `"1-3"` · `"1,3,5-7"` · `[1, 5, 10]` — real pages for PDF and Hancom-saved files, section approximation without a typesetting cache |
+| `ocr` | `--ocr` · `--ocr-force` | default: scanned pages + text in large images (when the model is cached) · `true`: + small images and logos (~18MB model auto-download) · `"force"`: every page · `false`: off · function: external OCR |
+| `formulaOcr` | `--formula-ocr` | PDF formula OCR (MFD+MFR, ~155MB models) — detected formulas as `$…$` / `$$…$$` |
+| `scriptTags` | `--script-tags` · `--no-script-tags` | superscripts/subscripts as `<sup>`/`<sub>` (so "10⁴ m²" does not flatten to "104 m2"). Default: on for HWPX · HWP · DOCX, off for PDF (`true` recommended for papers and math) |
+| `images` | `--no-images` | `false` skips image bytes (placeholders remain; PDF skips PNG encoding) |
+| `plain` | `--plain` | text-first Markdown without image placeholders, link URLs, underline or bold (headings, lists and table structure kept; `blocks` unchanged). `<sup>`/`<sub>` become `10^4`/`H_2O` |
+| `htmlTables` | `--html-tables` | every table as HTML, one tag per indented line (first row `<th>`) |
+| `password` | `--password` | open password (HWPX · HWP3 · HWP5; not Hancom DRM) |
+| `tables` | `--no-tables` | `false` turns off PDF table detection (two-column exam sheets whose boxes read as tables and flip the order) |
+| `removeHeaderFooter` | `--no-header-footer` | remove PDF running headers/footers (default on, 3+ pages) |
+| `layoutTables` | `--keep-layout-tables` | invisible-border layout tables. Default `"visual"`: as they look (frames become text, only ruled parts stay tables, cell-built fractions become equations). `"keep"`: original table structure (use it for markdown you will `patch` back) |
+| `keepTrailingEmptyCols` | `--keep-empty-cols` | keep empty trailing table columns (form input columns) |
+| `keepEmptyParagraphs` | `--keep-empty-paragraphs` | keep empty paragraphs — source paragraph count = line count (HWPX) |
+| `includeFieldPlaceholders` | `--include-field-placeholders` | also emit unfilled click-here field guide text (HWPX · HWP5) |
+| `dedupeRunningHeaders` | `--dedupe-headers` | drop running headers repeated per page in HWP5 layout tables (opt-in: may also drop per-attachment renumbering) |
+| `inlineImages` | `--inline-images` | inline images as base64 data URIs (BMP→PNG, HWP5) |
+| `classifyTables` | — | classify tables as data / layout / uncertain into `IRTable.classification` |
+| `onProgress` | — | progress callback `(current, total)` |
 
 ### Compare documents (redline)
 
 ```typescript
 import { compare } from "kordoc"
 
-const diff = await compare(oldBuffer, newBuffer)
+const diff = await compare(oldBuffer, newBuffer)   // cross-format HWP ↔ HWPX works
 // diff.stats → { added: 3, removed: 1, modified: 5, unchanged: 42 }
 // diff.diffs → BlockDiff[] (tables include cell-level diffs)
 ```
 
-Cross-format comparison (HWP vs HWPX) works too.
-
-### Extract form fields
+### Extract and fill form fields
 
 ```typescript
-import { parse, extractFormFields } from "kordoc"
-
-const result = await parse(buffer)
-if (result.success) {
-  const form = extractFormFields(result.blocks)
-  // form.fields → [{ label: "성명", value: "홍길동", row: 0, col: 0 }, ...]
-  // form.confidence → 0.85
-}
-```
-
-### Auto-fill a form
-
-```typescript
-import { fillForm } from "kordoc"
+import { parse, extractFormFields, fillForm } from "kordoc"
 import { readFileSync, writeFileSync } from "fs"
 
-const template = readFileSync("application.hwpx")
+const r = await parse(buffer)
+if (r.success) {
+  const form = extractFormFields(r.blocks)
+  // form.fields → [{ label: "성명", value: "홍길동", row: 0, col: 0 }, ...], form.confidence → 0.85
+}
 
-// HWPX format-preserving mode — fonts, sizes, alignment 100% intact
-const result = await fillForm(template, {
-  성명: "홍길동",
-  주민등록번호: "900101-1234567",
-  주소: "서울특별시 광진구 능동로 120",
+// HWPX format-preserving mode — fonts, sizes, alignment intact
+const filled = await fillForm(readFileSync("application.hwpx"), {
+  성명: "홍길동", 주민등록번호: "900101-1234567", 주소: "서울특별시 광진구 능동로 120",
 }, "hwpx-preserve")
-
-writeFileSync("application_filled.hwpx", Buffer.from(result.output as ArrayBuffer))
-// result.fill.filled → [{ label: "성명", value: "홍길동" }, ...]
-// result.fill.unmatched → keys that failed to match
+writeFileSync("application_filled.hwpx", Buffer.from(filled.output as ArrayBuffer))
+// filled.fill.filled → filled fields, filled.fill.unmatched → keys that failed to match
 ```
 
-### Generate HWPX (reverse conversion)
+### Built-in standard draft templates + click-here fields
+
+Standard draft-document forms (annexed to the 「Enforcement Rules of the Regulation on Administrative Efficiency and Collaboration」) ship with the package, so you can produce an official document by name alone. Form source: [rhwp](https://github.com/edwardkim/rhwp) (MIT).
+
+| Name | Form | Use | Click-here fields |
+|------|------|-----|-------------------|
+| `gian` (general draft) | Annex Form No. 1 | outgoing / cooperation documents | 23 — agency name, recipient, via, title, body, attachments, sender, drafter, reviewer, approver, enforcement number, … |
+| `gian-simple` (simple draft) | Annex Form No. 2 | internal approval reports/plans (approval table) | 13 — registration number, approval titles 1–4, title, summary, date, … |
+
+```bash
+npx kordoc fill --list-templates                                # built-in templates + fields
+npx kordoc fill --template gian -j values.json -o draft.hwpx
+npx kordoc fill templates:간이기안문 -f '제목=…' -o report.hwpx   # positional form works too
+```
+
+- Click-here fields are matched by name first, then remaining keys by label — works on any HWPX form with click-here fields.
+- Multi-line values become in-paragraph line breaks; the original formatting is kept.
+- API: `extractClickHereFields` → `fillHwpx(buf, values)`. The MCP `fill_form` tool takes the same templates via `template`.
+
+### Generate HWPX (Markdown → HWPX)
 
 ```typescript
 import { markdownToHwpx } from "kordoc"
 
-const hwpxBuffer = await markdownToHwpx("# Title\n\nBody text\n\n| Name | Rank |\n| --- | --- |\n| 홍길동 | 과장 |")
-writeFileSync("out.hwpx", Buffer.from(hwpxBuffer))
+const hwpx = await markdownToHwpx("# Title\n\nBody\n\n| Name | Rank |\n| --- | --- |\n| 홍길동 | 과장 |")
 
-// Display math blocks become native HWPX equations (<hp:equation>).
-// Supported: a limited LaTeX-like subset — \frac, \sqrt, sub/superscripts,
-// Greek, integrals/limits, arrows, relations, matrix family.
-const withEquation = await markdownToHwpx("Pythagoras\n\n$$a^2 + b^2 = c^2$$")
+// display math → native HWPX equations (<hp:equation>) — LaTeX-like subset: \frac, \sqrt, scripts, Greek, integrals/limits, arrows, relations, matrices
+await markdownToHwpx("Pythagoras\n\n$$a^2 + b^2 = c^2$$")
 
-// Official-document mode — 8-level Korean item numbering + hanging indent
-// + official margins/serif defaults
-const gongmun = await markdownToHwpx("1. 추진배경\n  - 세부 항목\n2. 추진계획", {
-  gongmun: { preset: "보고서" },  // official | report | plan | notice | minutes | gaejosik | press
+// official-document mode — 8-level item numbering + hanging indent + official margins / serif fonts
+// preset: official | report | plan | notice | minutes | gaejosik | press | ministry (work report) | bangchim (Seoul policy plan)
+await markdownToHwpx("1. 추진배경\n  - 세부 항목\n2. 추진계획", { gongmun: { preset: "보고서" } })
+
+// government-standard gaejosik report — cover, TOC (banner), Roman-numeral chapter headers, body title box, page numbers ("- 1 -", not on cover/TOC)
+await markdownToHwpx(md, {
+  gongmun: {
+    preset: "개조식",
+    cover: { org: "Agency", date: "2026. 7. 11." },
+    toc: true,                          // h2 list → Ⅰ Ⅱ Ⅲ TOC (on by default for gaejosik)
+    approval: ["담당", "팀장", "과장"],   // approval box (optional)
+    pageNumbers: true,                  // page numbers (on by default for gaejosik/report/plan)
+    endMark: false,                     // "끝." at the end (on by default for drafts)
+  },
 })
 ```
 
-From the CLI: `kordoc generate report.md -o report.hwpx --preset 보고서`
+- Tables follow government conventions automatically (shaded header, double bottom rule, content-proportional widths). Themes and a reference document's table format (`hwpxToProfile`) are accepted too.
+- CLI: `kordoc generate report.md -o report.hwpx --preset 개조식 --org Agency --approval 담당,팀장,과장`
 
-### Layout-preserving render (HWPX → SVG)
+### Layout-preserving render
 
-Draws the typesetting cache Hancom stores in HWPX (line coordinates, cell grids, object anchors) as absolutely-positioned SVG. Fast (no typesetting engine needed) and works on servers without Hancom. Multi-page vertical stack, search-term highlighting, and drawing shapes are supported (v3.14–15). Files without a cache (`markdownToHwpx` output, AI-generated or edited files) are typeset directly by the **pure-TS reflow engine** with `reflow: true` (v3.15). Equation objects are not rendered yet.
+Draws documents exactly as laid out, from the typesetting cache Hancom stores in HWPX (no Hancom on the server). Files without a cache (generated files) are typeset by the built-in reflow engine. Equation objects are not rendered yet.
 
 ```typescript
-import { renderHwpxToSvg } from "kordoc"
+import { renderHwpxToSvg, renderDocument, extractRenderedRegions } from "kordoc"
 
 const r = await renderHwpxToSvg(readFileSync("approval.hwpx"), { highlights: ["예산"] })
-writeFileSync("approval.svg", r.svg)
-// r.width/r.height (pt), r.pageCount, r.stats { texts, images, tables }, r.warnings
+// r.svg, r.width/r.height (pt), r.pageCount, r.stats { texts, images, tables }, r.warnings
+const g = await renderHwpxToSvg(generatedHwpx, { reflow: true })   // cache-less files
 
-const g = await renderHwpxToSvg(generatedHwpx, { reflow: true }) // cache-less files
-
-// Unified renderer — HWPX and HWP (5.x), per-page PNG + table crops (v4.13, HWP v4.13.1)
+// unified renderer — HWPX and HWP (5.x), per-page PNG + table crops
 const { scene, assets } = await renderDocument("approval.hwp", { format: "png", pages: "1-2" })
 const crops = await extractRenderedRegions("approval.hwp", { types: ["table"] })
 ```
 
-From the CLI: `kordoc render approval.hwpx -o approval.svg` (reflow on by default, `--no-reflow` to disable; `--highlight 예산,집행`) — for continuous rendering use `kordoc render-worker` (stdin NDJSON).
+CLI: `kordoc render approval.hwpx -o approval.svg` (`--highlight 예산`, `--no-reflow`). For preview apps, `kordoc render-worker` stays resident.
 
-### Text only (skip images, persistent parse worker)
+### Bulk conversion — persistent parse worker
 
 ```typescript
-const result = await parse(buffer, { images: false }) // no image bytes (placeholders remain)
-const plain = await parse(buffer, { plain: true, htmlTables: true }) // text-first + every table as indented HTML
+await parse(buffer, { images: false })                   // no image bytes
+await parse(buffer, { plain: true, htmlTables: true })   // text-first + every table as HTML
 ```
 
-From the CLI: `kordoc doc.pdf --format json --no-images`. For bulk conversion keep `kordoc parse-worker`
-running and send one JSON request per stdin line.
+`kordoc parse-worker` stays running and answers one line per stdin JSON line (no new node process per file).
 
 ```text
-ready     {"ready":true,"version":"4.15.0","protocol":1}
+ready     {"ready":true,"version":"4.16.0","protocol":1}
 request   {"id":1,"file":"doc.hwpx","images":false,"ocr":"off"}
-response  {"id":1,"rss":183500800,"result":{ …same ParseResult as --format json, failures as success:false… }}
+response  {"id":1,"rss":183500800,"result":{ …same as --format json, failures as success:false… }}
 quit      {"cmd":"quit"}  (or close stdin)
 ```
 
-`ocr` accepts `"off"`, `"auto"` (only pages that need OCR) or `"force"`; `formulaOcr` and `password` are also accepted.
+Requests accept `ocr` (`"off"` · `"auto"` · `"force"`), `formulaOcr` and `password`; use the response's `rss` (memory) to decide when to recycle the worker.
 
-### Page ranges
-
-```typescript
-const result = await parse(buffer, { pages: "1-3" })      // pages 1–3 only
-const result = await parse(buffer, { pages: [1, 5, 10] })  // specific pages
-```
-
-### OCR (scanned/image-based PDFs) — built-in engine (v4.2.0+)
+### OCR (scanned / image-based PDFs)
 
 ```typescript
-// Built-in OCR (PP-OCRv5 korean, ~18MB models auto-downloaded on first use)
-const result = await parse(buffer, { ocr: true })     // only pages that need OCR
-const result = await parse(buffer, { ocr: "force" })  // force-OCR every page
-```
-
-- **No API key or external service** — det (DBNet) + rec (CTC) ONNX inference on local CPU
-  (official PaddlePaddle conversions, Apache-2.0).
-- **Page-precise**: scanned pages and pages with broken ToUnicode mappings (the `needsOcr`
-  signals) are OCR'd; clean pages keep their parsed output.
-- **Tables survive**: OCR line boxes go through the same xy-cut + cluster table detection
-  pipeline, so table structure is reconstructed even from scans.
-- To use an external OCR instead, pass a provider function as before:
-
-```typescript
-const result = await parse(buffer, {
-  ocr: async (pageImage, pageNumber, mimeType) => {
-    return await myOcrService.recognize(pageImage) // Claude Vision, Tesseract, ...
-  }
+await parse(buffer, { ocr: true })      // pages that need OCR + text in images (PP-OCRv5 korean, ~18MB model on first use)
+await parse(buffer, { ocr: "force" })   // force every page
+await parse(buffer, {                   // external OCR (Claude Vision, Tesseract, …)
+  ocr: async (pageImage, pageNumber, mimeType) => myOcrService.recognize(pageImage),
 })
 ```
 
-### PDF text-quality signals (v2.9+)
+- Runs on local CPU with no API key (PP-OCRv5 korean ONNX — all 11,172 precomposed Hangul syllables).
+- Only pages without a text layer or with a broken one are OCR'd, and table structure is recovered from scans.
+- Model management: `kordoc models --status` (`--export`/`--import` for air-gapped networks).
 
-PDFs often have a text layer with broken ToUnicode/CMap or control characters mixed in. `parsePdf` returns per-page quality signals.
+### PDF text-quality signals
+
+`parsePdf` returns per-page quality signals — use them to send pages with a broken text layer to OCR.
 
 ```typescript
 const r = await parsePdf(buffer)
-if (r.success && r.qualitySummary?.needsOcr) {
-  // retry with the built-in OCR (v4.2.0+) — or route to your own OCR queue
-  const retried = await parse(buffer, { ocr: true })
-}
-
-for (const p of r.pageQuality ?? []) {
-  if (p.needsOcr) console.log(`p${p.page} needs review: ${p.ocrReason}`)
-}
+if (r.success && r.qualitySummary?.needsOcr) await parse(buffer, { ocr: true })   // or route to your OCR queue
+for (const p of r.pageQuality ?? []) if (p.needsOcr) console.log(`p${p.page} needs review: ${p.ocrReason}`)
 ```
 
-Signal keys: `textChars`, `hangulRatio`, `controlCharRatio`, `replacementCharRatio`, `puaRatio` / `needsOcr` (page & document level) / `ocrReason` (`low_text` | `high_pua` | `high_control` | `high_replacement` | `garbled_hangul` | `vector_text`). `vector_text` marks pages whose text is drawn as outlines, so the text layer has none (v4.14.4).
+Signals: `textChars` · `hangulRatio` · `controlCharRatio` · `replacementCharRatio` · `puaRatio`, `needsOcr`, `ocrReason` (`low_text` · `high_pua` · `high_control` · `high_replacement` · `garbled_hangul` · `vector_text`).
 
-## CLI
+---
+
+## 💻 CLI
+
+[Parallel batch benchmarks and limits](docs/parallel-batch.md)
+
+`--jobs N` runs whole-file conversions in parallel using N reusable processes (default: 1). With `--jobs > 1`, multiple inputs require `-d` and distinct filename stems, including across extensions. Per-file failures do not stop other files, and any failure sets a nonzero exit status. Completion messages and failure JSON arrive in completion order. More workers use more memory; tiny files may be slower, and OCR already uses native CPU threads. This does not parallelize pages within one document or change the JavaScript/MCP APIs.
 
 ```bash
+# convert
 npx kordoc business-plan.hwpx                       # print to terminal
-npx kordoc report.hwp -o report.md                  # save to file
+npx kordoc report.hwp -o report.md                  # save to file (images in images/report/)
 npx kordoc *.pdf -d ./converted/                    # batch conversion
+npx kordoc *.pdf --jobs 4 -d ./converted/           # parallel batch (4 reusable processes)
 npx kordoc review.hwpx --format json                # JSON (blocks + pages + metadata)
+npx kordoc review.pdf --format chunks               # RAG structure chunks (breadcrumbs + standalone tables)
 npx kordoc report.hwpx --pages 1-3                  # page range
-npx kordoc fill form.hwpx -f '성명=홍길동,주소=서울' -o filled.hwpx   # fill a form
-npx kordoc fill form.hwpx -j values.json -o filled.hwpx              # fill from JSON
-npx kordoc fill form.hwpx --dry-run                                  # list fields only
-npx kordoc fill form.hwpx -j values.json --formats '{"날짜":"yy.mm.dd"}'  # per-field value formatting (label → format)
-npx kordoc fill form.hwpx -j values.json --require-unique             # refuse if one key matches 2+ spots (repeated-label safety)
-npx kordoc fill form.hwpx -j values.json --mask                       # don't echo filled values to stdout
-npx kordoc generate report.md -o report.hwpx --preset 보고서          # markdown → official HWPX
-npx kordoc lint report.md                                            # 13-rule official-notation linter — input is md/txt ('-' = stdin), exits 1 on errors
-npx kordoc patch original.hwpx edited.md -o patched.hwpx  # format-preserving roundtrip patch (.hwp auto-detected)
-npx kordoc seal form.hwpx --image stamp.png --anchor "(인)" -o sealed.hwpx  # place a stamp/signature
-npx kordoc validate output.hwpx                     # HWPX structure validation (ZIP, required parts, XML)
-npx kordoc redact complaint.hwpx -o redacted.hwpx   # PII detection + format-preserving masking, incl. headers/footnotes/preview/document info; re-scans the output (exit 2 if anything remains)
-npx kordoc redact complaint.hwpx --mask-char '*' -o redacted.hwpx  # mask character (default ●)
+npx kordoc scan.pdf --ocr                           # built-in OCR (--ocr-force for every page)
+npx kordoc locked.hwpx --password 'secret'          # password-protected HWPX/HWP3/HWP5
+npx kordoc exam.pdf --no-tables                     # turn off PDF table detection
+npx kordoc doc.pdf --format json --no-images        # no images (also --plain, --html-tables)
+
+# fill forms
+npx kordoc fill form.hwpx -f '성명=홍길동,주소=서울' -o filled.hwpx
+npx kordoc fill form.hwpx -j values.json -o filled.hwpx
+npx kordoc fill form.hwpx --dry-run                                 # list fields only (incl. click-here)
+npx kordoc fill form.hwpx -j values.json --formats '{"날짜":"yy.mm.dd"}' # per-field value format
+npx kordoc fill form.hwpx -j values.json --require-unique           # refuse if one key matches 2+ spots
+npx kordoc fill form.hwpx -j values.json --mask                     # don't echo filled values to stdout
+npx kordoc fill --template gian -j values.json -o draft.hwpx        # built-in draft template (--list-templates)
+
+# generate · edit · verify
+npx kordoc generate report.md -o report.hwpx --preset 보고서         # Markdown → official HWPX
+npx kordoc patch original.hwpx edited.md -o patched.hwpx            # format-preserving patch (.hwp auto)
+npx kordoc seal form.hwpx --image stamp.png --anchor "(인)" -o sealed.hwpx
+npx kordoc validate output.hwpx                                     # HWPX structure validation (ZIP, required parts, XML)
+npx kordoc lint report.md                                           # 19-rule notation linter (md/txt, '-' = stdin, exit 1 on errors)
+npx kordoc profile agency-form.hwpx                                 # table format profile JSON → generate --profile
+
+# PII masking
+npx kordoc redact complaint.hwpx -o redacted.hwpx                   # format-preserving masking + re-scan (exit 2 if anything remains)
+npx kordoc redact complaint.hwpx --mask-char '*' -o redacted.hwpx   # mask character (default ●)
+npx kordoc redact contract.hwp --rules rrn,phone,crn --json --dry-run  # pick rules + per-location report only (crn, IP are opt-in)
 npx kordoc redact complaint.hwpx --rules rrn,phone,email,name,address -o redacted.hwpx  # names and addresses too (opt-in)
-npx kordoc redact notice.pdf                        # PDF/DOCX/etc.: the original file is NOT modified — masked markdown (.redacted.md) only; no PDF redaction
-npx kordoc profile agency-form.hwpx                 # extract table format profile (JSON) → reuse via generate --profile
-npx kordoc render approval.hwpx -o preview.svg      # layout-preserving SVG render (documents without a layout cache are reflowed; --no-reflow disables)
-npx kordoc render approval.hwpx --reflow-mode charAll -o preview.svg  # reflow line breaking: keep (word, default) | charAll (character)
-npx kordoc models --status                          # model cache status (--export/--import for air-gapped sideloading)
-npx kordoc check-ocr-models --status-only           # OCR model status as JSON (without the flag, missing models are downloaded)
-npx kordoc check-formula-models --status-only       # formula OCR models (MFD + MFR + tokenizer, ~155MB) status only
-npx kordoc watch ./inbox -d ./converted             # folder watch mode
+npx kordoc redact notice.pdf                                        # PDF/DOCX/etc.: masked .redacted.md only
+
+# render
+npx kordoc render approval.hwpx -o preview.svg                      # layout-preserving SVG (reflow when cache-less)
+npx kordoc render approval.hwpx --format png --pages 2-4 -d ./pages # also PNG, JPEG, HTML, PDF
+npx kordoc render approval.hwpx --reflow-mode charAll -o preview.svg # reflow line breaking: keep (word, default) | charAll (character)
+
+# models · watch
+npx kordoc models --status                          # OCR model status (--export/--import for air-gapped sideloading)
+npx kordoc check-ocr-models --status-only           # status only as JSON (without the flag, missing models are downloaded)
+npx kordoc check-formula-models --status-only       # formula OCR models (MFD+MFR+tokenizer, ~155MB) status only
+npx kordoc watch ./inbox -d ./converted             # folder watch (keeps subfolders)
 npx kordoc watch ./docs --webhook https://api/hook  # webhook notification
 ```
 
-With `watch -d`, output preserves the input's relative subdirectories: `inbox/team/report.hwpx` becomes `converted/team/report.md` (or `.json`). Files directly in `inbox` still write directly to `converted`.
+- `watch -d` keeps the subfolder structure.
+- `check-ocr-models` and `check-formula-models` download missing models — pass `--status-only` to inspect only.
+- `lint` checks Markdown/text. For HWPX: `kordoc doc.hwpx | kordoc lint -`.
 
-> `check-ocr-models` and `check-formula-models` **download** what is missing or fails its SHA check,
-> despite the name. Pass `--status-only` to inspect without downloading (formula models are ~155MB).
->
-> `kordoc lint` inspects **text (markdown/txt)** — do not hand it an HWPX. To lint a generated document,
-> lint the source markdown, or pipe: `kordoc report.hwpx | kordoc lint -`.
+### Failure contract — machine-readable failure JSON
 
-### Failure contract — machine-readable failure JSON (v4.10.0+, #69)
-
-Conversion failures emit the same failure JSON to stdout **in every `--format` (markdown · json · chunks)** and exit 1, so callers branch on `code` instead of parsing human-oriented stderr messages.
+Conversion failures emit the JSON below to stdout in every `--format` and exit 1 — branch on `code`.
 
 ```json
-{ "success": false, "fileType": "hwpx", "error": "…", "code": "ENCRYPTED" }
+{ "success": false, "fileType": "hwpx", "file": "report.hwpx", "error": "…", "code": "ENCRYPTED" }
 ```
 
-This never collides with success output — `markdown` success is markdown text, `chunks` success is a JSON **array**, and a failure is always a `success:false` **object**. With `-o`/`-d`, no output file is produced for a failed input; with multiple inputs, each failed file emits one failure JSON. Codes: `ENCRYPTED`, `DRM_PROTECTED`, `UNSUPPORTED_FORMAT`, `CORRUPTED`, `IMAGE_BASED_PDF`, `ZIP_BOMB`, `DECOMPRESSION_BOMB`, `NO_SECTIONS`, `OUTPUT_TOO_LARGE`, `MISSING_DEPENDENCY`, `EMPTY_INPUT`, `FILE_NOT_FOUND`, `PARSE_ERROR`. Each failure JSON also carries `file` (the failing input's basename), so a batch run can tell which input failed without parsing stderr. **Stability**: the exit-code rule (0 success / 1 failure) and the JSON fields are stable (fields are only ever added), and the `code` set only ever grows — existing values are never renamed or removed. The `error` string is for humans and is not part of the contract.
+- A failure is always a `success:false` object, so it never collides with success output (text or arrays). With multiple inputs each failure emits one line.
+- Exit codes and fields are stable; `code` values are only ever added. The `error` string is for humans, not part of the contract.
 
-### Image bundles — `images/<document name>/manifest.json` (v4.10.0+, #70 · #98)
+| `code` | Meaning |
+|---|---|
+| `ENCRYPTED` | open password required (`--password`) or wrong |
+| `DRM_PROTECTED` | Hancom document security (DRM) — cannot be opened |
+| `UNSUPPORTED_FORMAT` | unsupported format |
+| `CORRUPTED` | signature mismatch or unrecoverable damage |
+| `IMAGE_BASED_PDF` | scanned PDF without a text layer (needs `--ocr`) |
+| `ZIP_BOMB` / `DECOMPRESSION_BOMB` | decompression-bomb guard triggered |
+| `NO_SECTIONS` | no body sections |
+| `OUTPUT_TOO_LARGE` | output serialization exceeds the runtime string limit |
+| `MISSING_DEPENDENCY` | optional dependency not installed (pdfjs-dist, …) |
+| `EMPTY_INPUT` | empty input |
+| `FILE_NOT_FOUND` | input path does not exist (ENOENT) |
+| `PARSE_ERROR` | any other parse failure |
 
-When saving with `-o`/`-d`, extracted images land in a per-document folder `images/<document name>/` (the `-o` output name or the `-d` input name without its extension) together with a `manifest.json`, and Markdown links point there (spaces and parentheses percent-encoded). Converting several documents into one folder no longer overwrites each other's images. Consumers branch on formats without extension or magic-byte guessing.
+### Image bundles — `images/<document name>/manifest.json`
+
+With `-o`/`-d`, images go to a per-document folder `images/<document name>/` with a `manifest.json` (converting several documents into one folder never overwrites images). `--format json --image-refs` keeps only paths instead of bytes.
 
 ```json
 [ { "name": "image_001.png", "mimeType": "image/png", "bytes": 68, "source": "BinData/image1.png" } ]
 ```
 
-`mimeType` prefers magic-byte detection (PNG/JPEG/GIF/BMP/WMF/EMF) over the declared, extension-derived type; undetectable formats (TIFF, SVG, …) keep the declared value. `source` is the original container entry (HWPX/DOCX ZIP path, HWP5 BinData storage name) and is absent for synthesized images (PDF re-encodes). Possible extensions: PDF always emits `png` (pure-JS re-encode); HWP5 emits sniffed `png/jpg/gif/bmp` (`bin` for WMF/EMF); HWPX emits extension-derived `png/jpg/gif/bmp/tif/wmf/emf/svg` (`bin` for unknown); DOCX keeps original extensions. Images are never re-encoded — trust the manifest, not the extension.
+- `mimeType` is detected from the file header (magic bytes); `source` is the path inside the original container.
+- Images are stored as-is (only PDF images are re-encoded to PNG) — trust `mimeType` over the extension.
 
-## MCP Server (Claude / Cursor / Windsurf / Codex)
+---
 
-**Automatic setup (recommended)**:
+## 🤖 MCP Server
 
-```bash
-npx -y kordoc setup
-```
-
-Detects your AI client interactively and patches its config file — including `cmd /c npx` wrapping on Windows. See [30-Second Setup](#-30-second-setup-ai-agent-integration).
-
-For Codex, the wizard registers the server through `codex mcp add` rather than editing its TOML config directly.
-
-**Manual setup for Codex**:
+Automatic setup: [`npx -y kordoc setup`](#ai-agent-integration-mcp--30-seconds). Manual registration:
 
 ```bash
-codex mcp add kordoc -- npx -y kordoc mcp
+codex mcp add kordoc -- npx -y kordoc mcp          # Codex
 ```
-
-**Manual registration (macOS / Linux)**:
 
 ```json
-{
-  "mcpServers": {
-    "kordoc": {
-      "command": "npx",
-      "args": ["-y", "kordoc", "mcp"]
-    }
-  }
-}
+{ "mcpServers": { "kordoc": { "command": "npx", "args": ["-y", "kordoc", "mcp"] } } }
 ```
 
-**Manual registration (Windows — when Claude Desktop can't find `.cmd`)**:
+On Windows, if Claude Desktop can't find `.cmd`, use `"command": "cmd", "args": ["/c", "npx", "-y", "kordoc", "mcp"]`.
 
-```json
-{
-  "mcpServers": {
-    "kordoc": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "kordoc", "mcp"]
-    }
-  }
-}
-```
-
-**17 tools:**
+**17 tools**
 
 | Tool | Description |
 |------|-------------|
-| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX/PPTX → markdown (with metadata) |
-| `detect_format` | Format detection via magic bytes |
-| `parse_metadata` | Fast metadata-only extraction |
-| `parse_pages` | Parse a specific page range |
-| `parse_table` | Extract only the Nth table |
-| `compare_documents` | Compare two documents (cross-format) |
-| `parse_form` | Extract form fields as JSON |
-| `fill_form` | Fill a form template (HWPX format-preserving, format/uniqueness guards) |
-| `patch_document` | Apply edited markdown back into the original HWPX/HWP, format preserved (v3.3) |
-| `extract_profile` | Extract a table format profile (JSON) from a reference HWPX — feed it to generate_document's profile_path |
-| `generate_document` | Markdown (tables/equations/charts) → HWPX, official-document presets (v3.5) |
-| `place_seal` | Place a stamp/signature image over an anchor phrase (v3.16) |
-| `render_document` | Render HWPX/HWP exactly as typeset to PNG/JPEG (inline) or SVG/HTML/PDF files — lets the AI visually verify generated/edited documents (v4.1, HWP + formats v4.13.1) |
-| `redact_document` | Detect PII (resident/foreigner registration no., phone, email, card, account, business registration no., passport, driver license; opt-in corporate registration no., IP, names and addresses) + format-preserving masking. HWPX/HWP: also headers/footers, footnotes, text boxes, fields, preview text/image and document info, with a post-mask re-scan; other formats: masked markdown only (v4.1) |
-| `parse_chunks` | Structure-preserving chunk JSON for RAG — heading/outline hierarchy breadcrumbs + standalone table chunks (v4.1) |
-| `crop_regions` | Crop rendered regions (tables/images/paragraphs/shapes) from page images at true scale + regions.json (v4.13) |
-| `extract_tables` | Table classification (data table / layout-like / uncertain) + page·bbox + policy-based crops — org charts as images, data tables as structure (v4.13.1) |
+| `parse_document` | HWP/HWPX/PDF/XLSX/DOCX → Markdown (with metadata) |
+| `detect_format` | format detection via magic bytes |
+| `parse_metadata` | fast metadata only |
+| `parse_pages` | a page range only |
+| `parse_table` | the Nth table only |
+| `parse_chunks` | RAG structure chunks — heading/outline breadcrumbs + standalone table chunks |
+| `compare_documents` | compare two documents (cross-format) |
+| `parse_form` | form fields as JSON |
+| `fill_form` | fill a form (HWPX format-preserving, format/uniqueness guards, built-in `template`) |
+| `patch_document` | apply edited Markdown back into the original HWPX/HWP, format preserved |
+| `extract_profile` | table format profile JSON from a reference HWPX — reuse via `generate_document`'s `profile_path` |
+| `generate_document` | Markdown (tables/equations/charts) → HWPX, official-document presets |
+| `place_seal` | float a stamp/signature image over an anchor phrase |
+| `render_document` | render HWPX/HWP as typeset to PNG/JPEG (inline) or SVG/HTML/PDF files — lets the AI visually check generated/edited output |
+| `redact_document` | PII detection + format-preserving masking (HWPX/HWP incl. headers, footnotes, previews and document info, with a re-scan; other formats: masked Markdown) |
+| `crop_regions` | crop rendered regions (tables/images/paragraphs/shapes) from page images at true scale + regions.json |
+| `extract_tables` | table classification (data / org-chart-like / uncertain) + page·bbox + policy-based crops — org charts as images, data tables as structure |
 
-## API
+---
 
-### Core functions
+## 📚 API
+
+### Parsing
 
 | Function | Description |
 |----------|-------------|
-| `parse(buffer, options?)` | Auto format detection → Markdown + IRBlock[] |
-| `parseHwpx(buffer, options?)` | HWPX only |
-| `parseHwp(buffer, options?)` | HWP 5.x only |
-| `parseHwp3(buffer, options?)` | HWP 3.x (1996–2002 legacy) only |
-| `parsePdf(buffer, options?)` | PDF only |
-| `parseXlsx(buffer, options?)` | XLSX only |
-| `parseXls(buffer, options?)` | XLS (Excel 97–2003, BIFF8) only |
-| `parseDocx(buffer, options?)` | DOCX only |
-| `parsePptx(buffer, options?)` | PPTX only — slides, tables, charts, SmartArt, notes, images (OCR) |
-| `parseHwpml(buffer, options?)` | HWPML (XML-based HWP) only |
-| `detectFormat(buffer)` | Synchronous magic-byte detection — returns `hwpx` for ZIP and `hwp` for OLE2 for backward compatibility |
-| `await detectZipFormat(buffer)` | Inspects ZIP entries to distinguish `hwpx`, `xlsx`, `docx`, `pptx`, and `unknown` |
-| `detectOle2Format(buffer)` | Inspects OLE2 streams to distinguish `hwp`, `xls`, and `unknown` |
+| `parse(buffer, options?)` | auto format detection → Markdown + `IRBlock[]` (a file path string works too) |
+| `parseHwpx` · `parseHwp` · `parseHwp3` · `parseHwpml` | HWPX · HWP 5.x · HWP 3.x (1996–2002) · HWPML only — all `(buffer, options?)` |
+| `parsePdf` · `parseDocx` · `parseXlsx` · `parseXls` | PDF · DOCX · XLSX · XLS (Excel 97–2003, BIFF8) only |
+| `parseImage(buffer, options?)` | images (PNG/JPG/WebP) only — built-in OCR always on |
+| `detectFormat(buffer)` | synchronous magic-byte detection — returns `hwpx` for ZIP and `hwp` for OLE2 for backward compatibility |
+| `await detectZipFormat(buffer)` | ZIP entries → `hwpx` · `xlsx` · `docx` · `pptx` · `unknown` |
+| `detectOle2Format(buffer)` | OLE2 streams → `hwp` · `xls` · `unknown` |
 
-PPTX is parsed using the `sldIdLst` order in `ppt/presentation.xml` as slide numbers.
-Wrappers/APIs that route ZIP formats should call `await detectZipFormat(buffer)` when
-`detectFormat()` returns `hwpx`.
+PPTX is parsed by `parse()`. To tell ZIP formats apart, call `await detectZipFormat(buffer)` when `detectFormat()` returns `hwpx`.
 
-### Advanced functions
+### Compare · forms · editing
 
 | Function | Description |
 |----------|-------------|
 | `compare(bufferA, bufferB, options?)` | IR-level document comparison |
-| `extractFormFields(blocks)` | Recognize form fields from IRBlock[] |
-| `extractFormSchema(blocks)` | Field recognition + type/required/empty inference (v3.1) |
-| `fillForm(input, values, outputFormat?)` | Fill a form template — outputFormat: `"markdown"` (default) / `"hwpx"` / `"hwpx-preserve"`, returns `{ output, format, fill }` |
-| `fillFormFields(blocks, values)` | Replace field values on IRBlock[] |
-| `fillHwpx(buffer, values)` | Direct HWPX XML manipulation (format-preserving) |
-| `patchHwpx(original, editedMarkdown, options?)` | Edited markdown → in-place format-preserving HWPX patch (v3.0) |
-| `patchHwp(original, editedMarkdown, options?)` | Edited markdown → format-preserving HWP 5.x binary patch (v3.0.1) |
-| `openHwpxDocument(bytes, options?)` | `HwpxSession` incremental block-patch session for editors (v3.1) |
-| `patchHwpxBlocks(bytes, edits, options?)` | One-shot block edits without a session (v3.1) |
-| `markdownToHwpx(markdown, options?)` | Markdown → HWPX (themes, equations, charts, gongmun presets) |
-| `markdownToPdf(markdown, options?)` | Markdown → PDF (print renderer) |
-| `blocksToPdf(blocks, options?)` | IRBlock[] → PDF |
-| `renderHtml(blocks, options?)` | IRBlock[] → print-ready HTML |
-| `renderHwpxToSvg(buffer, options?)` | HWPX → layout-preserving SVG — multi-page, highlights, shapes; `reflow` for cache-less files (v3.10–15) |
-| `renderDocument(input, { format, pages?, … })` | HWPX/HWP (5.x) → per-page svg/png/jpeg or document html/pdf assets + `RenderScene` (page-local pt bboxes, deterministic region ids) (v4.13, HWP v4.13.1) |
-| `extractRenderedRegions(input, { types?, pages?, … })` | Crop table/image/paragraph/shape regions from page images at true scale (v4.13) |
-| `extractTables(input, { policy?, … })` | Table classification (data / layout-like / uncertain) + render-region join + policy-based crops (v4.13, HWP v4.13.1) |
-| `placeSealHwpx(buffer, seals)` | Place stamp/signature images over anchor phrases (v3.16) |
-| `validateHwpx(buffer)` | HWPX structure validation — ZIP, mimetype, required parts, XML well-formedness (v3.16) |
-| `blocksToMarkdown(blocks)` | IRBlock[] → Markdown string |
+| `extractFormFields(blocks)` / `extractFormSchema(blocks)` | form field recognition / + type, required, empty inference |
+| `fillForm(input, values, outputFormat?)` | fill a form — `"markdown"` (default) · `"hwpx"` · `"hwpx-preserve"`, returns `{ output, format, fill }` |
+| `fillFormFields(blocks, values)` | replace field values on IRBlock[] |
+| `fillHwpx(buffer, values)` | direct HWPX XML manipulation (format-preserving) |
+| `extractClickHereFields(buffer)` | inspect HWPX click-here (CLICK_HERE) fields — names and guide text |
+| `resolveBuiltinTemplate(name)` / `readBuiltinTemplate(t)` | look up / load built-in draft templates (`gian` · `gian-simple`) |
+| `patchHwpx(original, editedMarkdown, options?)` | edited Markdown → format-preserving HWPX patch |
+| `patchHwp(original, editedMarkdown, options?)` | edited Markdown → format-preserving HWP 5.x binary patch |
+| `openHwpxDocument(bytes, options?)` | `HwpxSession` incremental block-patch session for editors |
+| `patchHwpxBlocks(bytes, edits, options?)` | one-shot block edits without a session |
+| `placeSealHwpx(buffer, seals)` | float stamp/signature images over anchor phrases |
+| `validateHwpx(buffer)` | HWPX structure validation — ZIP, mimetype, required parts, XML well-formedness |
+
+### Generate · render
+
+| Function | Description |
+|----------|-------------|
+| `markdownToHwpx(markdown, options?)` | Markdown → HWPX (theme, format profile, page options, official-document presets) |
+| `hwpxToProfile(buffer)` | reference HWPX → table format profile JSON (reuse via `markdownToHwpx(md, { profile })`) |
+| `markdownToPdf(markdown, options?)` / `blocksToPdf(blocks, options?)` | Markdown / IRBlock[] → PDF (install `puppeteer-core` separately) |
+| `renderHtml(blocks, options?)` | IRBlock[] → print-ready HTML (no puppeteer; raw HTML passes only allowed tags, plus CSP) |
+| `renderHwpxToSvg(buffer, options?)` | HWPX → layout-preserving SVG — multi-page, highlights, shapes; `reflow` when cache-less |
+| `renderDocument(input, { format, pages?, … })` | HWPX / HWP (5.x) → per-page svg/png/jpeg or document html/pdf assets + `RenderScene` (page-local pt bboxes, deterministic region ids) |
+| `extractRenderedRegions(input, { types?, pages?, … })` | crop table/image/paragraph/shape regions from page images at true scale |
+| `extractTables(input, { policy?, … })` | table classification (data / org-chart-like / uncertain) + render-region join + policy-based crops |
+
+### Text · conversion helpers
+
+| Function | Description |
+|----------|-------------|
+| `lintGongmunText(text, { document? })` | 19 official-notation rules + 2 AI-slop rules (`document: true` adds document-level attachment / "끝." checks) |
+| `redactMarkdown(text, options?)` / `redactText(...)` | PII detection + masking — text level (file level: CLI `redact`, MCP `redact_document`) |
+| `blocksToChunks(blocks, options?)` | RAG structure chunks — heading/outline breadcrumbs + standalone table chunks |
+| `blocksToMarkdown(blocks)` | IRBlock[] → Markdown |
+| `blocksToPages(blocks)` | IRBlock[] → `[{ pageNumber, markdown }]` |
 
 ### Types
 
@@ -860,32 +551,60 @@ import type {
   IRBlock, IRBlockType, IRTable, IRCell, CellContext,
   DocumentMetadata, ParseOptions, ErrorCode, OutlineItem,
   DiffResult, BlockDiff, CellDiff, DiffChangeType,
-  FormField, FormResult, FillResult, HwpxFillResult, FillOutputFormat, FillFormOutput,
+  FormField, FormResult, FormFieldType, FormFieldSchema, FormSchemaResult,
+  FillResult, HwpxFillResult, FillOutputFormat, FillFormOutput,
+  ClickHereField, BuiltinTemplate,
   PatchOptions, PatchResult, PatchSkip,
-  HwpxTheme, MarkdownToHwpxOptions,
+  HwpxTheme, MarkdownToHwpxOptions, PageOptions,
   PrintPreset, PrintOptions, PageMargin,
   RenderSvgOptions, RenderSvgResult,
+  SealOp, SealPlacement, PlaceSealResult,
+  ValidateResult, ValidateIssue,
+  RedactRule, RedactOptions, RedactHit, RedactTextResult,
+  DocChunk, ChunkOptions, GongmunLintFinding,
   OcrProvider, WatchOptions,
 } from "kordoc"
 ```
 
-## Supported Formats
+---
+
+## 📂 Supported Formats
 
 | Format | Engine | Highlights |
 |--------|--------|-----------|
-| **HWPX** (Hancom 2020+) | ZIP + XML DOM | Manifest, nested tables, merged cells, corrupted-ZIP recovery |
-| **HWP 5.x** (Hancom legacy) | OLE2 + CFB | Distribution-copy decryption, corrupted-CFB recovery, footnotes/hyperlinks, 21 control chars, image extraction |
-| **HWP 3.x** (1996–2002) | Single binary | Johab → Unicode, 5,893 Hanja/symbol lookup, nested paragraph extraction |
+| **HWPX** (Hancom 2020+) | ZIP + XML DOM | manifest, nested tables, merged cells, corrupted-ZIP recovery, real page boundaries from the typesetting cache, open passwords, form check boxes and radio buttons |
+| **HWP 5.x** (Hancom legacy) | OLE2 + CFB | distribution-copy decryption, open passwords, corrupted-CFB recovery, footnotes/hyperlinks, 21 control chars, image extraction, real page boundaries |
+| **HWP 3.x** (1996–2002) | single binary | Johab → Unicode, 5,893 Hanja/symbol lookup, nested paragraphs, arae-a (archaic Hangul), open passwords |
 | **HWPML 2.x** (XML-based HWP) | XML DOM | HeadingType-based headings, merged cells, DoS guards |
-| **PDF** | pdfjs-dist | Line-based tables, XY-Cut reading order, heading detection, built-in OCR engine, text-quality signals |
-| **XLSX** (Excel) | ZIP + XML DOM | Shared strings, merged cells, multiple sheets, formula display |
+| **PDF** | pdfjs-dist | ruled, clip-based and borderless tables, XY-Cut reading order, two-column pages, headings, footnotes/endnotes, math-font recovery, OCR, underline/links, image extraction, text-quality signals |
+| **XLSX** (Excel) | ZIP + XML DOM | shared strings, merged cells, multiple sheets, formula display, date cells to ISO, large-sheet streaming |
 | **XLS** (Excel 97–2003) | OLE2 + BIFF8 | Workbook stream, SST shared strings, cell/sheet extraction |
-| **DOCX** (Word) | ZIP + XML DOM | Style-based headings, numbering, footnotes, image extraction |
-| **PPTX** (PowerPoint) | ZIP + XML DOM | Slide text, tables (merged cells), chart data cache, SmartArt, speaker notes, image extraction + OCR |
+| **DOCX** (Word) | ZIP + XML DOM | style-based headings, numbering (real number labels), footnotes, hyperlinks, image extraction |
+| **Images** (PNG/JPG/WebP) | sharp + built-in OCR | screenshots and scans as direct input, tables recovered from raster rules |
 
-## Security
+---
 
-Production-grade hardening: ZIP-bomb guards, XXE/Billion-Laughs prevention, decompression-bomb guards, path-traversal blocking, MCP error sanitization, 500MB file-size cap. See [SECURITY.md](./SECURITY.md).
+## 🔒 Security
+
+- Guards against ZIP and decompression bombs, XXE, path traversal and SSRF — details in [SECURITY.md](./SECURITY.md).
+- **Air-gapped networks**: `KORDOC_OFFLINE=1` blocks all outbound traffic, and `KORDOC_ROOT=<dir>` confines MCP file access to that directory. Offline install bundles and moving models: [docs/offline-deployment.md](docs/offline-deployment.md).
+
+---
+
+## 📝 Recent Changes
+
+### v4.17.1
+- DOCX scientific supplements: inline equations stay in place (#104) · Symbol-font characters °·×·μ (#105) · `\langle` spacing and equation numbers as `\tag` (#106) · text inside `w:dir`/`w:bdo` (#107) · `images: false` leaves media parts out of the 100 MB unzip limit (#108)
+
+### v4.17.0
+- Reads Korean documents **as they look**: invisible-border layout frames become text, only ruled parts stay tables, fractions built from two cells and a rule become `$\frac{…}{…}$` (`layoutTables`, default visual; `--keep-layout-tables` keeps the old structure). Statute annexes, 346 visible tables matched: HWP 72 → 346, PDF 66 → 335
+- PDF cross-page tables: split rows, unjoined fragments, tables with pictures, very large grids (151×76)
+- Text after dotted (leader) tabs is no longer cut off (HWPX · HWP5 · HWP3, HWPML tabs)
+- Markdown for `kordoc patch` must come from `--keep-layout-tables` (visual-mode edits are rejected with instructions)
+
+Full history in the [CHANGELOG](CHANGELOG.md).
+
+---
 
 ## About the Author
 
@@ -893,13 +612,16 @@ A local civil servant in Korea. Built this after seven years of wrestling HWP fi
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](./LICENSE). This project includes the following open-source software:
 
-This project includes the following open-source software:
-- **rhwp** (MIT, edwardkim) — HWP5 distribution-copy decryption and lenient CFB parsing
+- **rhwp** (MIT, edwardkim) — HWP5 distribution-copy decryption and lenient CFB parsing algorithms, the draft templates in `templates/`
+- **claw-hwp** (MIT, DoHyun468) — OOXML chartSpace assembly, floating stamp placement metrics, secure-fill format engine, validate check set
 - **OpenDataLoader PDF** (Apache 2.0, Hancom Inc.) — PDF table detection algorithm
+- **hml-equation-parser** (Apache 2.0, Open Bapul) — HML equation parsing
+- **PaddleOCR** (Apache 2.0, PaddlePaddle) — derived text OCR engine (PP-OCRv5 korean)
+- **Pix2Text** (MIT, breezedeus) — formula OCR (MFD/MFR) algorithm port. Models are downloaded at runtime and not redistributed — the MFD weights are based on Ultralytics YOLOv8 (AGPL-3.0), so commercial or closed products relying on formula OCR should check those terms separately
 - **cfb** (Apache 2.0, SheetJS) — HWP5 OLE2 container parsing
 - **pdfjs-dist** (Apache 2.0, Mozilla) — PDF text extraction
 - **JSZip** (MIT, Stuart Knightley et al.) — ZIP-based format parsing
 
-See [NOTICE](./NOTICE) for details.
+Full notices are in [NOTICE](./NOTICE) and license texts in `THIRD_PARTY/` — both ship in the npm package.

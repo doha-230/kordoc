@@ -31,6 +31,8 @@ export interface ClusterItem {
   fontName: string
   /** pdfjs 공백 아이템이 직전에 있었음 — 단어 경계 힌트 */
   hasSpaceBefore?: boolean
+  /** 직전 공백이 pdfjs 가 글자 틈으로 만든 것뿐(글리프 흐름에 공백 글리프 없음, tracked-text markSyntheticSpaces) — 균등배분 run 을 끊지 않는다 */
+  syntheticSpace?: boolean
 }
 
 // ─── 상수 ──────────────────────────────────────────────

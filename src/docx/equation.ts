@@ -24,12 +24,20 @@ import {
   elementChildren as eachChild,
 } from "../shared/xml.js"
 
-/** <m:r> 내부 <m:t> 텍스트 집계. 특수 연산자에 백슬래시 매핑. */
+/** <m:r> 내부 <m:t> 텍스트 집계. `#`·`%` 는 LaTeX 특수문자(매개변수·주석)라 이스케이프 (#106) */
 function runToLatex(r: Element): string {
   let out = ""
   for (const t of kids(r, "t")) out += t.textContent ?? ""
-  return out
+  return out.replace(/[#%]/g, "\\$&")
 }
+
+/** 이어 붙이기 — 글자로 끝나는 명령(`\langle`) 뒤에 글자가 오면 한 칸 띄운다. `\langlex` 는 없는 명령 (#106) */
+function join(a: string, b: string): string {
+  return /\\[A-Za-z]+$/.test(a) && /^[A-Za-z]/.test(b) ? a + " " + b : a + b
+}
+
+/** Word 수식 번호 "식#(43)" — 수식 배열 줄 끝의 `#` 와 괄호 번호 (runToLatex 가 `#` 를 `\#` 로 바꾼 뒤) */
+const EQ_NUMBER_RE = /\s*\\#\s*(?:\\left\((.+)\\right\)|\(([^()]*)\))\s*$/
 
 /** 함수 이름(sin/cos/log/ln/exp/tan/…) → `\sin` 식 매핑 */
 const FUNC_NAMES = new Set([
@@ -123,7 +131,7 @@ function grp(body: string): string {
 function childrenToLatex(parent: Element): string {
   let out = ""
   for (const ch of eachChild(parent)) {
-    out += nodeToLatex(ch)
+    out = join(out, nodeToLatex(ch))
   }
   return out
 }
@@ -261,7 +269,7 @@ function nodeToLatex(el: Element): string {
       }
       const items = kids(el, "e").map(childrenToLatex)
       const body = items.join(sep)
-      return "\\left" + mapDelim(beg, true) + body + "\\right" + mapDelim(end, false)
+      return join("\\left" + mapDelim(beg, true), body) + "\\right" + mapDelim(end, false)
     }
 
     // 행렬
@@ -340,10 +348,17 @@ function nodeToLatex(el: Element): string {
     case "groupChr":
       return childrenToLatex(firstKid(el, "e") ?? el)
 
-    // box/borderBox/phantom/eqArr/… 는 자식 본문만 유지
+    // 수식 배열 — 한 줄짜리 끝의 수식 번호 `#(43)` 는 \tag{43} (#106). 여러 줄은 종전대로 이어 붙인다
+    case "eqArr": {
+      const rows = kids(el, "e")
+      const one = rows.length === 1 ? childrenToLatex(rows[0]) : ""
+      const m = one.match(EQ_NUMBER_RE)
+      return m ? one.slice(0, m.index) + " \\tag{" + (m[1] ?? m[2]).trim() + "}" : childrenToLatex(el)
+    }
+
+    // box/borderBox/phantom/… 는 자식 본문만 유지
     case "borderBox":
     case "phant":
-    case "eqArr":
       return childrenToLatex(el)
 
     // 최상위 컨테이너

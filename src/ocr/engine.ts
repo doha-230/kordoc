@@ -35,7 +35,8 @@ import {
   getOcrModelsDir,
   parseCharacterDict,
 } from "./models.js"
-import { grayCrop, inkBounds, inkStats, leaderRuns, leadingTriangle, splitRowBands } from "./line-split.js"
+import { edgeTrim, leadingBullet, tallInkCount, grayCrop, inkBounds, inkStats, leaderRuns, leadingTriangle, splitRowBands } from "./line-split.js"
+import { restoreGlyphs } from "./glyph-restore.js"
 import { isDotFragment, joinLeaderItems, restoreBulletItems, restoreSymbols } from "./postprocess.js"
 import { bandBoxes, splitBoxAtCellRules, lineCrop, type Box, REC_HEIGHT } from "./crop.js"
 
@@ -73,6 +74,9 @@ export interface OcrTuning {
   recBatch: number
   /** 키 큰 박스 행 밴드 분할 */
   splitTall: boolean
+  /** 한 줄 박스에 걸린 이웃 줄 끝자락·상자 테두리를 지운 crop 도 인식 (line-split edgeTrim). 그림 영역만 읽을 때는 끈다 —
+   *  쪽 배율·두 배 재인식 중 평균 신뢰도로 한쪽을 통째로 고르는데 지운 판이 한쪽 신뢰도만 올려 선택이 뒤집혔다(ODL 073) */
+  trimEdges: boolean
   /** 이 대비(전경/배경 평균 휘도 차) 미만 박스는 글자가 아님 — 0 이면 끔 */
   minInkContrast: number
   /** 기호·따옴표 복원 + 점류 조각 폐기 */
@@ -91,6 +95,7 @@ export const DEFAULT_OCR_TUNING: Readonly<OcrTuning> = Object.freeze({
   textScore: 0.5,
   recBatch: 1,
   splitTall: true,
+  trimEdges: true,
   minInkContrast: 35,
   postprocess: true,
   tightBoxes: true,
@@ -106,6 +111,8 @@ const REC_BATCH_MAX_PIXELS = 48 * 16000
 const TALL_RATIO = 1.5
 /** 밴드로 갈라지지 않는 키 큰 박스 중 이 비율 이상은 90° 회전 글자 후보 */
 const ROTATE_RATIO = 3
+/** 이웃 줄 끝자락을 지운 crop 이 원본 crop 을 이기려면 넘어야 할 신뢰도 차 (recognizePage 주석) */
+const KEEP_MARGIN = 0.06
 /** 리더로 볼 최소 점 수 — 말줄임표 "…"(3점)보다 많이. 목차 쪽번호 박스가 무는 점은 코퍼스 실측 4~9개가 대부분 */
 const LEADER_MIN_DOTS = 4
 /** 리더 앞 조각 crop 을 리더 안쪽으로 더 무는 폭 (박스 높이 배수, recognizePage 주석) */
@@ -129,7 +136,8 @@ interface SharpChain {
 
 /** 인식 대상 한 줄 — rot 는 crop 회전(90=반시계, 270=시계). join: 리더로 가른 박스 번호, dotsBefore: 앞에 리더가 있었는지,
  *  trimDots: crop 이 뒤 리더 점을 물었는지(결과 끝 점을 지운다) */
-interface LineJob { box: Box; rot: 0 | 90 | 270; group: number; join?: number; dotsBefore?: boolean; trimDots?: boolean }
+/** keep: 인식 crop 에서 남길 박스 로컬 구간 — 밖(이웃 줄 끝자락·상자 테두리)은 배경으로 칠한다 (edgeTrim) */
+interface LineJob { box: Box; rot: 0 | 90 | 270; group: number; join?: number; dotsBefore?: boolean; trimDots?: boolean; keep?: { x0: number; x1: number; y0: number; y1: number; bg: number } }
 
 export class OcrEngine {
   private det: InferenceSession
@@ -233,6 +241,10 @@ export class OcrEngine {
           continue
         }
       }
+      // 한 줄 박스가 문 위아래 이웃 줄 글자 끝자락·좌우 끝 상자 테두리는 인식 crop 에서 배경으로 지운다 — 인식기가 받침·"|" 로
+      // 읽는다 (line-split edgeTrim). 박스를 줄이면 인식 입력 배율이 바뀌어 가운뎃점이 "•" 로 커 보였다 — 박스·좌표는 그대로 둔다
+      const trim = tuning.trimEdges ? edgeTrim(gray, b.w, b.h, ink) : null
+      const keep = trim ? { ...trim, bg: median(gray) } : undefined
       // 목차 리더 점 무리는 인식하지 않고 앞뒤 글만 따로 인식한 뒤, 검출 박스 하나로 다시 합쳐 "제목 … 쪽번호" 아이템
       // 하나를 낸다 — 텍스트층도 목차 줄을 리더 글자까지 한 줄로 준다. 조각을 따로 두면 줄 기하가 바뀌어 뒤 단계가
       // 흔들렸다: 리더 자리를 비우면 속기록 1면 목차 줄이 2단 본문 줄로 잡혀 단 판정이 무너졌고(assembly-minutes-1179),
@@ -257,24 +269,48 @@ export class OcrEngine {
         joins[join].trailDots = dots
         continue
       }
+      // 지운 crop 은 원본 crop 과 한 그룹으로 둘 다 인식해 신뢰도가 높은 쪽을 쓴다 — 끝자락이 글자 획과 붙어 있거나
+      // 인식기가 조각 없이도 흔들리는 줄(아이콘·로고 칸)에서 지우기가 오히려 틀리게 만들지 않게
+      if (keep) jobs.push({ box: b, rot: 0, group, keep })
       jobs.push({ box: b, rot: 0, group: group++ })
     }
 
     const results = await this.recognizeJobs(rgba, width, jobs, tuning.recBatch)
 
     // 회전 후보 그룹은 최고 신뢰도 하나만
-    const best = new Map<number, { job: LineJob; text: string; confidence: number }>()
+    const best = new Map<number, { job: LineJob; text: string; confidence: number; steps: number[]; stepPx: number }>()
+    // 끝자락을 지운 crop 은 원본보다 신뢰도가 KEEP_MARGIN 넘게 높을 때만 — 받침 조각 오독은 원본 0.46~0.89 → 지운 쪽 0.99 로
+    // 차이가 크고, 차이가 작은 쪽은 띄어쓰기·대시 길이 같은 잡음이었다(과학영재 안내문 "gifted" → "gifed" +0.015)
+    const score = (job: LineJob, confidence: number) => confidence - (job.keep ? KEEP_MARGIN : 0)
     jobs.forEach((job, i) => {
       const r = results[i]
       if (!r) return
       const cur = best.get(job.group)
-      if (!cur || r.confidence > cur.confidence) best.set(job.group, { job, ...r })
+      if (!cur || score(job, r.confidence) > score(cur.job, cur.confidence)) best.set(job.group, { job, ...r })
     })
 
     let items: OcrItem[] = []
-    for (const { job, text: raw, confidence } of best.values()) {
-      let text = tuning.postprocess ? restoreSymbols(raw.trim()) : raw
+    for (const { job, text: read, confidence, steps, stepPx } of best.values()) {
+      const note: { ringLead?: boolean } = {}
+      const raw = tuning.postprocess && job.rot === 0 ? restoreGlyphs(rgba, width, job.box, read, steps, stepPx, note) : read
+      let text = tuning.postprocess ? restoreSymbols(raw.trim(), note.ringLead) : raw
       if (!text.trim()) continue
+      // 사전 밖·작은 점으로 읽히거나 빠지는 글머리(◎ ● ▪ □) — 첫 글리프 모양으로 되살린다 (line-split.ts)
+      if (tuning.postprocess && job.rot === 0 && !/^[◎●▪□■○ㅇ]/.test(text)) {
+        const chars = [...read], k = chars.findIndex(c => c.trim())
+        if (k >= 0 && steps.length === chars.length) {
+          const g = grayCrop(rgba, width, job.box)
+          const b = leadingBullet(g, job.box.w, job.box.h, inkStats(g), (steps[k] + 0.5) * stepPx)
+          // ◎ 는 "O" 로 잘못 읽은 자리만 바꾼다(장식 아이콘에 끼워 넣지 않게). ●▪ 는 본문 줄(뒤 글 한글 4음절 이상)에서만 —
+          // 표 칸의 큰 가운뎃점("·수학"·"·승합", 글꼴에 따라 네모·원으로 그려짐)은 정답도 "·" 다
+          const body = (text.match(/[가-힣]/g) ?? []).length >= 4
+          const miss = /^[Oo0•·ㆍ∙‧○]/.test(text)
+          if (b?.mark === "\u25ce" && b.covers && /^[Oo0○]/.test(text)) text = b.mark + " " + text.slice(1).trimStart()
+          // □ 는 인식에서 빠진 자리만(첫 글자 앞) — 모델은 사전에 □ 가 있어도 내지 않고 통째로 빠뜨린다
+          else if (b?.mark === "\u25a1") { if (!b.covers && body) text = b.mark + " " + text }
+          else if (b && b.mark !== "\u25ce" && body) text = b.covers ? (miss ? b.mark + " " + text.slice(1).trimStart() : text) : b.mark + " " + text
+        }
+      }
       // 숫자 앞 △·▲ 는 사전 밖이라 빈칸으로 사라진다 — 박스 맨 앞 글자 모양으로 되살린다 (line-split.ts)
       if (tuning.postprocess && /^\d/.test(text) && job.rot === 0) {
         const g = grayCrop(rgba, width, job.box)
@@ -378,10 +414,10 @@ export class OcrEngine {
     pageW: number,
     jobs: LineJob[],
     batchSize: number,
-  ): Promise<Array<{ text: string; confidence: number } | null>> {
-    const crops = jobs.map(j => lineCrop(rgba, pageW, j.box, j.rot))
+  ): Promise<Array<{ text: string; confidence: number; steps: number[]; stepPx: number } | null>> {
+    const crops = jobs.map(j => lineCrop(rgba, pageW, j.box, j.rot, j.keep))
     const order = crops.map((_, i) => i).sort((a, b) => crops[a].w - crops[b].w)
-    const results: Array<{ text: string; confidence: number } | null> = new Array(jobs.length).fill(null)
+    const results: Array<{ text: string; confidence: number; steps: number[]; stepPx: number } | null> = new Array(jobs.length).fill(null)
     const plane = REC_HEIGHT
     for (let s = 0; s < order.length;) {
       // 폭 오름차순이라 배치 마지막 원소가 최대 폭
@@ -414,12 +450,38 @@ export class OcrEngine {
       const [, T, C] = logits.dims as number[]
       const data = logits.data as Float32Array
       idx.forEach((ci, k) => {
-        results[ci] = ctcDecode(data.subarray(k * T * C, (k + 1) * T * C), T, C, this.dict)
+        const r = ctcDecode(data.subarray(k * T * C, (k + 1) * T * C), T, C, this.dict)
+        // CTC 시점 하나가 덮는 원본 픽셀 폭 — crop 은 높이 48 로 줄인 뒤 bw 까지 오른쪽을 채웠다 (회전 crop 은 세로 축)
+        const job = jobs[ci], src = job.rot === 0 ? job.box.w : job.box.h
+        // 채운 자리(crop 폭 밖)에 찍힌 글자 — CTC 는 짧은 박스의 진짜 끝 글자도 마지막 시점에 찍어("54" → 시점 36·39) 자리만으로는 못 가른다.
+        // crop 안 키 큰 잉크 덩어리보다 키 큰 글자가 많을 때 남는 것만 지어낸 것으로 버린다 — 칸에 "/" 하나만 든 박스가 "/)"·"(/:)" 로
+        // 읽혔다(여수 인원표). 점·쉼표류는 덩어리로 안 세니 그대로 둔다. "(cid:9)" 환각은 restoreSymbols 가 통째로 걷도록 손대지 않는다.
+        // crop 안 글자가 두 자 이하인 작은 박스만 — 긴 낱말은 그림 성분이 글자 높이를 부풀려 소문자를 덩어리로 못 세었다("ToContent" → "ToCont")
+        let kept = r
+        const last = (crops[ci].w * T) / bw + 1
+        const chars = r ? [...r.text] : []
+        if (r && job.rot === 0 && chars.length === r.steps.length && r.steps.some(t => t > last) && !r.text.includes("(cid:")) {
+          const tallCh = (c: string) => !/[\s.,:;\u00b7\u2026'"\u2018-\u201d`\-_~]/.test(c)
+          const g = grayCrop(rgba, pageW, job.box)
+          const inside = chars.filter((c, i) => r.steps[i] <= last && tallCh(c)).length
+          let budget = inside <= 2 ? tallInkCount(g, job.box.w, job.box.h, inkStats(g)) - inside : Infinity
+          const keep = chars.map((c, i) => r.steps[i] <= last || !tallCh(c) || budget-- > 0)
+          if (!keep.every(Boolean)) kept = { ...r, text: chars.filter((_, i) => keep[i]).join(""), steps: r.steps.filter((_, i) => keep[i]) }
+        }
+        results[ci] = kept && { ...kept, stepPx: (bw / T) * (src / crops[ci].w) }
       })
       s = e
     }
     return results
   }
+}
+
+/** 회색조 중앙값 — 글줄 박스는 배경 픽셀이 다수라 배경 휘도가 된다 */
+function median(gray: Uint8Array): number {
+  const hist = new Uint32Array(256)
+  for (let i = 0; i < gray.length; i++) hist[gray[i]]++
+  for (let v = 0, n = 0; v < 256; v++) if ((n += hist[v]) * 2 >= gray.length) return v
+  return 255
 }
 
 /** CTC greedy 디코드 — 연속 중복 붕괴 → blank(0) 제거 → 사전 매핑 (테스트용 export) */
@@ -428,11 +490,14 @@ export function ctcDecode(
   T: number,
   C: number,
   dict: string[],
-): { text: string; confidence: number } | null {
+): { text: string; confidence: number; steps: number[] } | null {
   let text = ""
   let confSum = 0
   let confCount = 0
   let prev = -1
+  /** 글자(코드 포인트)마다 CTC 시점 구간 [첫, 끝] — 괄호 모양 판별이 글자 자리를 픽셀로 옮길 때 쓴다 */
+  const runs: Array<[number, number]> = []
+  let open: Array<[number, number]> = []
   for (let t = 0; t < T; t++) {
     const off = t * C
     let best = 0
@@ -443,7 +508,9 @@ export function ctcDecode(
     }
     const repeat = best === prev
     prev = best
-    if (best === 0 || repeat) continue
+    if (repeat && best !== 0) { for (const r of open) r[1] = t; continue }
+    open = []
+    if (best === 0) continue
     // 모델 출력이 softmax 확률이 아니면 (>1) 해당 스텝만 정규화
     let p = bestV
     if (p > 1.0001 || p < 0) {
@@ -453,11 +520,12 @@ export function ctcDecode(
     }
     confSum += p
     confCount++
-    if (best >= 1 && best <= dict.length) text += dict[best - 1]
-    else if (best === dict.length + 1) text += " "
+    const tok = best >= 1 && best <= dict.length ? dict[best - 1] : best === dict.length + 1 ? " " : ""
+    text += tok
+    for (const _ of tok) { const r: [number, number] = [t, t]; runs.push(r); open.push(r) }
   }
   if (!text) return null
-  return { text, confidence: confCount > 0 ? confSum / confCount : 0 }
+  return { text, confidence: confCount > 0 ? confSum / confCount : 0, steps: runs.map(([a, b]) => (a + b) / 2) }
 }
 
 /** 이진화 확률맵의 4-연결 성분 bbox (score = 성분 평균 확률, 테스트용 export) */

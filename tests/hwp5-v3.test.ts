@@ -74,7 +74,7 @@ function tableRecData(rows: number, cols: number): Buffer {
 
 /** 빈 DocInfo 골격 */
 function emptyDocInfo(): HwpDocInfo {
-  return { charShapes: [], paraShapes: [], styles: [], binData: [], numberings: [], bullets: [] }
+  return { charShapes: [], paraShapes: [], styles: [], binData: [], numberings: [], bullets: [], borderEdges: [] }
 }
 
 function parse(buffers: Buffer[], docInfo: HwpDocInfo | null = null, doc = createHwp5DocState()) {

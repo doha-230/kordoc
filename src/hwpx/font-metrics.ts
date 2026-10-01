@@ -122,8 +122,15 @@ export function hasFontMetrics(face: string | null | undefined): boolean {
 
 /** 코드포인트 advance(em×1000). 폭표 없는 글꼴은 null — 호출부가 근사 클래스로 폴백 */
 export function fontAdvanceEm1000(face: string, cp: number): number | null {
+  if (!hasFontMetrics(face)) return null
   const m = FONTS[face.trim()]
-  if (!m) return null
   if (cp >= 0x20 && cp <= 0x7e) return m.ascii[cp - 0x20]
   return m.ex[cp] ?? m.cjk
+}
+
+/** 문단 계산 전에 폭표를 한 번 선택한다 — 글자마다 글꼴명 trim·조회하지 않는다. */
+export function fontWidthFn(face: string): ((cp: number) => number) | null {
+  if (!hasFontMetrics(face)) return null
+  const m = FONTS[face.trim()]
+  return cp => cp >= 0x20 && cp <= 0x7e ? m.ascii[cp - 0x20] : m.ex[cp] ?? m.cjk
 }

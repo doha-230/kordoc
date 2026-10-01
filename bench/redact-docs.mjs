@@ -116,7 +116,7 @@ for (const dir of DIRS) {
     }
     // 종전 경로 — 마크다운 편집 역반영
     if (withOld && found) {
-      const parsed = await parse(ab(bytes))
+      const parsed = await parse(ab(bytes), { layoutTables: "keep" }) // 패치 편집본은 원본 표 구조 그대로(keep) 출력
       if (!parsed.success) continue
       const md = redactMarkdown(parsed.markdown, { rules: RULES })
       const isHwp = r.format === "hwp"

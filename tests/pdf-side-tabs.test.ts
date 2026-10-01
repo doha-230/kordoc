@@ -16,6 +16,13 @@ describe("removeSideTabs", () => {
     assert.deepEqual(out.map(x => x.text), Array(4).fill("본문 단락입니다. 내용이 이어집니다"))
   })
 
+  it("장마다 되풀이되는 절 탭 — 책 전체로는 성겨도 한 장 안에서 몰려 되풀이되면 뺀다 ('제1절' 이 장마다 몇 쪽씩)", () => {
+    const pages = [10, 11, 12, 13, 60, 61, 62, 120, 121, 122, 123]
+    const blocks = pages.flatMap(p => [b("제1절", p, 505), b("본문 단락입니다. 내용이 이어집니다", p, 100, 300)])
+    const out = removeSideTabs(blocks, new Map(pages.map(p => [p, W] as [number, number])))
+    assert.ok(out.every(x => x.text !== "제1절"))
+  })
+
   it("keeps side text that appears once or sparsely, and long text", () => {
     const blocks = [b("주석", 1, 505), b("주석", 30, 505), b("주석", 60, 505), b("가장자리에 놓인 긴 설명 문장입니다", 2, 500, 50), b("두 단 왼단 첫머리 뒤 본문 줄입니다", 5, 28, 250), b("따라서", 5, 28, 30), b("따라서", 6, 28, 30), b("따라서", 7, 28, 30), b("두 단 왼단 첫머리 뒤 본문 줄입니다", 6, 28, 250), b("두 단 왼단 첫머리 뒤 본문 줄입니다", 7, 28, 250)]
     // 두 단 왼단 첫머리의 짧은 줄("따라서")은 본문 왼끝에 붙어 있어 탭이 아니다 (수능 모의고사 해설)

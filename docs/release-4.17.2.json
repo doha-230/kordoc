@@ -1,0 +1,211 @@
+{
+  "version": "4.17.2",
+  "status": "published",
+  "visual": {
+    "status": "unavailable",
+    "requiredBy": "AGENTS.md",
+    "cases": 14,
+    "reason": "Hancom Office HWP absent locally; ssh sm hostname not configured",
+    "execution": "npm run bench:visual: Unable to find application named Hancom Office HWP; stopped after this prerequisite failure",
+    "userOverride": {
+      "date": "2026-09-30",
+      "instruction": "배포해",
+      "context": "User explicitly requested publication after unavailable visual gate was disclosed",
+      "visualPassed": false
+    }
+  },
+  "published": true,
+  "package": {
+    "path": "/tmp/kordoc-release-4.17.2/kordoc-4.17.2.tgz",
+    "files": 151,
+    "unexpectedFiles": 0,
+    "cliVersion": "4.17.2",
+    "sha256": "847612a9efdb58e5c042e572647cb04752dd86be6affabf4711df4f6fe3dc7c6",
+    "size": 5572237
+  },
+  "publicTagCreated": true,
+  "mainIntegration": {
+    "qualityCommit": "3ff5280a6cb093805d56f1bbc08e79de0239092d",
+    "pushed": true,
+    "ciNode20_22_24": "passed",
+    "sourceCommit": "89b3e52b245e168c12ab8eba78601007092fc1a3",
+    "gitlabBranchAndTagMirror": "passed"
+  },
+  "publishPrepublish": {
+    "command": "npm publish --access public",
+    "metadata": true,
+    "notices": true,
+    "typecheck": true,
+    "unitTests": true,
+    "build": true,
+    "pages": true,
+    "score": true,
+    "roundtrip": true,
+    "status": "passed",
+    "pdfTable": true,
+    "pdfText": true,
+    "annex": true,
+    "formats": true,
+    "fuzz": {
+      "runs": 23700,
+      "pass": true,
+      "gates": {
+        "crash": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "hang": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "noCode": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "slow": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "genInvalid": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "generatedAt": "2026-09-30T10:42:23.985Z"
+    },
+    "reflow": true,
+    "redact": true,
+    "ocr": {
+      "pass": true,
+      "summary": {
+        "generatedAt": "2026-09-30T10:47:01.032Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09542,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 1.03,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "gates": {
+        "cerMicro": {
+          "value": 0.05188,
+          "threshold": "≤ 0.1",
+          "pass": true
+        },
+        "charRecall": {
+          "value": 0.99001,
+          "threshold": "≥ 0.988",
+          "pass": true
+        },
+        "charPrecision": {
+          "value": 0.99355,
+          "threshold": "≥ 0.9915",
+          "pass": true
+        },
+        "hangulRecall": {
+          "value": 0.99363,
+          "threshold": "≥ 0.992",
+          "pass": true
+        },
+        "tableMatched": {
+          "value": 0.7761,
+          "threshold": "≥ 0.76",
+          "pass": true
+        },
+        "tableCellF1": {
+          "value": 0.5465,
+          "threshold": "≥ 0.535",
+          "pass": true
+        },
+        "population": {
+          "value": "53/102",
+          "threshold": "≥ 53/102",
+          "pass": true
+        },
+        "environment": {
+          "value": 0,
+          "threshold": "0 (OCR 미적용 문서)",
+          "pass": true
+        }
+      }
+    },
+    "scoreGeneratedAt": "2026-09-30T10:16:46.206Z",
+    "exitCode": 0
+  },
+  "githubUrl": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.2",
+  "githubPublishedAt": "2026-09-30T10:48:30Z",
+  "npmUrl": "https://www.npmjs.com/package/kordoc/v/4.17.2",
+  "sourceCommit": "89b3e52b245e168c12ab8eba78601007092fc1a3",
+  "registry": {
+    "version": "4.17.2",
+    "latest": "4.17.2",
+    "dist": {
+      "shasum": "2e8414064c91758866cd154690f953e6e3ee7c14",
+      "tarball": "https://registry.npmjs.org/kordoc/-/kordoc-4.17.2.tgz",
+      "fileCount": 151,
+      "integrity": "sha512-hxPGs4KgdFgpD3OygB9ggNbXdQK3Kp1zH9qzVvCasJ/hqv2zwcWzimAXTVlOVdUHFx7imb3Uw98K+nhKqqNhcw==",
+      "signatures": [
+        {
+          "sig": "MEUCIF9n2PXW9AWoqL3JN/Do/uMEN2MzfJGeS4v20NP7BSPtAiEAsbL+3FZJEZ5jux/IfP/AzqE2Mnh+JnDlDPt/p2JJVqg=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "sig": "MEUCIQDF9eLGlb6iMUAXFs2jWCEsURYRv437Pvc8UG9LliMNiwIgeEf6Oc0M1VkXWGlfWtotaziwWM+nxORTIwrW4R8U+4U=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        }
+      ],
+      "unpackedSize": 20137870
+    },
+    "acceptedHttpStatus": 202,
+    "publicVerifiedAt": "2026-09-30T10:53:40.697Z",
+    "downloadSHA256": "847612a9efdb58e5c042e572647cb04752dd86be6affabf4711df4f6fe3dc7c6",
+    "freshCliVersion": "4.17.2"
+  }
+}

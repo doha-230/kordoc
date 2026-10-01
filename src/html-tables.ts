@@ -1,7 +1,7 @@
 /**
  * `htmlTables` 옵션 — 모든 표를 HTML 로, 태그마다 한 줄씩 들여써 낸다(BeautifulSoup prettify 와 같은 모양).
  * 파이프 표는 칸 글의 Markdown 이스케이프를 풀고 HTML 로 이스케이프해 옮기고(첫 행은 머리 칸 `<th>`), kordoc 이 이미 낸 HTML 표
- * (병합·중첩)는 모양만 정렬한다. 칸 안의 `<br>`·`<u>`·`<img>` 는 그대로. HTML 블록 안에 빈 줄을 만들지 않는다.
+ * (병합·중첩)는 모양만 정렬한다. 칸 안의 `<br>`·`<u>`·`<sup>`·`<sub>`·`<img>` 는 그대로. HTML 블록 안에 빈 줄을 만들지 않는다.
  */
 
 const TABLE_TAG = /(<\/?(?:table|tr|th|td)\b[^>]*>)/i
@@ -9,7 +9,7 @@ const TABLE_TAG = /(<\/?(?:table|tr|th|td)\b[^>]*>)/i
 /** 파이프 칸 글 → HTML 칸 글: Markdown 이스케이프를 풀고 &·<·> 를 이스케이프하되 kordoc 이 칸에 넣는 태그는 둔다 */
 function pipeCellToHtml(cell: string): string {
   return cell
-    .split(/(<br>|<\/?u>|<img\b[^>]*>)/)
+    .split(/(<br>|<\/?(?:u|sup|sub)>|<img\b[^>]*>)/)
     .map((part, i) => i % 2 ? part : part
       .replace(/\\([\\`*_{}[\]()#+\-.!|~<>$])/g, "$1")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"))

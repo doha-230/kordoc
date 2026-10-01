@@ -64,10 +64,11 @@ for (const path of files) {
     G.warm.push(pct(warms, 50))
   }
 
-  // 라운드트립 no-op 바이트 동일
+  // 라운드트립 no-op 바이트 동일 — 패치 편집본은 원본 표 구조 그대로(keep) 출력이다 (v4.17.0)
   try {
-    const pr = ext === "hwpx" ? await patchHwpx(new Uint8Array(buf), r.markdown)
-      : ext === "hwp" ? await patchHwp(new Uint8Array(buf), r.markdown)
+    const km = (ext === "hwpx" || ext === "hwp") ? (await parse(buf, { layoutTables: "keep" })).markdown : r.markdown
+    const pr = ext === "hwpx" ? await patchHwpx(new Uint8Array(buf), km)
+      : ext === "hwp" ? await patchHwp(new Uint8Array(buf), km)
       : null
     if (pr) {
       if (pr.success && Buffer.from(pr.data).equals(buf)) G.noopOk++

@@ -255,15 +255,17 @@ describe("글자처럼 취급 표 — 앞뒤 글을 표 자리에서 나눈다 (
 
 // ─── 채움 탭 · 누름틀 · 셀 각주 ───────────────────────
 
-describe("채움(리더) 탭 — 뒤 목차 쪽번호 절단 (HWPX leader-tab-cut 대칭)", () => {
-  it("채움 모양 ≠ 0 탭 뒤는 버리고, 보통 탭은 남긴다", () => {
+describe("채움(리더) 탭 — 보통 탭과 같이 뒤 글을 남긴다 (HWPX 채움 탭 대칭)", () => {
+  it("채움 모양 ≠ 0 탭 뒤 목차 쪽 번호·다음 항목이 남는다 (종전엔 잘렸다)", () => {
     const { blocks } = parse([
       rec(TAG_PARA_HEADER, 0, paraHeaderData()),
       rec(TAG_PARA_TEXT, 1, Buffer.concat([utf16("Ⅰ. 개요"), tabChar(3), utf16(" 12")])),
       rec(TAG_PARA_HEADER, 0, paraHeaderData()),
+      rec(TAG_PARA_TEXT, 1, Buffer.concat([utf16("<참고1> 동향"), tabChar(3), utf16("19"), utf16("\n"), utf16("<참고2> 개요"), tabChar(3), utf16("20")])),
+      rec(TAG_PARA_HEADER, 0, paraHeaderData()),
       rec(TAG_PARA_TEXT, 1, Buffer.concat([utf16("성명"), tabChar(0), utf16("홍길동")])),
     ])
-    assert.deepEqual(blocks.map(b => b.text), ["Ⅰ. 개요", "성명\t홍길동"])
+    assert.deepEqual(blocks.map(b => b.text), ["Ⅰ. 개요\t 12", "<참고1> 동향\t19\n<참고2> 개요\t20", "성명\t홍길동"])
   })
 })
 

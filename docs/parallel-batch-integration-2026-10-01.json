@@ -1,0 +1,56 @@
+{
+  "base": "714cc88c8400a7aacca0208c6b5ce2593e0003c9",
+  "head": "13e165005e93e755791055d4ba6191809c1f4b0a",
+  "runtime": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cliNode": "v26.10.0",
+    "onnxruntime": "1.29.0"
+  },
+  "finalSummary": {
+    "base": "714cc88",
+    "publicBaselineVersion": "4.17.6",
+    "fullTests": 2904,
+    "pass": 2899,
+    "fail": 0,
+    "skip": 5,
+    "skipReasons": [
+      "﹣ active parallel batch terminates its workers after parent SIGINT (0.76075ms) # SKIP",
+      "﹣ active parallel batch terminates its workers after parent SIGKILL (0.139583ms) # SKIP",
+      "﹣ dead-owner cleanup removes regular partials but preserves symlinks and directories (0.335833ms) # SKIP",
+      "﹣ parallel batch cleans up after worker crash (0.355625ms) # SKIP",
+      "﹣ parallel batch cleans up after parent interruption (0.1715ms) # SKIP"
+    ],
+    "expectedPopulation": 2904,
+    "typecheck": true,
+    "build": {
+      "esm": true,
+      "cjs": true,
+      "declarations": true
+    },
+    "bundledCliSmoke": true,
+    "fullRealCorpusLinked": true,
+    "productionSourceUnchangedFromPR": true,
+    "rawPdfJsonByteEquality": false,
+    "rawPdfJsonChangedFields": 4,
+    "rawPdfDifferenceKinds": [
+      "blocks.*.style.fontName: g_d1_f* -> g_d0_f*"
+    ],
+    "confirmedLifecycleBug": false
+  },
+  "integrationDecision": "Candidate ready for root-controlled integration/minor-version decision; no confirmed lifecycle failure. Preserve raw PDF JSON font-ID differences and OCR memory evidence.",
+  "limitations": [
+    "Real-file runs are one-pass integration checks, not throughput benchmarks. Summed RSS sampled 100ms using ps; shared pages count multiple times. OCR disabled via empty isolated cache for this comparison.",
+    "Real-file runs are one-pass integration checks, not throughput benchmarks. Summed RSS sampled 100ms using ps; shared pages count multiple times. OCR disabled via empty isolated cache for this comparison.",
+    "Darwin native interruption probes use diagnostic-only boundary markers around unchanged synchronous native ONNX run, actual forced OCR, copied verified model bytes, and offline mode. Linux lifecycle tests remain skipped on this host; Windows is untested."
+  ],
+  "documentationFollowup": {
+    "file": "docs/parallel-batch.md",
+    "line": 108,
+    "oldText": "the feature does not claim to fix it",
+    "reason": "issue109 cleanup is already present in main via merged PR111; existing cleanup and new lifecycle tests pass",
+    "recommendation": "Keep historical measurements but replace the current unresolved-cleanup claim with implemented dead-owner cleanup, live-owner preservation and regression evidence."
+  },
+  "finished": true,
+  "cpuDiagnosticsStopped": true
+}

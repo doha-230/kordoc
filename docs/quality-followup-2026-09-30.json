@@ -1,0 +1,1049 @@
+{
+  "baselineCommit": "a4158ee88e461a23b17c9590ac17405dbf058b69",
+  "date": "2026-09-30",
+  "status": "released",
+  "scoringPolicy": "GT/evaluator/population/exclusions unchanged",
+  "unitTests": {
+    "tests": 2772,
+    "suites": 812,
+    "pass": 2772,
+    "fail": 0,
+    "skip": 0,
+    "scope": "Final C quality source plus security lockfile update; full npm test after dependency installation"
+  },
+  "hwpx": {
+    "docs": 2286,
+    "tables": 9865,
+    "before": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.996351,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.997668,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999545,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999588,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "tableCount": 9865,
+      "exactCount": 9829,
+      "pass": true
+    },
+    "after": {
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.996858,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.997993,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999627,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999677,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "exactCount": 9834,
+      "pass": true
+    },
+    "improvements": [
+      {
+        "doc": "licbyl/14233873_보안관찰법 시행규칙_보안관찰처분 사안 인지 승인 신청.hwpx",
+        "changes": [
+          {
+            "metric": "exactRate",
+            "before": 0,
+            "after": 1
+          },
+          {
+            "metric": "cellF1",
+            "before": 0.394584,
+            "after": 1
+          },
+          {
+            "metric": "contentNED",
+            "before": 0.82906,
+            "after": 1
+          }
+        ]
+      },
+      {
+        "doc": "licbyl/17882151_최저임금법 시행규칙_(정신, 신체) 장애로 인한 최저임금 적용 제외 인가신청서.hwpx",
+        "changes": [
+          {
+            "metric": "exactRate",
+            "before": 0.8333,
+            "after": 1
+          },
+          {
+            "metric": "cellF1",
+            "before": 0.866667,
+            "after": 1
+          },
+          {
+            "metric": "contentNED",
+            "before": 0.920673,
+            "after": 1
+          }
+        ]
+      },
+      {
+        "doc": "licbyl2/17848663_아시아문화중심도시 조성에 관한 특별법 시행규칙_투자분 인정신청서.hwpx",
+        "changes": [
+          {
+            "metric": "exactRate",
+            "before": 0.8333,
+            "after": 1
+          },
+          {
+            "metric": "cellF1",
+            "before": 0.833333,
+            "after": 1
+          },
+          {
+            "metric": "contentNED",
+            "before": 0.938865,
+            "after": 1
+          }
+        ]
+      },
+      {
+        "doc": "licbyl2/7729959_1980년해직공무원의보상등에관한특별조치법시행령_보상금수령위임장.hwpx",
+        "changes": [
+          {
+            "metric": "exactRate",
+            "before": 0,
+            "after": 1
+          },
+          {
+            "metric": "cellF1",
+            "before": 0.804878,
+            "after": 1
+          },
+          {
+            "metric": "contentNED",
+            "before": 0.633065,
+            "after": 1
+          }
+        ]
+      }
+    ],
+    "regressions": []
+  },
+  "generation": {
+    "boldMarkerRoundtripFixed": true,
+    "initialPerformance": {
+      "scope": "200-paragraph report generation; exploratory run before final standalone measurement",
+      "medianMs": [
+        27.232708,
+        21.2085
+      ],
+      "zipEntriesEqual": true,
+      "fitEquivalentCases": 768
+    },
+    "performance": {
+      "evidence": "quality-followup-performance-2026-09-30.json",
+      "baselineCommit": "a4158ee88e461a23b17c9590ac17405dbf058b69",
+      "standalone": true,
+      "generationReductionPercent": 21.595739733035902,
+      "fitReductionPercent": 22.073148871587446,
+      "pdfPerformanceClaim": "approximately unchanged on three documents; no general speedup claim"
+    }
+  },
+  "pdf": {
+    "candidateA": {
+      "snapshot": "/tmp/kordoc-quality-followup-A",
+      "status": "rejected",
+      "odlDefaultRegressions": [
+        "008",
+        "055",
+        "070",
+        "122"
+      ],
+      "odl163Unchanged": true,
+      "reason": "global clip changed OCR crops; isolated role-split restores all eight changed outputs"
+    },
+    "candidateB": {
+      "snapshot": "/tmp/kordoc-quality-followup-B",
+      "distSHA256": "0e999ad006ee194453be42d60c6690d69bc28d50b4b4c26a02b8a95929d38989",
+      "sourceSHA256": {
+        "src/pdf/image-regions.ts": "f47fc343e9056b48889c8f5c51cb3871000993f6b4c11f8cc3c943d815f51355",
+        "src/pdf/image-panels.ts": "699722ac7acf1977859f7ef141a113fc566b57834ef21214c7406251c965028c",
+        "src/pdf/page-blocks.ts": "208d07285c795693db1d1103752bba9582ea4d4d0b60dd68364711a1c6851765",
+        "src/pdf/parser.ts": "e999b1868f9cace117201883fc1095365fa3a39ea1ccc0a78ce07c1e15dae5c1",
+        "dist/index.js": "0e999ad006ee194453be42d60c6690d69bc28d50b4b4c26a02b8a95929d38989"
+      },
+      "evaluatorSHA256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+      "comparison": {
+        "default": {
+          "aggregate": {
+            "overall_mean": {
+              "baseline": 0.9601440557272316,
+              "final": 0.9604023202745556,
+              "delta": 0.0002582645473240275
+            },
+            "nid_mean": {
+              "baseline": 0.9606531073059388,
+              "final": 0.9608759169736125,
+              "delta": 0.0002228096676737401
+            },
+            "nid_s_mean": {
+              "baseline": 0.96452056034587,
+              "final": 0.9647433700135438,
+              "delta": 0.00022280966767385113
+            },
+            "teds_mean": {
+              "baseline": 0.9789524108694445,
+              "final": 0.9789524108694445,
+              "delta": 0
+            },
+            "teds_s_mean": {
+              "baseline": 0.9906982529854047,
+              "final": 0.9906982529854047,
+              "delta": 0
+            },
+            "mhs_mean": {
+              "baseline": 0.945374975899153,
+              "final": 0.9459239841738709,
+              "delta": 0.0005490082747179326
+            },
+            "mhs_s_mean": {
+              "baseline": 0.9788672478337129,
+              "final": 0.9794903007932144,
+              "delta": 0.0006230529595014911
+            }
+          },
+          "counts": {
+            "baseline": {
+              "score": {
+                "overall_mean": 0.9601440557272316,
+                "nid_mean": 0.9606531073059388,
+                "nid_s_mean": 0.96452056034587,
+                "teds_mean": 0.9789524108694445,
+                "teds_s_mean": 0.9906982529854047,
+                "mhs_mean": 0.945374975899153,
+                "mhs_s_mean": 0.9788672478337129
+              },
+              "nid_count": 200,
+              "teds_count": 42,
+              "mhs_count": 107,
+              "missing_predictions": 0
+            },
+            "final": {
+              "score": {
+                "overall_mean": 0.9604023202745556,
+                "nid_mean": 0.9608759169736125,
+                "nid_s_mean": 0.9647433700135438,
+                "teds_mean": 0.9789524108694445,
+                "teds_s_mean": 0.9906982529854047,
+                "mhs_mean": 0.9459239841738709,
+                "mhs_s_mean": 0.9794903007932144
+              },
+              "nid_count": 200,
+              "teds_count": 42,
+              "mhs_count": 107,
+              "missing_predictions": 0
+            }
+          },
+          "perMetric": {
+            "overall": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.8769056732077694,
+                  "final": 0.9285585826725554,
+                  "delta": 0.05165290946478607
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "nid": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.898036253776435,
+                  "final": 0.9425981873111783,
+                  "delta": 0.04456193353474325
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "nid_s": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.898036253776435,
+                  "final": 0.9425981873111783,
+                  "delta": 0.04456193353474325
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "teds": {
+              "comparable": 42,
+              "improved": [],
+              "regressed": [],
+              "unchanged": 42,
+              "availabilityChanged": []
+            },
+            "teds_s": {
+              "comparable": 42,
+              "improved": [],
+              "regressed": [],
+              "unchanged": 42,
+              "availabilityChanged": []
+            },
+            "mhs": {
+              "comparable": 107,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.8557750926391038,
+                  "final": 0.9145189780339326,
+                  "delta": 0.058743885394828776
+                }
+              ],
+              "regressed": [],
+              "unchanged": 106,
+              "availabilityChanged": []
+            },
+            "mhs_s": {
+              "comparable": 107,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.9333333333333333,
+                  "final": 1,
+                  "delta": 0.06666666666666665
+                }
+              ],
+              "regressed": [],
+              "unchanged": 106,
+              "availabilityChanged": []
+            }
+          }
+        },
+        "plain-html": {
+          "aggregate": {
+            "overall_mean": {
+              "baseline": 0.9716006951421311,
+              "final": 0.9720162877922346,
+              "delta": 0.0004155926501034912
+            },
+            "nid_mean": {
+              "baseline": 0.9761737170247906,
+              "final": 0.9764221642297596,
+              "delta": 0.0002484472049689712
+            },
+            "nid_s_mean": {
+              "baseline": 0.9759776702104048,
+              "final": 0.9762261174153737,
+              "delta": 0.0002484472049688602
+            },
+            "teds_mean": {
+              "baseline": 0.9827577018320368,
+              "final": 0.9827577018320368,
+              "delta": 0
+            },
+            "teds_s_mean": {
+              "baseline": 0.9908039556438265,
+              "final": 0.9908039556438265,
+              "delta": 0
+            },
+            "mhs_mean": {
+              "baseline": 0.9547216929875645,
+              "final": 0.9558109230721217,
+              "delta": 0.0010892300845571912
+            },
+            "mhs_s_mean": {
+              "baseline": 0.9788672478337129,
+              "final": 0.9794903007932144,
+              "delta": 0.0006230529595014911
+            }
+          },
+          "counts": {
+            "baseline": {
+              "score": {
+                "overall_mean": 0.9716006951421311,
+                "nid_mean": 0.9761737170247906,
+                "nid_s_mean": 0.9759776702104048,
+                "teds_mean": 0.9827577018320368,
+                "teds_s_mean": 0.9908039556438265,
+                "mhs_mean": 0.9547216929875645,
+                "mhs_s_mean": 0.9788672478337129
+              },
+              "nid_count": 200,
+              "teds_count": 42,
+              "mhs_count": 107,
+              "missing_predictions": 0
+            },
+            "final": {
+              "score": {
+                "overall_mean": 0.9720162877922346,
+                "nid_mean": 0.9764221642297596,
+                "nid_s_mean": 0.9762261174153737,
+                "teds_mean": 0.9827577018320368,
+                "teds_s_mean": 0.9908039556438265,
+                "mhs_mean": 0.9558109230721217,
+                "mhs_s_mean": 0.9794903007932144
+              },
+              "nid_count": 200,
+              "teds_count": 42,
+              "mhs_count": 107,
+              "missing_predictions": 0
+            }
+          },
+          "perMetric": {
+            "overall": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.888242638315333,
+                  "final": 0.971361168336037,
+                  "delta": 0.08311853002070402
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "nid": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.9192546583850931,
+                  "final": 0.968944099378882,
+                  "delta": 0.049689440993788914
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "nid_s": {
+              "comparable": 200,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.9192546583850931,
+                  "final": 0.968944099378882,
+                  "delta": 0.049689440993788914
+                }
+              ],
+              "regressed": [],
+              "unchanged": 199,
+              "availabilityChanged": []
+            },
+            "teds": {
+              "comparable": 42,
+              "improved": [],
+              "regressed": [],
+              "unchanged": 42,
+              "availabilityChanged": []
+            },
+            "teds_s": {
+              "comparable": 42,
+              "improved": [],
+              "regressed": [],
+              "unchanged": 42,
+              "availabilityChanged": []
+            },
+            "mhs": {
+              "comparable": 107,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.8572306182455728,
+                  "final": 0.9737782372931919,
+                  "delta": 0.11654761904761912
+                }
+              ],
+              "regressed": [],
+              "unchanged": 106,
+              "availabilityChanged": []
+            },
+            "mhs_s": {
+              "comparable": 107,
+              "improved": [
+                {
+                  "documentId": "01030000000163",
+                  "baseline": 0.9333333333333333,
+                  "final": 1,
+                  "delta": 0.06666666666666665
+                }
+              ],
+              "regressed": [],
+              "unchanged": 106,
+              "availabilityChanged": []
+            }
+          }
+        }
+      },
+      "outputs": {
+        "default": {
+          "markdown": {
+            "comparable": 200,
+            "unchanged": 199,
+            "changed": [
+              {
+                "documentId": "01030000000163",
+                "baselineBytes": 1365,
+                "finalBytes": 1365,
+                "baselineSHA256": "c1af544307884d8c931313b12475046d045d9cf0b5adc4e3bd2cb594c9111cdd",
+                "finalSHA256": "81ac3209a405e90a4a1ce2d3eef0558ba411454f1048de114c61909597bc4cff"
+              }
+            ]
+          },
+          "irChangedDocuments": [
+            "01030000000163"
+          ],
+          "warningChanges": [],
+          "html": {
+            "baseline": {
+              "documentsWithHtmlTable": 10,
+              "tableOpenTags": 10
+            },
+            "final": {
+              "documentsWithHtmlTable": 10,
+              "tableOpenTags": 10
+            }
+          },
+          "documents": 200,
+          "failures": 0
+        },
+        "plain-html": {
+          "markdown": {
+            "comparable": 200,
+            "unchanged": 199,
+            "changed": [
+              {
+                "documentId": "01030000000163",
+                "baselineBytes": 1290,
+                "finalBytes": 1290,
+                "baselineSHA256": "643b987e1fc8eaaf178ffee5a541ec520a5dc122f2f9d3aadf389cc1b5562bdd",
+                "finalSHA256": "300e30beadff9f9647935296c947f5dc6317e78fdc7e42648d2124b47a982459"
+              }
+            ]
+          },
+          "irChangedDocuments": [
+            "01030000000163"
+          ],
+          "warningChanges": [],
+          "html": {
+            "baseline": {
+              "documentsWithHtmlTable": 44,
+              "tableOpenTags": 56
+            },
+            "final": {
+              "documentsWithHtmlTable": 44,
+              "tableOpenTags": 56
+            }
+          },
+          "documents": 200,
+          "failures": 0
+        }
+      },
+      "notes": [
+        "Original 200 documents, GT, evaluator, and options unchanged",
+        "Concurrent validation running; elapsed/RSS not a performance improvement claim",
+        "Only document 163 changes in both modes; all individual comparable metrics have no regressions",
+        "All 400 documents OCR warnings preserved; A OCR crop regressions restored",
+        "All HTML table counts preserved; existing table documents Markdown byte identical",
+        "Only generic clipped figures used in fallback layout; OCR/grid cell regions keep raw default"
+      ]
+    },
+    "corpusAudit": {
+      "evidence": "quality-corpus-audit-2026-09-30.json",
+      "status": "verified",
+      "generationZipEntries": {
+        "count": 36,
+        "missing": 0,
+        "added": 0,
+        "changed": 0,
+        "canonicalHashMapSHA256": "59e23604676d0be39e193fba6b35a2822285a7b1aaa0f20596e8c1a407210c57"
+      }
+    }
+  },
+  "github": {
+    "issue109": "https://github.com/chrisryugj/kordoc/issues/109#issuecomment-5906997486",
+    "pr110": {
+      "url": "https://github.com/chrisryugj/kordoc/pull/110",
+      "head": "8efb96e",
+      "review": "no confirmed blocking finding; read-only source review; CI20/22/24 success; full branch tests not rerun",
+      "responsePosted": true,
+      "integrationStatus": "conflicting after PR111 main merge",
+      "followup": "https://github.com/chrisryugj/kordoc/pull/110#issuecomment-5907881692",
+      "releaseScope": "new public CLI feature kept separate from patch release"
+    },
+    "pr111": {
+      "url": "https://github.com/chrisryugj/kordoc/pull/111",
+      "head": "145f69a491228f59072bde63ab63cef14722f98f",
+      "review": "independent read and 8/8 new tests passed on macOS with mocked downloads; CI20/22/24 success",
+      "responsePosted": true,
+      "mergedCommit": "52851ac4823d61160ef3461281cdcd6ef33360b0"
+    },
+    "issue109Closed": true
+  },
+  "targetAchieved": false,
+  "release": {
+    "version": "4.17.2",
+    "status": "published",
+    "published": true,
+    "evidence": "release-4.17.2.json",
+    "sourceCommit": "89b3e52b245e168c12ab8eba78601007092fc1a3",
+    "npmUrl": "https://www.npmjs.com/package/kordoc/v/4.17.2",
+    "githubUrl": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.2",
+    "visualPassed": false,
+    "userVisualGateOverride": true
+  },
+  "hwp5BorderZero": {
+    "production": "src/hwp5/body.ts parseCell only",
+    "policy": "0 is NONE only when border definitions exist; missing definitions/unknown positive IDs/short headers stay unknown",
+    "reproduction": "new first test failed before fix",
+    "focusedTests": {
+      "pass": 61,
+      "fail": 0,
+      "skip": 0
+    },
+    "corpusPairs": {
+      "evidence": "quality-hwp5-border-zero-2026-09-30.json",
+      "pairs": 4,
+      "allAfterMetrics": 1,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0
+    },
+    "fullGate": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    }
+  },
+  "finalCandidate": {
+    "snapshot": "/tmp/kordoc-quality-followup-C",
+    "sourceSHA256": {
+      "src/hwp5/body.ts": "01eea86b183137c7000a452fa731ea0ae6b01c09d0d26b40c1b4910365dc6982",
+      "src/hwpx/styles.ts": "fc05c1edd6c34a5f3c14788fa8f81207af0d19ec662d18c41f06fa2163edf263",
+      "src/hwpx/text-metrics.ts": "844c9391144dd0d5fe06763707168d852632c282184a65cd258581aa2313553f",
+      "src/hwpx/font-metrics.ts": "0bef92a1f330c47f5ac29d6a85d9e5476b36910e2514eb8b060e8da11e222f45",
+      "src/hwpx/outline.ts": "7a1b530c7ab5cff3743960b000d6a06ad039e02a6350d8eab6535533d43ed56a",
+      "src/pdf/image-regions.ts": "f47fc343e9056b48889c8f5c51cb3871000993f6b4c11f8cc3c943d815f51355",
+      "src/pdf/image-panels.ts": "699722ac7acf1977859f7ef141a113fc566b57834ef21214c7406251c965028c",
+      "src/pdf/page-blocks.ts": "208d07285c795693db1d1103752bba9582ea4d4d0b60dd68364711a1c6851765",
+      "src/pdf/formula/models.ts": "b2ddd72a6552870ed4d99cdfaefa2b1fdd3f6e117614fc93d669ccc7b8a1b61f",
+      "src/pdf/formula/model-partials.ts": "aa640946352ccdf8182511ccf95a6e35ed73ec90cded9863ec4b65a53996992c",
+      "dist/index.js": "e6aab45b10cee65c978904c2f84080a4fde290d1524470b1d2b60f94b0e57c40"
+    },
+    "prepublish": {
+      "metadata": true,
+      "notices": true,
+      "typecheck": true,
+      "unitTests": true,
+      "build": true,
+      "corpusGate": "passed",
+      "command": "npm run prepublishOnly",
+      "exitCode": 0
+    },
+    "score": {
+      "generatedAt": "2026-09-30T08:47:49.930Z",
+      "population": {
+        "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+        "threshold": "≥ 2286/1911/1120",
+        "pass": true
+      },
+      "overallPass": true,
+      "hwpxPass": true,
+      "pdfPass": true,
+      "hwp5Pass": true
+    },
+    "scoreAudit": {
+      "evidence": "quality-score-audit-2026-09-30.json",
+      "overallPass": true,
+      "pdfVsB": [],
+      "hwpxVsB": [],
+      "hwp5Pass": true,
+      "policyWhitelistEqual": true
+    },
+    "fuzz": {
+      "generatedAt": "2026-09-30T09:12:46.617Z",
+      "elapsedMs": 883801,
+      "runs": 23700,
+      "success": 12545,
+      "failed": 11155,
+      "pass": true,
+      "gates": {
+        "crash": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "hang": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "noCode": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "slow": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "genInvalid": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "codeDist": {
+        "PARSE_ERROR": 6293,
+        "CORRUPTED": 4056,
+        "UNSUPPORTED_FORMAT": 366,
+        "ZIP_BOMB": 5,
+        "NO_SECTIONS": 386,
+        "ENCRYPTED": 14,
+        "DECOMPRESSION_BOMB": 35
+      },
+      "slowest": [
+        {
+          "file": "pdf/changwon-plan2026.pdf",
+          "variant": "hflip",
+          "ms": 18981,
+          "outcome": "success"
+        },
+        {
+          "file": "pdf/changwon-plan2026.pdf",
+          "variant": "bflip",
+          "ms": 18843,
+          "outcome": "success"
+        },
+        {
+          "file": "korea-kr-pairs2/156775765_20260827_보도자료_기상기후인재개발원 신청사 개원, 국가 기상기후 인재 양성 본격화.pdf",
+          "variant": "hflip",
+          "ms": 12720,
+          "outcome": "success"
+        },
+        {
+          "file": "pdf/gwd-info-plan.pdf",
+          "variant": "bflip",
+          "ms": 11541,
+          "outcome": "success"
+        },
+        {
+          "file": "pdf/gwd-info-plan.pdf",
+          "variant": "hflip",
+          "ms": 11334,
+          "outcome": "success"
+        }
+      ],
+      "incidents": []
+    },
+    "ocr": {
+      "summary": {
+        "generatedAt": "2026-09-30T09:17:11.663Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09542,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 0.98,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "pass": true,
+      "gates": {
+        "cerMicro": {
+          "value": 0.05188,
+          "threshold": "≤ 0.1",
+          "pass": true
+        },
+        "charRecall": {
+          "value": 0.99001,
+          "threshold": "≥ 0.988",
+          "pass": true
+        },
+        "charPrecision": {
+          "value": 0.99355,
+          "threshold": "≥ 0.9915",
+          "pass": true
+        },
+        "hangulRecall": {
+          "value": 0.99363,
+          "threshold": "≥ 0.992",
+          "pass": true
+        },
+        "tableMatched": {
+          "value": 0.7761,
+          "threshold": "≥ 0.76",
+          "pass": true
+        },
+        "tableCellF1": {
+          "value": 0.5465,
+          "threshold": "≥ 0.535",
+          "pass": true
+        },
+        "population": {
+          "value": "53/102",
+          "threshold": "≥ 53/102",
+          "pass": true
+        },
+        "environment": {
+          "value": 0,
+          "threshold": "0 (OCR 미적용 문서)",
+          "pass": true
+        }
+      },
+      "allDocumentQualityAndExclusionsEqualToB": true
+    }
+  },
+  "dependencySecurity": {
+    "reason": "GitLab OSV pre-receive rejected original locked transitive dependencies",
+    "fastUri": {
+      "before": "3.1.7",
+      "after": "3.1.8",
+      "advisory": "https://github.com/advisories/GHSA-hrr3-gc8f-f4qj"
+    },
+    "ipAddress": {
+      "before": "10.7.0",
+      "after": "10.7.2",
+      "advisories": [
+        "https://github.com/advisories/GHSA-h3mg-xc3c-68pw",
+        "https://github.com/advisories/GHSA-j6r3-76f7-8jcv"
+      ]
+    },
+    "lockfileScope": "Only these two package entries changed; parent package ranges unchanged",
+    "auditVulnerabilities": 0,
+    "typecheck": true,
+    "unitTests": true,
+    "build": true,
+    "metadata": true,
+    "notices": true,
+    "allSourceAndEsmIndexHashesPreserved": true,
+    "cjsEsmGenerateParse": true,
+    "cjsBuildDifference": "Symlink versus local node_modules path in tsup shim comment changes chunk IDs; canonical CJS index body identical",
+    "fullCorpusGateScope": "Normal npm publish reran all prepublishOnly corpus gates with final root/demo lockfiles; exit code 0. Source and ESM hashes match frozen C.",
+    "demoLockfile": {
+      "fastUriBefore": "3.1.7",
+      "fastUriAfter": "3.1.8",
+      "scope": "Single transitive package entry; demo source and package ranges unchanged",
+      "auditVulnerabilities": 0
+    }
+  }
+}

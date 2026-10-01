@@ -9,6 +9,7 @@ import type { CellContext, IRBlock, ParseWarning } from "../types.js"
 // WalkCtx.styleMap 타입 참조 — 타입 전용이라 styles.ts와의 순환은 컴파일 시 소거됨
 import type { HwpxStyleMap } from "./styles.js"
 import type { NoteNumberFormat } from "./notes.js"
+import type { Edges } from "../table/layout-frames.js"
 
 // 256MB — rhwp 1만 건 실문서 서베이에서 section1.xml 단독 75.2MB(압축비 35:1) 정상
 // 문서가 확인됨 (rhwp #1917). 종전 100MB 총합 컷은 대형 실문서를 ZIP bomb 으로 오인 거부.
@@ -40,6 +41,8 @@ export interface CellCtxEx extends CellContext {
   /** 중첩표/이미지 등 구조 콘텐츠 존재 — true일 때만 IRCell.blocks로 attach */
   hasStructure?: boolean
   isHeader?: boolean
+  /** 칸의 보이는 변 (borderFillIDRef → header borderFill) — IR 칸의 CELL_EDGES 로 옮긴다 (v4.17.0) */
+  edges?: Edges
   /**
    * cell.text 평탄화 조립용 임시 상태 (#52 후속) — 인라인 흐름(글자취급 표·같은 문단
    * 텍스트)이 "열려" 있어 다음 인라인 항목을 `\n`이 아니라 공백으로 이어야 하는지.
@@ -76,7 +79,7 @@ export interface SectionShared {
   /** numbering id → 레벨별(1..10) 카운터. -1 = 미사용(start값으로 초기화 — 0은 start="0"의 유효값) */
   numState: Map<string, number[]>
   pageText: { headers: string[]; footers: string[] }
-  track: { deleteDepth: number; warned: boolean }
+  track: { deleteDepth: number; warned: boolean; deletedObjects: WeakSet<Element>; deletedImageRefs: Set<string> }
   /** content.hpf kordoc-layout 메타 ("default"|"gongmun") — 자사 생성 파일 왕복 채널
    *  게이트. null/미설정 = 외래 파일 (id 기반 인라인 강조·인용 복원 꺼짐) */
   kordocLayout?: string | null
@@ -95,7 +98,7 @@ export function createSectionShared(): SectionShared {
   return {
     numState: new Map(),
     pageText: { headers: [], footers: [] },
-    track: { deleteDepth: 0, warned: false },
+    track: { deleteDepth: 0, warned: false, deletedObjects: new WeakSet(), deletedImageRefs: new Set() },
     pageState: { base: 0, allUsable: true },
   }
 }

@@ -94,6 +94,8 @@ export function normText(s) {
     // hwpx GT는 밑줄을 방출하지 않으므로 태그를 남기면 서식 보존이 감점되는 역전이
     // 생긴다. <img>/표 태그와 동일하게 채점 전 제거 — 양쪽 동일 적용이라 대칭.
     .replace(/<\/?u>/g, "")
+    // 첨자 태그 <sup>·<sub> — 파서가 내는 서식 표지, 정답(원본 글)은 첨자를 펴서 담는다. <u> 와 같은 이유로 제거
+    .replace(/<\/?su[bp]>/g, "")
     // 한컴 PDF 가운뎃점 — pdftotext·pdfjs 는 ㆍ(U+318D)를 조합형 아래아 ᆞ(U+119E)로 낸다. 파서(text-clean
     // normalizeAraea)가 되돌리므로 채점 양쪽을 같은 꼴로 (v4.12.3, 옛한글 초성 결합은 보존)
     .replace(/(?<![\u1100-\u115F])\u119E/g, "\u318D")
@@ -169,6 +171,8 @@ export function mdToPlain(md) {
   // 마크다운 줄(GFM 셀)의 <br> — 이스케이프된 \< 는 리터럴 글 (파서 escapeGfm)
   s = s.replace(/(?<!\\)<\/?(?:table|thead|tbody|tr|td|th)\b[^>]*>/gi, " ")
   s = s.replace(/(?<!\\)<br\s*\/?>/gi, "\n")
+  // 첨자 태그 <sup>·<sub> — 파서가 내는 서식 표지. 모수 판정(정답 글자 수·텍스트층 커버리지)이 이 평문을 바로 쓰므로 여기서 걷는다
+  s = s.replace(/(?<!\\)<\/?su[bp]>/g, "")
 
   // 표 구분행 | --- | --- |
   s = s.replace(/^\s*\|(?:\s*:?-{3,}:?\s*\|)+\s*$/gm, " ")

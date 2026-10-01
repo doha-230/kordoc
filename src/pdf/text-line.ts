@@ -31,6 +31,8 @@ export interface NormItem {
   isHidden: boolean
   /** pdfjs 공백 아이템이 이 아이템 직전에 있었음 — 단어 경계 힌트 */
   hasSpaceBefore?: boolean
+  /** 직전 공백이 pdfjs 가 글자 틈으로 만든 것뿐(글리프 흐름에 공백 글리프 없음, tracked-text markSyntheticSpaces) — 균등배분 run 을 끊지 않는다 */
+  syntheticSpace?: boolean
   /** 취소선이 그어진 텍스트 (신구조문대비표 삭제 표시 등) */
   strike?: boolean
   /** 밑줄이 그어진 텍스트 (개정문 추가·변경 표시, 제목 강조 등) */
@@ -96,10 +98,12 @@ export function filterHiddenText(items: NormItem[], pageWidth: number, pageHeigh
  */
 export function collapseEvenSpacing(text: string, whole = true): string {
   // 1. 전체가 균등배분: 토큰의 70%가 1글자
-  const tokens = text.split(" ")
-  const singleCharCount = tokens.filter(t => t.length === 1).length
-  if (whole && tokens.length >= 3 && singleCharCount / tokens.length >= 0.7 && !isDateUnitBlank(tokens)) {
-    return tokens.join("")
+  if (whole) {
+    const tokens = text.split(" ")
+    // 표시 서식은 글자 비율·날짜 빈칸 판정에 영향이 없다. 출력 태그는 원래 토큰으로 보존한다.
+    const visible = tokens.map(t => t.replace(/<\/?u>|~~/g, ""))
+    const singleCharCount = visible.filter(t => t.length === 1).length
+    if (tokens.length >= 3 && singleCharCount / tokens.length >= 0.7 && !isDateUnitBlank(visible)) return tokens.join("")
   }
 
   // 2. 부분 균등배분: 한글 1자가 3개+ 연속 (2자 단어는 건드리지 않음)
@@ -110,7 +114,13 @@ export function collapseEvenSpacing(text: string, whole = true): string {
   // hwpx↔pdf 752쌍: 96문서 나아짐·4문서 나빠짐(각 1~2어절)
   return text.replace(
     /(?<![^\s>])[가-힣](?: [가-힣\d]){2,}(?![^\s<])/g,
-    match => (isDateUnitBlank(match.split(" ")) ? match : match.replace(/ /g, "")),
+    (match, offset: number) => {
+      // 표지는 낱말 경계가 아니다 — "할 수 있</u>다"의 "있"은 홀로 선 한 글자가 아니다.
+      const before = text.slice(0, offset).replace(/(?:<\/?u>|~~)+$/, "")
+      const after = text.slice(offset + match.length).replace(/^(?:<\/?u>|~~)+/, "")
+      if (/\S$/.test(before) || /^\S/.test(after)) return match
+      return isDateUnitBlank(match.split(" ")) ? match : match.replace(/ /g, "")
+    },
   )
 }
 
@@ -155,7 +165,7 @@ export function dominantStyle(items: NormItem[]): { fontSize: number; fontName?:
 export function normalizeItems(rawItems: PdfTextItem[]): NormItem[] {
   const items: NormItem[] = []
   // pdfjs 공백 아이템 위치 수집 — 단어 경계 힌트로 활용
-  const spacePositions: { x: number; y: number }[] = []
+  const spacePositions: { x: number; y: number; synthetic?: boolean }[] = []
 
   let seq = 0
   for (const i of rawItems) {
@@ -166,7 +176,7 @@ export function normalizeItems(rawItems: PdfTextItem[]): NormItem[] {
 
     if (!i.str.trim()) {
       // 공백 전용 아이템: 위치만 기록 (단어 구분 힌트)
-      spacePositions.push({ x, y })
+      spacePositions.push({ x, y, synthetic: (i as { synthetic?: boolean }).synthetic })
       continue
     }
 
@@ -250,7 +260,11 @@ export function normalizeItems(rawItems: PdfTextItem[]): NormItem[] {
           nearest = item
         }
       }
-      if (nearest) nearest.hasSpaceBefore = true
+      if (nearest) {
+        // 진짜 공백이 하나라도 닿으면 진짜 경계
+        nearest.syntheticSpace = (nearest.hasSpaceBefore ? nearest.syntheticSpace === true : true) && sp.synthetic === true
+        nearest.hasSpaceBefore = true
+      }
     }
   }
 
@@ -441,6 +455,12 @@ export function mergeSuperscriptLines(lines: NormItem[][]): NormItem[][] {
     for (const i of line) total += i.text.trim().length
     return total > 0 && total <= 10
   }
+  // 짧은 기호 조각 여럿(각 3자 이하 — 저자 줄 소속 표시 ∗·†·a·1)은 합이 10자를 넘어도, 조각마다 옆 줄 글자 오른끝에
+  // 붙어(0.35em 안) 있으면 조각이다. 글자 위에 얹힌 수식 조각(∑ 위아래 극한)은 붙어 있지 않다
+  const isMarkers = (line: NormItem[], host: NormItem[]) => line.length > 1 && line.length <= 16 && line.every(i => {
+    if (i.text.trim().length > 3 || !i.text.trim()) return false
+    return host.some(h => { const g = i.x - (h.x + h.w); return g <= h.fontSize * 0.35 && g >= -h.fontSize * 0.1 })
+  })
 
   const result: NormItem[][] = [lines[0]]
   for (let i = 1; i < lines.length; i++) {
@@ -449,8 +469,8 @@ export function mergeSuperscriptLines(lines: NormItem[][]): NormItem[][] {
     const a = band(prev)
     const b = band(curr)
     const overlap = Math.min(a.top, b.top) - Math.max(a.bottom, b.bottom)
-    const prevIsFrag = isFrag(prev) && a.height <= b.height * 0.8 && overlap >= a.height * 0.5
-    const currIsFrag = isFrag(curr) && b.height <= a.height * 0.8 && overlap >= b.height * 0.5
+    const prevIsFrag = (isFrag(prev) || isMarkers(prev, curr)) && a.height <= b.height * 0.8 && overlap >= a.height * 0.5
+    const currIsFrag = (isFrag(curr) || isMarkers(curr, prev)) && b.height <= a.height * 0.8 && overlap >= b.height * 0.5
     if (prevIsFrag || currIsFrag) {
       result[result.length - 1] = [...prev, ...curr]
     } else {

@@ -10,6 +10,7 @@ import { detectHeadings } from "../src/pdf/block-detect.js"
 import { extractWithColumns } from "../src/pdf/columns.js"
 import { WrapLexicon, wrapJoiner, bodyLineJoins, type WrapLine } from "../src/pdf/line-wrap.js"
 import { cellTextToString, type TextItem } from "../src/pdf/line-detector.js"
+import { detectEvenSpacedItems, cleanCellText } from "../src/pdf/cell-text.js"
 import type { IRBlock } from "../src/types.js"
 
 const item = (text: string, x: number, w: number, y = 700, fontSize = 10, extra: Partial<NormItem> = {}): NormItem =>
@@ -28,9 +29,25 @@ describe("collapseEvenSpacing — 홀로 선 한 글자 셋 이상만 균등배�
     assert.equal(collapseEvenSpacing("<참 고 사 항>", false), "<참 고 사 항>")
   })
 
+  it("낱말 안의 밑줄 경계는 단어 끝이 아니다 — 실제 띄어쓰기를 보존한다", () => {
+    assert.equal(collapseEvenSpacing("<u>할 수 있</u>다.", false), "<u>할 수 있</u>다.")
+    assert.equal(collapseEvenSpacing("<u>할 수 있</u>다."), "<u>할 수 있</u>다.")
+    assert.equal(collapseEvenSpacing("지원<u>을 할 수</u> 있는 기관", false), "지원<u>을 할 수</u> 있는 기관")
+    assert.equal(collapseEvenSpacing("<u>홍 보 담 당</u> 관", false), "<u>홍보담당</u> 관")
+  })
+
   it("홀로 선 한 글자 연속은 종전대로 붙이고 날짜 빈칸은 둔다", () => {
     assert.equal(collapseEvenSpacing("과장 홍 보 담 당 관", false), "과장 홍보담당관")
     assert.equal(collapseEvenSpacing("발급일 년 월 일"), "발급일 년 월 일")
+  })
+
+  it("전체 균등배분의 글자 비율과 날짜 판정은 표시 태그와 무관하다", () => {
+    assert.equal(collapseEvenSpacing("정 보 공 개 과 - 135"), "정보공개과-135")
+    assert.equal(collapseEvenSpacing("정 보 공 개 과 - <u>135</u>"), "정보공개과-<u>135</u>")
+    for (const [open, close] of [["<u>", "</u>"], ["~~", "~~"], ["<u>~~", "~~</u>"]]) {
+      assert.equal(collapseEvenSpacing(open + "정 보 공 개 과" + close + " - " + open + "135" + close), open + "정보공개과" + close + "-" + open + "135" + close)
+      assert.equal(collapseEvenSpacing(open + "년 월 일" + close), open + "년 월 일" + close)
+    }
   })
 
   it("whole=false 는 줄 전체 한 글자 비율 규칙을 끈다 (기호·쌍점 토큰까지 세던 것)", () => {
@@ -174,6 +191,19 @@ describe("bodyLineJoins — 줄 간격 200% 본문", () => {
 
 describe("칸 줄 꺾임 — 칸 글의 오른끝까지 찬 줄 (오른 안 여백이 넓은 칸)", () => {
   const ti = (text: string, x: number, w: number, y: number): TextItem => ({ text, x, y, w, h: 10, fontSize: 10 })
+  it("밑줄·취소선 표지는 다음 줄 첫 글자의 기하 폭에 포함하지 않는다", () => {
+    const lex = new WrapLexicon()
+    lex.addLine("의약품 제조")
+    const plain = [ti("의약", 106, 84, 700), ti("품", 106, 10, 686), ti("제조", 130, 20, 686)]
+    const wrap = { box: { x1: 100, x2: 200 }, lex }
+    assert.equal(cellTextToString(plain, wrap), "의약품 제조")
+    for (const [open, close] of [["<u>", "</u>"], ["~~", "~~"], ["<u>~~", "~~</u>"]]) {
+      const marked = plain.map((it, i) => ({ ...it, text: i < 2 ? open + it.text + close : it.text }))
+      const out = cellTextToString(marked, wrap)
+      assert.equal(out.replace(/<\/?u>|~~/g, ""), "의약품 제조")
+      assert.ok(out.includes(open + "품" + close))
+    }
+  })
   it("다음 글자가 칸 안쪽에 반 글자 못 미치게 남아도 세 줄 이상 칸의 찬 줄은 꺾임으로 본다", () => {
     // 칸 x 100~300, 왼 여백 6 → 안쪽 오른끝 294. 찬 줄이 288.6 에서 끝남(0.54em 앞) — 종전 기하(넘침 0.46em < 0.5em)로는 꺾임이 아니었다
     const items = [
@@ -192,4 +222,17 @@ describe("cleanPdfText 한글 줄 이음 — 블록 안 줄바꿈도 어절 판�
     assert.equal(cleanPdfText("영상 결합 제품의 수출\n현황을 점검한다"), "영상 결합 제품의 수출 현황을 점검한다")
     assert.equal(cleanPdfText("협력의 새로운 이정표입\n니다."), "협력의 새로운 이정표입니다.")
   })
+})
+
+it("좌표 균등배분은 표시 태그와 무관하고 날짜와 하이픈 공백을 보존한다", () => {
+  const row = [item("○ ○",139,22),item("출",165,9,700,10,{hasSpaceBefore:true,syntheticSpace:true}),item("장",177,9),item("소",188,9),item("-",209,8,700,10,{hasSpaceBefore:true}),item("55",226,13,700,10,{hasSpaceBefore:true})]
+  for (const [open,close] of [["",""],["<u>","</u>"],["~~","~~"],["<u>~~","~~</u>"]]) {
+    const tagged = row.map((it,i) => ({...it,text:(i===0?open:"")+it.text+(i===3?close:"")}))
+    assert.deepEqual(detectEvenSpacedItems(tagged), [false,false,true,true,false,false])
+    assert.equal(cleanCellText(mergeLineSimple(tagged)), open+"○ ○ 출장소"+close+" - 55")
+    const heading = [item(open+"기",300,12),item("업",330,12),item("체"+close,360,12)]
+    assert.deepEqual(detectEvenSpacedItems(heading,true), [false,true,true])
+    const date = [item(open+"년",300,12),item("월",330,12),item("일"+close,360,12)]
+    assert.deepEqual(detectEvenSpacedItems(date,true), [false,false,false])
+  }
 })

@@ -238,3 +238,30 @@ describe("ommlElementToLatex — limLow / oMathPara", () => {
     assert.ok(out.includes("^{2}"))
   })
 })
+
+describe("ommlElementToLatex — LaTeX 로 깨지는 것 (#106)", () => {
+  const angle = (inner: string) =>
+    `<m:d><m:dPr><m:begChr m:val="⟨"/><m:endChr m:val="⟩"/></m:dPr><m:e><m:r><m:t>${inner}</m:t></m:r></m:e></m:d>`
+
+  it("글자로 끝나는 명령 뒤 글자는 띄운다 (\\langlex 는 없는 명령)", () => {
+    assert.equal(ommlElementToLatex(parse(`<m:oMath>${angle("x")}</m:oMath>`)), "\\left\\langle x\\right\\rangle")
+    assert.equal(ommlElementToLatex(parse(`<m:oMath>${angle("a")}<m:r><m:t>b</m:t></m:r></m:oMath>`)),
+      "\\left\\langle a\\right\\rangle b")
+    // 숫자·기호 앞은 그대로 (명령 이름은 글자에서만 이어진다)
+    assert.equal(ommlElementToLatex(parse(`<m:oMath>${angle("1")}<m:r><m:t>=</m:t></m:r></m:oMath>`)),
+      "\\left\\langle1\\right\\rangle=")
+  })
+
+  it("수식 배열 한 줄 끝의 번호 #(43) 는 \\tag{43}", () => {
+    const el = parse(`<m:oMathPara><m:oMath><m:eqArr><m:e>${angle("au,ν")}<m:r><m:t>=</m:t></m:r>${angle("L,ν")}` +
+      `<m:r><m:t>#</m:t></m:r><m:d><m:e><m:r><m:t>43</m:t></m:r></m:e></m:d></m:e></m:eqArr></m:oMath></m:oMathPara>`)
+    assert.equal(ommlElementToLatex(el), "\\left\\langle au,ν\\right\\rangle=\\left\\langle L,ν\\right\\rangle \\tag{43}")
+    // 번호가 괄호째 한 run 에 든 선형 표기
+    const lin = parse(`<m:oMath><m:eqArr><m:e><m:r><m:t>a=b#(S1)</m:t></m:r></m:e></m:eqArr></m:oMath>`)
+    assert.equal(ommlElementToLatex(lin), "a=b \\tag{S1}")
+  })
+
+  it("번호가 아닌 # · % 는 이스케이프", () => {
+    assert.equal(ommlElementToLatex(parse(`<m:oMath><m:r><m:t>#x=50%</m:t></m:r></m:oMath>`)), "\\#x=50\\%")
+  })
+})

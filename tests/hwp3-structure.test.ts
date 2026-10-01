@@ -176,9 +176,9 @@ describe("HWP3 문단 컨트롤 — HWP5·HWPX 와 같은 IR", () => {
     assert.equal(out, "I. One\n\n(2) Two\n\n가. Three")
   })
 
-  it("채움 탭(점끌기 ≠ 0) 뒤 목차 쪽번호는 자른다, 보통 탭은 남긴다", () => {
+  it("채움 탭(점끌기 ≠ 0)도 보통 탭 — 뒤 목차 쪽번호가 남는다 (종전엔 잘렸다)", () => {
     const tab = (leader: number): Piece => ({ bytes: u16([9, 600, leader, 9]), hchars: 4 })
-    assert.equal(md(doc(para(text("Chapter"), tab(1), text("12")), para(text("a"), tab(0), text("b")))), "Chapter\n\na\tb")
+    assert.equal(md(doc(para(text("Chapter"), tab(1), text("12")), para(text("a"), tab(0), text("b")))), "Chapter\t12\n\na\tb")
   })
 
   it("자동 번호(ch=18) 그림 번호는 저장 번호로 — 종전 공백", () => {

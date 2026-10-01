@@ -1,0 +1,101 @@
+{
+  "environment": {
+    "node": "v26.10.0",
+    "platform": "darwin arm64",
+    "cpu": "Apple M4"
+  },
+  "baselineCommit": "2065b45d9e6a86dd8605684d289fca0959d0110b",
+  "scriptSha256": "26593513d5ac8fa72d75f6b751f98bb1812c29526adc6412e1096d02ede4b232",
+  "comparator": "Plain-object and array recursion preserves undefined and nonfinite numbers; only fontName PDF.js document ID prefix is folded",
+  "measurement": {
+    "generation": {
+      "paragraphs": 200,
+      "zipEntriesEqual": true,
+      "medianMs": [
+        46.57850000000002,
+        27.207583999999997
+      ]
+    },
+    "pdfParse": [
+      {
+        "file": "01030000000125.pdf",
+        "bytes": 16426,
+        "sha256": "2183cb0d11b4e22a1fd54f2e79e9d91b280e63c24da91c4164d52a89732dd1b0",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          3.0848340000000007,
+          3.077792000000045
+        ]
+      },
+      {
+        "file": "01030000000188.pdf",
+        "bytes": 114941,
+        "sha256": "61070c2fe64a690c7c9cc97d12b76380e7a134feda3c5315f779306699a89a1b",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          15.085833000000093,
+          14.948707999999897
+        ]
+      },
+      {
+        "file": "01030000000189.pdf",
+        "bytes": 71529,
+        "sha256": "2f972daaa81cb3949db12a39cf6910c4f9952135f7eb3850e1f60ef7d8b5aaf9",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false,
+          "images": true
+        },
+        "markdownEqual": true,
+        "structuralBlocksEqual": true,
+        "irNormalization": "PDF.js transient document ID prefix only",
+        "medianMs": [
+          10.785041000000092,
+          10.817334000000074
+        ]
+      }
+    ],
+    "cellMap": [
+      {
+        "cells": 500,
+        "medianMs": [
+          1.2488749999997708,
+          0.5626250000000255
+        ]
+      },
+      {
+        "cells": 2500,
+        "medianMs": [
+          17.320874999999887,
+          1.6803749999999127
+        ]
+      },
+      {
+        "cells": 5000,
+        "medianMs": [
+          68.88141700000006,
+          3.801582999999937
+        ]
+      }
+    ],
+    "equivalentCases": 768,
+    "fit1000Ms": [
+      83.98970800000006,
+      13.770499999999629
+    ]
+  }
+}

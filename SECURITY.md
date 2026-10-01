@@ -77,7 +77,9 @@ kordoc processes untrusted binary files. The following defenses are in place:
 ### Path Traversal
 - Broken ZIP recovery: backslash normalization, `..`, absolute paths, Windows drive letters all rejected
 - ZIP entry filename length capped at 1,024 bytes
-- MCP image directory reads accept bare filenames only (no separators, no `..`)
+- CLI/MCP image directory reads support Unicode and URL-encoded relative paths;
+  each resolved file must remain inside the resolved image directory, including
+  symlink targets. MCP also checks `KORDOC_ROOT`.
 
 ### Access Confinement (opt-in)
 - **`KORDOC_ROOT=<dir>`** confines every MCP read and write to that directory subtree.

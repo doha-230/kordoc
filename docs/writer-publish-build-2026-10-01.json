@@ -1,0 +1,180 @@
+{
+  "version": "4.18.0",
+  "byteExactFiles": 122,
+  "totalFiles": 136,
+  "runtimeAndDeclarationsExact": true,
+  "sourcemapPathOnlyDifferences": [
+    {
+      "file": "chunk-2QBZMCRT.cjs.map",
+      "before": "39e6591122565595a32f3afea4b5d7317ed1f2b6590d0f656cb400ea9bf62b16",
+      "after": "575c94eeb495bab643fd8e60499edc4033c4de3c2d1f561f58c96e85fd0aee0b",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-CKMGVW6S.cjs.map",
+      "before": "e3e6571ca0bff9ba9b02ded5332998d5f7c4a5762a87e7d177ba5fc4a6304698",
+      "after": "a69a5c08461e786a8a90cdf248c6cf527dfcc95c059a5793a9b14c5deae0940c",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-ELTPM4HM.cjs.map",
+      "before": "e66137231a0fb3723e55a90770ce424d27e4aef8a20afda73eb892738244ca88",
+      "after": "1725199e9c3b26f232323ad3b7b9f8016829b782f1b13e1cfc1ba4a7f5e8f39f",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-F4ESJBGU.cjs.map",
+      "before": "cc2585f47df6383c35df1ee5f21698a5a8343cdb0fbe6cea72c3d5b2852c4d77",
+      "after": "0ff6a6ef0a7b40f88592d837c9d9cfad89944de467efb676e4424e11cb8d8191",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-GP7BPJTU.cjs.map",
+      "before": "56f31c433fd47a1a0c5e8b00d7a28c3b0757ada0aebf293fa4b10dfeeedb75d3",
+      "after": "796e4bb855f7d7e019a109d0b8eb79f1d8a8a0787396ae85e93e72d7dbd00450",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-GS7T56RP.cjs.map",
+      "before": "586f95ef47fe4b67efc397d1a4d6d414feb640738963c499f99898d5ca21b6db",
+      "after": "928b1677d18ba550de676a654ccf2073818efd92e7ca98df21455913bcfb34e0",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-J55UQC5H.cjs.map",
+      "before": "8db8de34b8460996896d670f17bfd2df5c6d3602f6085528bc1cb238f09ca83b",
+      "after": "13b7ba0f4998fd53d2287aa0559266eb8ad3fdd4b167c84aecd8e47ccac06670",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "chunk-RLVALQZI.cjs.map",
+      "before": "55486c5dcf6f35d194503b16eff6329417a4ac32f6cc095ed27bc3a962f07d78",
+      "after": "af2764869b2f9dbf04b8650c7d723b74853b620c9e68e3c4092238814ecc7b5c",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "formula-43KHT3B3.cjs.map",
+      "before": "3093bb33e5dbdd09e40af638bed10e034d8146eddb2bd30dd4dcb95637e0c43a",
+      "after": "5b44e9dd2ae78ab79729761babc8afd00ff2cc5b0c283c0a997af62f08cd94f6",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "image-ocr-22XQ4TMN.cjs.map",
+      "before": "d7d39048cc8f1e4b3114d2e59ec5b00da1130d53cb0187f56760d0e8765cf7a2",
+      "after": "f86dec6a0139d4929da8cb1f055428bed1294456f66ec669eb590d3acf3bc56a",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "index.cjs.map",
+      "before": "ec2f59fd3c08831f2b0161f5963ef3933af6abee1b65a621e9847a614551a9bc",
+      "after": "1f0176437a2620266d80a0229982ff9dc74298a7cdb473a838b9d7a1a6588cb0",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "page-range-QHHFTL7X.cjs.map",
+      "before": "6b48950da3694ae769dcaafc7dd019061e6caaaafb5f73d7b9b1c62b20302a22",
+      "after": "47cc0e42d2d38b8fd329876aae287f404af21a30f3a8f69eac1575cff2ab09fb",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "parser-L77S4RZC.cjs.map",
+      "before": "95357e1be3898010a7672cde25b20f77128d07e2f4c00022d37412c51dd2459c",
+      "after": "39da4c5f4b648280688249390a0dd519d53538e5bb7aa0dd8a94fb64b456d371",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    },
+    {
+      "file": "pdf-ocr-ZWF6ZXLP.cjs.map",
+      "before": "70e05a728ca0508fdbaf9ddcd4a76ffb73c8ee9f7ab118ed8b2c6cec5e0d5765",
+      "after": "85e5019f20b6b99e573c56854be5a867deeab734e65a8ad45736b852327c5df3",
+      "differentFields": [
+        "sources",
+        "file"
+      ],
+      "onlyCheckoutAbsolutePaths": true,
+      "sourcesContentExact": true,
+      "mappingsExact": true
+    }
+  ],
+  "indexSHA256": "773353e08d451c1e6b23c679669968cf54ec563acd1b32aa8a12491f819d3485",
+  "cliSHA256": "3227cefbd98aca14bff2bf0989322d082b17e197ec3741e5fdda5695d53b1966",
+  "cjsSHA256": "e83c7f171362cbd08d58d298200387d6dec32a8b830c4b33125d98871e1e49b6",
+  "note": "14 CJS maps contain their checkout absolute file/source paths. Every runtime/declaration file, sourcesContent and mappings are identical; both raw map hashes retained. Public tarball will be compared byte for byte to the primary publish build."
+}

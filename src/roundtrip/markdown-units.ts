@@ -543,3 +543,24 @@ function removeNestedTables(html: string): string {
   if (depth === 0) result += html.slice(last)
   return result
 }
+
+/** 패치 원본 파싱과 다른 출력 모드로 뽑은 편집본 안내 — 원본 표 서수로 위치를 찾으므로 keep 출력이 필요하다 (v4.17.0) */
+export const LAYOUT_MODE_MISMATCH = "편집 마크다운이 기본(보이는 대로) 출력에서 나왔습니다. 이 문서에는 테두리가 안 보이는 틀 표가 있어 그 출력으로는 원본 위치를 찾을 수 없습니다 — "
+  + "`kordoc <원본> --keep-layout-tables`(API: parse(원본, { layoutTables: \"keep\" }))로 뽑은 마크다운을 고쳐 다시 패치하세요"
+
+/**
+ * 편집본이 보이는 대로(visual) 출력에서 나왔나 — 틀 표를 푼 visual 출력과 원본 구조 그대로인 keep 출력이 다를 때만 본다.
+ * 편집되지 않은 단위(문단·표)는 뽑은 쪽 출력과 글자까지 같으니, 편집본 단위가 어느 쪽에 더 많이 그대로 있는지로 가른다
+ */
+export function editedFromVisual(keepMarkdown: string, visualMarkdown: string, editedMarkdown: string): boolean {
+  if (keepMarkdown === visualMarkdown) return false
+  const keep = new Set(splitMarkdownUnits(keepMarkdown).map(u => u.raw))
+  const visual = new Set(splitMarkdownUnits(visualMarkdown).map(u => u.raw))
+  let k = 0, v = 0
+  for (const u of splitMarkdownUnits(editedMarkdown)) {
+    if (keep.has(u.raw)) k++
+    if (visual.has(u.raw)) v++
+  }
+  return v > k
+}
+

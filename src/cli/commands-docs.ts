@@ -102,7 +102,7 @@ export function registerDocCommands(program: Command): void {
 
         // --dry-run: 필드 목록만 출력 — 서식 입력란(빈 후행 열)이 목록에 나오도록 보존 (#47)
         if (opts.dryRun) {
-          const result = await parse(arrayBuffer, { keepTrailingEmptyCols: true })
+          const result = await parse(arrayBuffer, { keepTrailingEmptyCols: true, layoutTables: "keep" })
           if (!result.success) {
             process.stderr.write(`[kordoc] 파싱 실패: ${result.error}\n`)
             process.exit(1)
@@ -216,7 +216,7 @@ export function registerDocCommands(program: Command): void {
         }
 
         // ─── 일반 경로: parse → fill → output ─── (양식 입력란 보존, #47)
-        const result = await parse(arrayBuffer, { keepTrailingEmptyCols: true })
+        const result = await parse(arrayBuffer, { keepTrailingEmptyCols: true, layoutTables: "keep" })
         if (!result.success) {
           process.stderr.write(`[kordoc] 파싱 실패: ${result.error}\n`)
           process.exit(1)

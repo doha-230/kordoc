@@ -26,7 +26,7 @@ import { noteFormatFrom, noteRefMark, type NoteNumberFormat } from "../hwpx/note
 import { patchZipEntries } from "./zip-patch.js"
 import { AUTONUM_PREFIX_RE,
   splitMarkdownUnits, normForMatch, sanitizeText, unescapeGfm, summarize, parseGfmTable,
-  alignUnits,
+  alignUnits, editedFromVisual, LAYOUT_MODE_MISMATCH,
   type MdUnit,
 } from "./markdown-units.js"
 import { patchGfmTable, patchHtmlTable, patchTextChunkTable } from "./table-patch.js"
@@ -64,10 +64,13 @@ export async function patchHwpx(
   }
 
   // 1) 원본 파싱 (기존 파서 그대로 — IR 블록과 마크다운 확보)
+  //    원본 표 서수로 위치를 찾으므로 틀 표를 풀지 않은 keep 출력이 기준 — 편집본이 기본(visual) 출력이면 분명히 알린다
   let origBlocks: IRBlock[]
   try {
-    const parsed = await parseHwpxDocument(u8ToArrayBuffer(original))
+    const parsed = await parseHwpxDocument(u8ToArrayBuffer(original), { layoutTables: "keep" })
     origBlocks = parsed.blocks
+    const visual = await parseHwpxDocument(u8ToArrayBuffer(original))
+    if (editedFromVisual(parsed.markdown, visual.markdown, editedMarkdown)) return { success: false, applied: 0, skipped, error: LAYOUT_MODE_MISMATCH }
   } catch (err) {
     return { success: false, applied: 0, skipped, error: `원본 HWPX 파싱 실패: ${err instanceof Error ? err.message : String(err)}` }
   }
@@ -165,7 +168,7 @@ export async function patchHwpx(
   let verification: DiffResult | undefined
   if (options?.verify !== false) {
     try {
-      const reparsed = await parseHwpxDocument(u8ToArrayBuffer(data))
+      const reparsed = await parseHwpxDocument(u8ToArrayBuffer(data), { layoutTables: "keep" })
       verification = diffUnitLists(splitMarkdownUnits(reparsed.markdown), editedUnits)
     } catch (err) {
       return { success: false, applied, skipped, error: `패치본 재파싱 실패 — 패치 중단: ${err instanceof Error ? err.message : String(err)}` }

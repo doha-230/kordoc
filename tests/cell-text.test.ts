@@ -28,6 +28,14 @@ describe("cellTextToString", () => {
     assert.equal(cellTextToString([ti("내", 130, 175, 12), ti("용", 160, 175, 12)], { box: { x1: 60, x2: 240 }, lex }), "내 용")
   })
 
+  it("시도 이름표(\"서  울\")는 본문 어휘 증거 없이도 붙인다 — 표 머리글 \"전  체\" 는 원고에서 띄어 쓰기도 해 그대로", () => {
+    const lex = new WrapLexicon()
+    lex.addLine("건설공사액은 전년 대비 감소했다")
+    const box = { box: { x1: 68, x2: 128 }, lex }
+    assert.equal(cellTextToString([ti("서", 72.84, 175, 12), ti("울", 111.24, 175, 12)], box), "서울")
+    assert.equal(cellTextToString([ti("전", 72.84, 175, 12), ti("체", 111.24, 175, 12)], box), "전 체")
+  })
+
   it("단일 아이템 → 그대로 반환", () => {
     assert.equal(cellTextToString([ti("안녕", 10, 100)]), "안녕")
   })

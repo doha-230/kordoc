@@ -64,7 +64,7 @@ describe("patchHwpx/patchHwp — 컨테이너 매직 바이트로 패처 선택 
 
   it("patchHwp 에 HWPX(ZIP) 바이트 — no-op 바이트 동일, 수정은 HWPX 로 적용", async () => {
     const hwpx = new Uint8Array(await markdownToHwpx("첫 문단입니다\n\n둘째 문단입니다"))
-    const parsed = await parseHwpx(hwpx.slice().buffer)
+    const parsed = await parseHwpx(hwpx.slice().buffer, { layoutTables: "keep" })
     assert.ok(parsed.success)
     const noop = await patchHwp(hwpx, parsed.markdown)
     assert.equal(noop.success, true, noop.error)
@@ -74,7 +74,7 @@ describe("patchHwpx/patchHwp — 컨테이너 매직 바이트로 패처 선택 
     assert.equal(r.success, true, r.error)
     assert.equal(r.applied, 1, JSON.stringify(r.skipped))
     assert.ok(isZip(r.data!), "원본과 같은 ZIP 컨테이너로 나온다")
-    const re = await parseHwpx(r.data!.slice().buffer)
+    const re = await parseHwpx(r.data!.slice().buffer, { layoutTables: "keep" })
     assert.ok(re.success && re.markdown.includes("고친 둘째 문단"))
   })
 
@@ -120,7 +120,7 @@ describe("patchHwpx/patchHwp e2e: 확장자와 속이 다른 실파일", { skip:
         const ole = buf[0] === 0xd0 && buf[1] === 0xcf && buf[2] === 0x11 && buf[3] === 0xe0
         const hwpxName = /\.hwpx$/i.test(f)
         if (hwpxName !== ole) continue // 이름과 속이 맞는 문서는 bench/perf.mjs no-op 줄이 잰다
-        const parsed = await parse(buf)
+        const parsed = await parse(buf, { layoutTables: "keep" })
         assert.ok(parsed.success, `${f}: parse 실패`)
         const r = hwpxName ? await patchHwpx(new Uint8Array(buf), parsed.markdown) : await patchHwp(new Uint8Array(buf), parsed.markdown)
         assert.equal(r.success, true, `${f}: ${r.error}`)

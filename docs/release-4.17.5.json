@@ -1,0 +1,528 @@
+{
+  "version": "4.17.5",
+  "sourceCommit": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+  "publication": "Normal npm publish --access public exited 0; public registry and tarball verified; no republish.",
+  "sourceCI": {
+    "run": 36791200860,
+    "status": "success",
+    "node": [
+      20,
+      22,
+      24
+    ]
+  },
+  "mainMirror": {
+    "run": 36791200791,
+    "status": "success",
+    "gitlabMain": "d6bd3566c7915b7976c6fac8e3ad65ced0891444"
+  },
+  "testedBuild": {
+    "date": "2026-10-01",
+    "baselineCommit": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+    "baselineIndexSha256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+    "files": {
+      "dist/index.js": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+      "dist/index.cjs": "87498d4ec733fb9a37a3dbcfba5d781dcad6a8dc7c06612a4d8b7ead8a9a3062",
+      "dist/cli.js": "c7404496c885500d66e147f832a69b3e1d87239ae61d770fabe0b6cd2377f689",
+      "src/pdf/xy-cut.ts": "2f2072211e5d6e1eff58a6b892ad2035f8c66412268936382184a263cf701a42",
+      "src/pdf/paragraph-lines.ts": "6d72f3e0986bec9695cc3837a85081f5d9ec6b8f9e0f2818c307b6c948acbf31",
+      "src/pdf/heading-demote.ts": "0cfd2d0a84ac69d5f3af7809356e67af2807ee74b85ddc1186f5e60c1cbf5ccb"
+    }
+  },
+  "normalPublishLog": "/tmp/kordoc-publish-4.17.5-20261001.log",
+  "knownPassedNormalStages": [
+    "meta drift check",
+    "notices",
+    "typecheck",
+    "2888 tests / 826 suites / zero fail and skip",
+    "build matches fixed candidate",
+    "pages 10/10"
+  ],
+  "tag": {
+    "name": "v4.17.5",
+    "annotatedObject": "761775f9ef3a3584e129b85509697775f72e07e4",
+    "peeledCommit": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+    "githubGitlabIdentical": true,
+    "mirrorRun": 36794739083,
+    "mirrorStatus": "success"
+  },
+  "date": "2026-10-01",
+  "status": "released-with-confirmed-native-toc-boundary-regression",
+  "finalGates": {
+    "allPass": true,
+    "normalPublishExitCode": 0,
+    "normalPublishLogSHA256": "c804941bef951327871185e08d9f03238f9bde8b7ca801ef85c2f5b610b50af7",
+    "population": {
+      "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+      "threshold": "≥ 2286/1911/1120",
+      "pass": true
+    },
+    "hwpx": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "tableCount": 9865,
+      "exactCount": 9849,
+      "nestedTables": 559,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.998378,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.998581,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999953,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999982,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "hwp5": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "pdfTable": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "pdfText": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98809,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "roundtrip": {
+      "pass": true,
+      "corpusDocs": 75,
+      "aggregate": {
+        "fwdCovMicro": 1,
+        "bwdCovMicro": 1,
+        "tables": {
+          "ref": 68,
+          "exact": 68,
+          "cellTotal": 1897,
+          "cellExact": 1897,
+          "cellExactRate": 1
+        }
+      }
+    },
+    "annex": {
+      "hwp": {
+        "docs": 272,
+        "recall": 1,
+        "phantom": 0.00001,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 346,
+        "tableExact": 1,
+        "cellF1": 1,
+        "eqRef": 11,
+        "eqHit": 11
+      },
+      "pdf": {
+        "docs": 272,
+        "recall": 0.99965,
+        "phantom": 0.00053,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 336,
+        "tableExact": 0.9711,
+        "cellF1": 0.99564,
+        "eqRef": 11,
+        "eqHit": 7
+      }
+    },
+    "formats": {
+      "pass": true,
+      "population": "docx36/xlsx28/xls15/hml9/largeSheets8"
+    },
+    "fuzz": {
+      "runs": 23700,
+      "incidents": 0,
+      "pass": true,
+      "elapsedMs": 910591,
+      "gates": {
+        "crash": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "hang": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "noCode": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "slow": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "genInvalid": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      }
+    },
+    "reflow": {
+      "cases": 59,
+      "consistency": 1,
+      "pass": true
+    },
+    "redact": {
+      "cases": 313,
+      "referenceSpans": 284,
+      "negativeCases": 102,
+      "pass": true
+    },
+    "ocr": {
+      "before": {
+        "generatedAt": "2026-09-30T22:05:43.612Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09589,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 1.03,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "after": {
+        "generatedAt": "2026-10-01T00:08:35.497Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09665,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 0.98,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "pass": true,
+      "changedStrictDocuments": [
+        {
+          "before": {
+            "doc": "khs-budget-2014.pdf",
+            "pages": [
+              5,
+              6
+            ],
+            "gtChars": 594,
+            "dist": 2,
+            "cer": 0.0034,
+            "cerStrict": 0.1401,
+            "charRecall": 0.9966,
+            "charPrecision": 1,
+            "hangulRecall": 1,
+            "secPerPage": 0.73,
+            "tbl": null
+          },
+          "after": {
+            "doc": "khs-budget-2014.pdf",
+            "pages": [
+              5,
+              6
+            ],
+            "gtChars": 594,
+            "dist": 2,
+            "cer": 0.0034,
+            "cerStrict": 0.2294,
+            "charRecall": 0.9966,
+            "charPrecision": 1,
+            "hangulRecall": 1,
+            "secPerPage": 0.73,
+            "tbl": null
+          }
+        }
+      ]
+    }
+  },
+  "registry": {
+    "version": "4.17.5",
+    "gitHead": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+    "distTags": {
+      "latest": "4.17.5"
+    },
+    "dist": {
+      "shasum": "f70b29809797907a16ba0c38177daeb769adf986",
+      "tarball": "https://registry.npmjs.org/kordoc/-/kordoc-4.17.5.tgz",
+      "fileCount": 151,
+      "integrity": "sha512-J3QE0geialJPNEXOosWySY0gw4ny4E2xAI+YC+/eTluyWjS6gmayjmAzWXnds8x/N1Ynx6w9KmGzOAPnSrrIdA==",
+      "signatures": [
+        {
+          "sig": "MEUCIQD5kYPszMGQ+gGJ2/u0MCod0XhYC7tQA44awQn1t36AvAIgW+EGI34CxfXS8XoOWSeoEYohIZPpS6l4awhZXz1GeCI=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEYCIQC4Krdkezjz0SygXdy19UW64dzRIiQto+Ue0gcX0cg+ogIhAIezxr+gx53jZsP4bs2IzndDBeO1hIES8oVIA5N64Fnr"
+        }
+      ],
+      "unpackedSize": 20360005
+    }
+  },
+  "publicArtifact": {
+    "version": "4.17.5",
+    "tarball": "kordoc-4.17.5.tgz",
+    "tarballSHA256": "ed707609f05d422da6ce27f699b52008072553f31de4ef5bdb480050afd57203",
+    "indexSHA256": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+    "cliSHA256": "c7404496c885500d66e147f832a69b3e1d87239ae61d770fabe0b6cd2377f689",
+    "cjsSHA256": "87498d4ec733fb9a37a3dbcfba5d781dcad6a8dc7c06612a4d8b7ead8a9a3062",
+    "results": [
+      {
+        "mode": "ESM",
+        "success": true
+      },
+      {
+        "mode": "CJS",
+        "success": true
+      }
+    ],
+    "distFilesExact": 136,
+    "dependencySource": "Validated lockfile dependencies; npm exec verifies CLI with independently installed public package",
+    "unpacked": "/tmp/kordoc-public-4.17.5-20261001/unpacked/package"
+  },
+  "publicCLI": {
+    "command": "ONNXRUNTIME_NODE_INSTALL=skip npm exec --yes --package=<public kordoc-4.17.5.tgz> -- kordoc --version",
+    "exitCode": 0,
+    "stdout": "4.17.5",
+    "scriptsIgnored": false
+  },
+  "githubRelease": {
+    "url": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.5",
+    "publishedAt": "2026-10-01T00:11:47Z",
+    "asset": "kordoc-4.17.5.tgz",
+    "assetID": 602060114,
+    "size": 5641541,
+    "sha256": "ed707609f05d422da6ce27f699b52008072553f31de4ef5bdb480050afd57203",
+    "downloadedAssetMatchesPublicTarball": true
+  },
+  "knownRegression": {
+    "document": "khs-budget-2014.pdf",
+    "pages": [
+      5,
+      6
+    ],
+    "nativeIssue": "Independent account TOC heading with its own page number is concatenated to the previous Na entry.",
+    "ocrTextChanged": false,
+    "aggregateStrictCER": {
+      "before": 0.09589,
+      "after": 0.09665
+    },
+    "derivedLegacyGTChanged": true,
+    "followUp": "Source fix with anonymous row-boundary regression tests in minimum next patch 4.17.6. No scorer or GT changes."
+  },
+  "visual": {
+    "hancomGui": "not-run",
+    "deploymentAuthorization": "Existing explicit user instruction to deploy retained"
+  }
+}

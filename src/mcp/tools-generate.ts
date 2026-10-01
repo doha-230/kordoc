@@ -1,12 +1,13 @@
 /** kordoc MCP 도구 — 생성 — extract_profile·generate_document */
 
 import { z } from "zod"
-import { readFile, mkdir, realpath } from "fs/promises"
-import { resolve, dirname, join } from "path"
+import { readFile, mkdir } from "fs/promises"
+import { dirname } from "path"
 import { markdownToHwpx, unknownFontWarnings, usesGaejosikMunche, PRESET_ALIAS, incompatibleGongmunWarnings, gongmunLintWarnings, muncheLintWarnings } from "../index.js"
 import type { GongmunOptions } from "../index.js"
 import { buildGongmunOptions, BODY_FONTS, H2_MARKERS, BULLET2_CHARS, FONT_ROLE_KEYS, SIZE_KEYS, DOC_HEAD_KEYS, DOC_FOOT_KEYS, DOC_INFO_KEYS, NOTICE_HEAD_KEYS, PRESS_CONTACT_KEYS, BODY_PT_RANGE, LINE_SPACING_RANGE, SIZE_PT_RANGE, APPROVAL_MAX, LEVEL_STYLE_KEYS } from "../hwpx/gongmun-surface.js"
 import { assertWithinRoot } from "../shared/offline.js"
+import { loadGenerationImages } from "../shared/generate-images.js"
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { PROFILE_EXTENSIONS, safePath, safeOutputPath, writeOutputFile, describeError, readValidatedFile } from "./shared.js"
 
@@ -42,14 +43,14 @@ export function registerGenerateTools(server: McpServer): void {
 
   server.tool(
     "generate_document",
-    "마크다운을 HWPX 한글 문서로 생성합니다. \"보고서로/공문서로/개조식으로/계획서로 뽑아줘·만들어줘\" 요청이 이 도구입니다. 프리셋 매핑: 정부 표준 보고서(표지·목차·로마숫자 장헤더 자동)='개조식', 중앙부처 업무보고·국회 서면보고(재경부 실측: 장 띠·절 숫자칸·소제목 박스·① 항목 띠·연노랑 성과 요약박스·별첨 띠, □ 뒤 (키워드) 파랑)='업무보고', 기안문·시행문·알림공문='기안문', 1페이지 요약보고서='보고서', 추진계획='계획서'. 표는 실측 정부 서식(헤더 음영+이중선·외곽 굵은선·내용 비례 열폭), 쪽번호·결재란·'끝.' 표시 지원. ⚠ 생성 전 확인 권장: 문서종류(보고서/기안문)·제목·기관명(org)·날짜·목차 여부가 불명확하면 사용자에게 물어보세요 — 엉뚱한 프리셋 선택이 가장 흔한 오생성 원인. 마크다운 규칙(v4.13 서울 실결재 실측 위계): #(h1)=문서 제목, ##(h2)=장(보고서 Ⅰ Ⅱ / 기안문·통지는 법정 1.), ###(h3)=□ 대항목(기안문 가.), 그 아래 리스트=ㅇ → - → ㆍ(기안문 가. → 1) → 가)), 본문에 □/ㅇ/-/1./가. 를 직접 써도 같은 위계로 정규화, ※시작·'출처:'·'자료:'=참고(13pt), 제목 직후 인용문(>)=보고서 요약박스 — ★보고서는 반드시 제목 직후 `> …하고자 함` 한 문장(쉼표 허용·부호 없음·3줄 이내 약 90~100자)로 보고 목적을 넣을 것(없거나 3줄 초과면 경고), <right>텍스트</right>=우측정렬. □·제목은 한 줄에 자동 축소, 본문은 어절 단위 줄바꿈(낱말·날짜가 줄 끝에서 안 쪼개짐)·부호 뒤 탭 정렬(둘째 줄이 첫 줄 내용과 같은 위치), 마지막 줄이 짧은 고아 줄과 공백이 크게 벌어지는 줄은 자간 축소로 정리, 곧은따옴표는 ‘’“”로. 법령 코드 (282791)·KOSIS 표 ID DT_…·(법정동코드 …)·○○ MCP 조회 같은 내부 식별자·도구 언급은 자동 제거 — 출처는 기관·자료명만 쓸 것. (원본 서식 보존 제자리 수정은 patch_document, 서식 빈칸 채우기는 fill_form)",
+    "마크다운을 HWPX 한글 문서로 생성합니다. \"보고서로/공문서로/개조식으로/계획서로 뽑아줘·만들어줘\" 요청이 이 도구입니다. 프리셋 매핑: 정부 표준 보고서(표지·목차·로마숫자 장헤더 자동)='개조식', 중앙부처 업무보고·국회 서면보고(재경부 실측: 장 띠·절 숫자칸·소제목 박스·① 항목 띠·연노랑 성과 요약박스·별첨 띠, □ 뒤 (키워드) 파랑)='업무보고', 지방자치단체 방침서·추진계획(서울시 시장방침 실측: 제목표·파랑 부제·요약박스·[Ⅰ] 장 상자·절 띠)='서울방침' — 보고서·계획서를 만들 때 정부(업무보고)형과 지방(서울방침)형 중 무엇으로 할지 불명확하면 사용자에게 물어보세요, 기안문·시행문·알림공문='기안문', 1페이지 요약보고서='보고서', 추진계획='계획서'. 표는 실측 정부 서식(헤더 음영+이중선·외곽 굵은선·내용 비례 열폭), 쪽번호·결재란·'끝.' 표시 지원. ⚠ 생성 전 확인 권장: 문서종류(보고서/기안문)·제목·기관명(org)·날짜·목차 여부가 불명확하면 사용자에게 물어보세요 — 엉뚱한 프리셋 선택이 가장 흔한 오생성 원인. 마크다운 규칙(v4.13 서울 실결재 실측 위계): #(h1)=문서 제목, ##(h2)=장(보고서 Ⅰ Ⅱ / 기안문·통지는 법정 1.), ###(h3)=□ 대항목(기안문 가.), 그 아래 리스트=ㅇ → - → ㆍ(기안문 가. → 1) → 가)), 본문에 □/ㅇ/-/1./가. 를 직접 써도 같은 위계로 정규화, ※시작·'출처:'·'자료:'=참고(13pt), 제목 직후 인용문(>)=보고서 요약박스 — ★보고서는 반드시 제목 직후 `> …하고자 함` 한 문장(쉼표 허용·부호 없음·3줄 이내 약 90~100자)로 보고 목적을 넣을 것(없거나 3줄 초과면 경고), <right>텍스트</right>=우측정렬. □·제목은 한 줄에 자동 축소, 본문은 어절 단위 줄바꿈(낱말·날짜가 줄 끝에서 안 쪼개짐)·부호 뒤 탭 정렬(둘째 줄이 첫 줄 내용과 같은 위치), 마지막 줄이 짧은 고아 줄과 공백이 크게 벌어지는 줄은 자간 축소로 정리, 곧은따옴표는 ‘’“”로. 법령 코드 (282791)·KOSIS 표 ID DT_…·(법정동코드 …)·○○ MCP 조회 같은 내부 식별자·도구 언급은 자동 제거 — 출처는 기관·자료명만 쓸 것. (원본 서식 보존 제자리 수정은 patch_document, 서식 빈칸 채우기는 fill_form)",
     {
       markdown: z.string().min(1).describe("HWPX로 변환할 마크다운 전문. 표는 GFM 문법 사용 (예: '| 이름 | 부서 |\\n| --- | --- |\\n| 홍길동 | 기획팀 |')"),
       output_path: z.string().min(1).describe("출력 HWPX 파일의 절대 경로 (.hwpx 권장)"),
       profile_path: z.string().optional().describe("서식 프로필 JSON 경로 (extract_profile로 추출) — 참조 문서의 표 테두리·음영·열폭·셀 글꼴을 재현. 표 행·열 수와 첫 셀 텍스트가 일치하는 표에만 적용"),
       // 값 집합·범위는 gongmun-surface SSOT에서 파생 (CLI와 드리프트 불가 — v4.0.4 영역1-1)
       preset: z.enum(Object.keys(PRESET_ALIAS) as [string, ...string[]]).optional()
-        .describe("공문서 프리셋 — 지정 시 한국 행정 공문서 표준 서식 적용. '개조식'=정부 표준 개조식 보고서(표지·목차·로마숫자 장 헤더 자동 + □○-※ 부호별 폰트), '업무보고'=중앙부처 업무보고(##=Ⅰ 장 띠, ###=파란 숫자칸 절, ####=남색 소제목 박스, #####=① 하늘색 항목 띠, > ▪…=연노랑 성과 요약박스, ## 별첨 …=별첨 띠, ❶⇒ 부호 보존, 함초롬바탕 15·각주 맑은 고딕 12), '보도자료'=머리박스+제목 25pt+□→ㅇ→*(각주) 체계. 미지정 시 범용 마크다운 변환"),
+        .describe("공문서 프리셋 — 지정 시 한국 행정 공문서 표준 서식 적용. '개조식'=정부 표준 개조식 보고서(표지·목차·로마숫자 장 헤더 자동 + □○-※ 부호별 폰트), '업무보고'=중앙부처 업무보고(##=Ⅰ 장 띠, ###=파란 숫자칸 절, ####=남색 소제목 박스, #####=① 하늘색 항목 띠, > ▪…=연노랑 성과 요약박스, ## 별첨 …=별첨 띠, ❶⇒ 부호 보존, 함초롬바탕 15·각주 맑은 고딕 12), '서울방침'=서울시 방침서(# 제목 뒤 '- 부제 -' 줄=파랑 부제·☎ 줄=담당자 행·> =요약박스, ##=[Ⅰ] 장 상자, ###=파란 번호 절 띠, ####=❶ 과제 소제목, □ HY견고딕 17·ㅇ 한컴돋움 15 굵게·- 휴먼명조 14·▸ 13, 줄간격 200%), '보도자료'=머리박스+제목 25pt+□→ㅇ→*(각주) 체계. 미지정 시 범용 마크다운 변환"),
       font: z.enum(BODY_FONTS).optional().describe("본문 글꼴(공문서 모드): myeongjo=명조 계열(개조식·보고서·계획서는 실측 휴먼명조, 그 외 함초롬바탕), gothic=맑은 고딕"),
       body_pt: z.number().int().min(BODY_PT_RANGE.min).max(BODY_PT_RANGE.max).optional().describe("본문 글자 크기(pt, 공문서 모드). 기본: 기안문 12, 보고서·계획서·통지 15"),
       line_spacing: z.number().int().min(LINE_SPACING_RANGE.min).max(LINE_SPACING_RANGE.max).optional().describe("본문 줄간격(%, 공문서 모드). 기본: 프리셋별 실측값(기안문 160, 회의록 130 등)"),
@@ -61,11 +62,14 @@ export function registerGenerateTools(server: McpServer): void {
       page_numbers: z.boolean().optional().describe("쪽번호(하단 중앙 '- 1 -', 표지·목차 카운트 제외). 미지정 시 개조식·보고서·계획서 켜짐"),
       end_mark: z.boolean().optional().describe("본문 끝 '끝.' 표시 (행정업무규정). 미지정 시 기안문만 켜짐, 본문이 이미 '끝.'으로 끝나면 중복 생성 안 함"),
       body_title_box: z.boolean().optional().describe("본문 첫 페이지 제목 반복 박스 (개조식 실측 관행). 미지정 시 개조식+표지 조합에서 켜짐"),
+      chapter_fit: z.boolean().optional().describe("개조식 장 헤더 제목 칸을 글자 폭에 맞춤. 미지정 시 제목 칸이 본문 폭까지"),
       h2_marker: z.enum(H2_MARKERS).optional().describe("h2 장 제목 표기: band=로마자 채움 칸+제목 띠 표(보고서·계획서 기본), roman='Ⅰ. 제목' 텍스트, number='1. 제목'(통지 기본), box=장 없이 □ 대항목으로, none=번호 없음. 기안문 본문의 h2는 항상 법정 '1.' 항목"),
       band_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().describe("띠 제목 번호칸 채움색 #RRGGBB (기본 #003366 실측 최다. 교육청형 밝은 띠는 #DFE6F7 + band_text_color #000000)"),
       band_text_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional().describe("띠 제목 번호 글자색 #RRGGBB (기본 #FFFFFF)"),
       summary: z.string().optional().describe("보고서 요약 박스 — 제목표 아래 #DFE6F7 음영 상자(서울 실결재 관행). 마크다운 제목 직후 인용문(> …)으로도 지정 가능"),
       doc_info: z.object(Object.fromEntries(DOC_INFO_KEYS.map(k => [k, z.string().optional()]))).optional().describe("보고서 표지 문서정보표 — docNum=문서번호/date=결재일자/disclosure=공개여부/policyNo=방침번호 (cover=true와 함께)"),
+      checklist: z.union([z.boolean(), z.object({ na: z.array(z.number().int()).optional(), notes: z.record(z.string(), z.string()).optional() })]).optional()
+        .describe("서울 사전 검토항목 점검표(표지 다음 쪽, 보고서·계획서·서울방침) — true=표시 없는 빈 서식, {na:[6,7,…]}=적은 문항(1~14)은 해당없음·나머지 검토완료, notes={\"7\":\"교육\"}=비고"),
       dept: z.string().optional().describe("표지 부서명 — 기관명 아래 '(스마트도시과)' (cover와 함께)"),
       cover_label: z.string().optional().describe("표지 우상단 취급 표시 — '대외주의'·'비공개' 빨간 테두리 박스 (업무보고 프리셋 실측, cover와 함께)"),
       fonts: z.object(Object.fromEntries(FONT_ROLE_KEYS.map(k => [k, z.string().optional()])))
@@ -95,7 +99,7 @@ export function registerGenerateTools(server: McpServer): void {
       footer: z.string().optional().describe("꼬리말 텍스트 — 모든 쪽 하단 (v4.5.0)"),
       image_dir: z.string().optional().describe("마크다운 이미지 참조(![](x.png))를 이 디렉토리에서 읽어 실데이터 임베드 (v4.5.0, PNG/JPEG/GIF/BMP). 미지정 시 참조만 placeholder로 보존"),
     },
-    async ({ markdown, output_path, profile_path, preset, font, body_pt, line_spacing, org, date, toc, cover, approval, page_numbers, end_mark, body_title_box, h2_marker, band_color, band_text_color, summary, doc_info, dept, cover_label, fonts, sizes, levels, bullet2, suppress_single, doc_head, doc_foot, report_info, notice_head, press, paper, landscape, columns, header, footer, image_dir }) => {
+    async ({ markdown, output_path, profile_path, preset, font, body_pt, line_spacing, org, date, toc, cover, approval, page_numbers, end_mark, body_title_box, chapter_fit, h2_marker, band_color, band_text_color, summary, doc_info, checklist, dept, cover_label, fonts, sizes, levels, bullet2, suppress_single, doc_head, doc_foot, report_info, notice_head, press, paper, landscape, columns, header, footer, image_dir }) => {
       try {
         // 조립은 gongmun-surface SSOT(buildGongmunOptions) — CLI와 의미론 공유 (v4.0.4)
         let gongmun: GongmunOptions | undefined
@@ -103,10 +107,11 @@ export function registerGenerateTools(server: McpServer): void {
           gongmun = buildGongmunOptions({
             preset: PRESET_ALIAS[preset], font, bodyPt: body_pt, lineSpacing: line_spacing,
             org, date, cover, toc, approval,
-            pageNumbers: page_numbers, endMark: end_mark, bodyTitleBox: body_title_box,
+            pageNumbers: page_numbers, endMark: end_mark, bodyTitleBox: body_title_box, chapterFit: chapter_fit,
             h2Marker: h2_marker, bandColor: band_color, bandTextColor: band_text_color, fonts, sizes, levels, bullet2, suppressSingle: suppress_single,
             docHead: doc_head, docFoot: doc_foot, reportInfo: report_info,
             noticeHead: notice_head, press, summary, docInfo: doc_info, dept, coverLabel: cover_label,
+            checklist: checklist && typeof checklist === "object" ? { na: checklist.na, notes: checklist.notes && Object.fromEntries(Object.entries(checklist.notes).map(([k, v]) => [Number(k), v])) } : checklist,
           })
         }
         // 서식 프로필 (이슈 #41) — 경로 검증(realpath + .json) 후 경계 zod 검증 (CLI --profile과 공유 스키마)
@@ -126,21 +131,13 @@ export function registerGenerateTools(server: McpServer): void {
             ...(footer ? { footer } : {}),
           }
           : undefined
-        // 이미지 실데이터 (v4.5.0) — 안전한 파일명 참조만 디렉토리에서 읽는다
+        const genWarnings: string[] = []
         let images: Record<string, Uint8Array> | undefined
         if (image_dir) {
-          const dir = await realpath(resolve(image_dir))
-          assertWithinRoot(dir)
-          for (const m of markdown.matchAll(/!\[[^\]]*\]\(([^)\s]+)\)/g)) {
-            const url = m[1]
-            if (!/^[A-Za-z0-9._-]+\.[A-Za-z0-9]+$/.test(url) || url.includes("..")) continue
-            try {
-              images ??= {}
-              images[url] = new Uint8Array(await readFile(join(dir, url)))
-            } catch { /* 파일 없음 — placeholder 유지 */ }
-          }
+          const loaded = await loadGenerationImages(markdown, image_dir, assertWithinRoot)
+          images = loaded.images
+          genWarnings.push(...loaded.warnings)
         }
-        const genWarnings: string[] = []
         const buf = await markdownToHwpx(markdown, gongmun || profile || page || images
           ? {
             ...(gongmun ? { gongmun } : {}), ...(profile ? { profile } : {}),

@@ -1,0 +1,453 @@
+{
+  "date": "2026-10-01",
+  "baselineVersion": "4.17.3",
+  "candidateVersion": "4.17.4",
+  "baselineCommit": "b053ae9f1e7b2586fc7bbd7cedcd183ac459c3cf",
+  "sourceCommit": "74698a88105ad6717045ba3047f4193fc1cc38da",
+  "candidateIndexSHA256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+  "protocol": "Same hardware/Node v26.10.0; isolated from other local benchmarks; two warmups and alternating AB/BA paired samples unless stated otherwise",
+  "fullTableApi": {
+    "rows": 301,
+    "cols": 6,
+    "inputChars": 19147,
+    "zipEntriesEqual": true,
+    "generation": {
+      "samplesMs": [
+        [
+          15.27479199999999,
+          18.90662500000002,
+          19.607916000000046,
+          18.707625000000007,
+          17.788915999999972,
+          18.101917000000014,
+          17.640584000000047
+        ],
+        [
+          17.038958000000008,
+          19.21270899999999,
+          18.327625000000012,
+          17.337041999999997,
+          17.666875000000005,
+          17.675542000000007,
+          17.491416000000015
+        ]
+      ],
+      "medianMs": [
+        18.101917000000014,
+        17.666875000000005
+      ]
+    },
+    "render": {
+      "samplesMs": [
+        [
+          102.11016599999994,
+          100.36708399999998,
+          96.33662499999991,
+          95.71954200000005,
+          96.22254099999986,
+          97.00308300000006,
+          95.34987499999988
+        ],
+        [
+          103.4381249999999,
+          107.94829200000004,
+          100.13970799999993,
+          97.09249999999997,
+          97.67612499999996,
+          95.6119590000003,
+          95.76216599999998
+        ]
+      ],
+      "medianMs": [
+        96.33662499999991,
+        97.67612499999996
+      ]
+    },
+    "plainSceneEqual": true,
+    "resourceUsage": {
+      "userCPUTime": 3951584,
+      "systemCPUTime": 123148,
+      "maxRSS": 410080,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 31667,
+      "majorPageFault": 107,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 0,
+      "involuntaryContextSwitches": 16265
+    },
+    "runtime": "v26.10.0",
+    "isolated": true
+  },
+  "nativeParsing": {
+    "runtime": "v26.10.0",
+    "isolated": true,
+    "options": {
+      "ocr": false,
+      "formulaOcr": false
+    },
+    "warmups": 2,
+    "samples": 7,
+    "order": "alternating AB/BA",
+    "rows": [
+      {
+        "id": "01030000000001",
+        "samplesMs": [
+          [
+            19.89129200000002,
+            14.93625000000003,
+            16.798333999999954,
+            15.357332999999926,
+            15.394000000000005,
+            15.951542000000018,
+            13.142791999999986
+          ],
+          [
+            17.775791999999967,
+            17.83445899999998,
+            15.597207999999966,
+            15.208041999999978,
+            15.067207999999937,
+            15.144374999999968,
+            13.733624999999961
+          ]
+        ],
+        "medianMs": [
+          15.394000000000005,
+          15.208041999999978
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          8,
+          8
+        ]
+      },
+      {
+        "id": "01030000000125",
+        "samplesMs": [
+          [
+            2.8400420000000395,
+            3.026499999999942,
+            2.6596660000000156,
+            3.4490829999999733,
+            2.6692919999999276,
+            2.716792000000055,
+            2.4171669999999494
+          ],
+          [
+            2.621874999999932,
+            2.967292000000043,
+            2.9921249999999873,
+            3.072375000000079,
+            2.573417000000063,
+            2.3163749999999936,
+            2.5402090000000044
+          ]
+        ],
+        "medianMs": [
+          2.716792000000055,
+          2.621874999999932
+        ],
+        "markdownEqual": false,
+        "blockCount": [
+          7,
+          3
+        ]
+      },
+      {
+        "id": "01030000000188",
+        "samplesMs": [
+          [
+            18.53937499999995,
+            19.463416999999936,
+            19.360500000000002,
+            16.499458000000004,
+            15.754791999999952,
+            16.36287500000003,
+            15.519416999999976
+          ],
+          [
+            16.404749999999922,
+            16.835500000000025,
+            20.46524999999997,
+            16.59866599999998,
+            15.825249999999983,
+            15.854791999999975,
+            15.771624999999858
+          ]
+        ],
+        "medianMs": [
+          16.499458000000004,
+          16.404749999999922
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      },
+      {
+        "id": "01030000000189",
+        "samplesMs": [
+          [
+            13.35349999999994,
+            12.366125000000011,
+            12.235458000000108,
+            12.503375000000005,
+            14.646874999999909,
+            11.36870799999997,
+            11.42820800000004
+          ],
+          [
+            12.371459000000186,
+            13.167124999999942,
+            11.667290999999977,
+            12.304334000000154,
+            12.391832999999906,
+            12.166582999999946,
+            11.53774999999996
+          ]
+        ],
+        "medianMs": [
+          12.366125000000011,
+          12.304334000000154
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      }
+    ],
+    "notes": "Quality-changing samples are scored separately against the same 200-document GT; timing is a four-document diagnostic, not a claim for all PDFs."
+  },
+  "markerFreePrepass": {
+    "rows": 301,
+    "cols": 6,
+    "publicApi": "renderDocumentToScene",
+    "baseline": "same source, conservative scan forced by XML comment",
+    "candidate": "same source, proven marker-free XML",
+    "sceneAndSvgsExactEqual": true,
+    "builtCandidateAndOptimizedSceneSvgExactEqual": true,
+    "samplesMs": [
+      [
+        92.71533399999998,
+        94.53983399999993,
+        96.52083299999981,
+        95.76520900000014,
+        92.35179200000039,
+        93.93620800000008,
+        93.11795799999982,
+        95.40104100000008,
+        97.12070799999992,
+        97.12204100000008,
+        94.77050000000008,
+        93.61954199999991,
+        93.7041250000002,
+        95.61316599999964,
+        95.77516600000035
+      ],
+      [
+        93.17208400000004,
+        92.411292,
+        89.38512500000002,
+        89.27787499999977,
+        89.59712500000023,
+        91.98641600000019,
+        93.46049999999968,
+        91.52637499999992,
+        89.2994590000003,
+        88.74337500000001,
+        90.98995799999966,
+        92.07216700000026,
+        93.3725000000004,
+        92.43595800000003,
+        89.15516600000046
+      ]
+    ],
+    "medianMs": [
+      94.77050000000008,
+      91.52637499999992
+    ],
+    "directions": {
+      "AB": [
+        94.77050000000008,
+        90.98995799999966
+      ],
+      "BA": [
+        95.40104100000008,
+        91.98641600000019
+      ]
+    },
+    "runtime": "v26.10.0"
+  },
+  "gfmTableInternal": {
+    "rows": 300,
+    "cols": 6,
+    "beforeMs": [
+      30.346958,
+      27.1555,
+      24.737667,
+      23.890583,
+      23.968709,
+      23.969042,
+      23.783209
+    ],
+    "afterMs": [
+      25.208625,
+      23.886083,
+      21.893084,
+      22.71,
+      22.009084,
+      21.937875,
+      21.698666
+    ],
+    "medianMs": [
+      23.969042,
+      22.009084
+    ],
+    "plainXmlExact": true,
+    "htmlControlsEqual": 4
+  },
+  "generationResources": {
+    "records": [
+      {
+        "label": "A1",
+        "root": "/tmp/kordoc-quality-baseline-20261001",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.490249999999989,
+          16.963000000000022,
+          15.046582999999998,
+          15.799499999999995,
+          14.893,
+          16.953292000000005,
+          18.51916700000001
+        ],
+        "medianMs": 15.799499999999995,
+        "maxRSSBytes": 128188416,
+        "userCPUSeconds": 0.30443,
+        "systemCPUSeconds": 0.031425,
+        "isolated": true
+      },
+      {
+        "label": "B1",
+        "root": "/Users/mong-e/workspace/kordoc-quality-99",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.486249999999998,
+          15.670665999999997,
+          14.639666999999974,
+          14.936958000000004,
+          14.421875,
+          16.533917000000002,
+          17.89262499999998
+        ],
+        "medianMs": 15.486249999999998,
+        "maxRSSBytes": 135020544,
+        "userCPUSeconds": 0.287483,
+        "systemCPUSeconds": 0.027572,
+        "isolated": true
+      },
+      {
+        "label": "B2",
+        "root": "/Users/mong-e/workspace/kordoc-quality-99",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.335916999999995,
+          15.814917000000008,
+          14.941334000000012,
+          14.50916699999999,
+          15.45820900000001,
+          17.102000000000004,
+          17.30616600000002
+        ],
+        "medianMs": 15.45820900000001,
+        "maxRSSBytes": 135577600,
+        "userCPUSeconds": 0.287208,
+        "systemCPUSeconds": 0.027449,
+        "isolated": true
+      },
+      {
+        "label": "A2",
+        "root": "/tmp/kordoc-quality-baseline-20261001",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.674166999999997,
+          15.901665999999992,
+          16.338707999999997,
+          15.585291000000012,
+          15.080417000000011,
+          17.53720900000002,
+          18.28533299999998
+        ],
+        "medianMs": 15.901665999999992,
+        "maxRSSBytes": 139952128,
+        "userCPUSeconds": 0.28411,
+        "systemCPUSeconds": 0.028452,
+        "isolated": true
+      },
+      {
+        "label": "A3",
+        "root": "/tmp/kordoc-quality-baseline-20261001",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.519416000000007,
+          16.53533300000001,
+          16.18074999999999,
+          15.193040999999994,
+          15.888458000000014,
+          18.125042000000008,
+          18.903084000000007
+        ],
+        "medianMs": 16.18074999999999,
+        "maxRSSBytes": 139722752,
+        "userCPUSeconds": 0.287013,
+        "systemCPUSeconds": 0.028396,
+        "isolated": true
+      },
+      {
+        "label": "B3",
+        "root": "/Users/mong-e/workspace/kordoc-quality-99",
+        "runtime": "v26.10.0",
+        "rows": 301,
+        "cols": 6,
+        "samplesMs": [
+          15.402917000000002,
+          15.440083000000001,
+          14.236416999999989,
+          14.838957999999991,
+          14.720166000000006,
+          17.192958000000004,
+          17.493375000000015
+        ],
+        "medianMs": 15.402917000000002,
+        "maxRSSBytes": 135643136,
+        "userCPUSeconds": 0.292774,
+        "systemCPUSeconds": 0.028234,
+        "isolated": true
+      }
+    ],
+    "note": "Three independent processes per version, sequential A1/B1/B2/A2/A3/B3. Median of process medians: 15.901666 -> 15.458209 ms; median peak RSS 139722752 -> 135577600 bytes. Measured before renderer-only fast path; generation source and API are unchanged."
+  },
+  "limits": [
+    "Full-table rendering versus 4.17.3 measured 96.336625 -> 97.676125 ms (+1.39%); no claim of a general render speedup. The same-source marker-free optimization removes 3.42% of the added deletion scanning cost.",
+    "Four native PDF timings are diagnostic, not representative of all PDFs. Concurrent 200-document quality runs are not latency or resource evidence."
+  ]
+}

@@ -8,9 +8,18 @@ on:
     branches: [main]
     tags: ['**']
   workflow_dispatch:
+    inputs:
+      mirror_ref:
+        description: '동기화할 전체 ref (비우면 실행 ref)'
+        required: false
+        type: string
+      expected_tag_object:
+        description: '태그 복구 시 현재 GitLab 객체 SHA (비우면 일반 push)'
+        required: false
+        type: string
 
 concurrency:
-  group: mirror-gitlab-${{ github.ref }}
+  group: mirror-gitlab-${{ inputs.mirror_ref || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -20,12 +29,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # 기본 checkout은 annotated tag를 GITHUB_SHA(대상 커밋)로 덮을 수 있다.
+          ref: ${{ inputs.mirror_ref || github.ref }}
 
-      - name: Push ${{ github.ref }} to gitlab.aigov.go.kr
+      - name: Push ${{ inputs.mirror_ref || github.ref }} to gitlab.aigov.go.kr
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           REPO: ${{ github.event.repository.name }}
-          REF: ${{ github.ref }}
+          REF: ${{ inputs.mirror_ref || github.ref }}
+          EXPECTED_TAG_OBJECT: ${{ inputs.expected_tag_object }}
         run: |
-          git push "https://oauth2:${GITLAB_TOKEN}@gitlab.aigov.go.kr/chrisryugj/${REPO}.git" \
-            "${GITHUB_SHA}:${REF}"
+          [[ "$REF" == refs/heads/* || "$REF" == refs/tags/* ]] || exit 1
+          git check-ref-format "$REF"
+          lease=()
+          if [[ -n "$EXPECTED_TAG_OBJECT" ]]; then
+            [[ "$REF" == refs/tags/* && "$EXPECTED_TAG_OBJECT" =~ ^[0-9a-f]{40}$ ]] || exit 1
+            lease=("--force-with-lease=${REF}:${EXPECTED_TAG_OBJECT}")
+          fi
+          # GITHUB_SHA는 annotated tag의 대상 커밋이다. 원본 ref를 밀어 태그 객체·메시지도 보존한다.
+          git push "${lease[@]}" "https://oauth2:${GITLAB_TOKEN}@gitlab.aigov.go.kr/chrisryugj/${REPO}.git" \
+            "${REF}:${REF}"

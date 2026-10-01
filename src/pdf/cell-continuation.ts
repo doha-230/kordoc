@@ -8,8 +8,9 @@
  */
 
 import type { IRBlock, IRCell, IRTable } from "../types.js"
-import { CLIP_TABLES, CONT_PARTS, EMPTY_PARTS, TABLE_COLXS } from "./table-meta.js"
+import { CELL_LINES, CLIP_TABLES, CONT_PARTS, EMPTY_PARTS, TABLE_COLXS, TABLE_TAIL } from "./table-meta.js"
 import { mergeCrossPageTables } from "./table-parts.js"
+import { joinCellEdges } from "./cell-edges.js"
 
 /** 조각의 좌우 변과 앞 표 열 경계를 같은 것으로 보는 거리 (pt) — 격자 열 경계는 클립 좌표 묶음(0.3pt)의 평균 */
 const COL_MATCH_TOL = 0.5
@@ -53,6 +54,12 @@ export function mergeContinuedCells(blocks: IRBlock[], pageHeights?: Map<number,
     const at = cell.blocks || add.blocks ? cellBlocks(cell, prev.pageNumber).length : -1
     if (cell.blocks || add.blocks) cell.blocks = [...cellBlocks(cell, prev.pageNumber), ...cellBlocks(add, part.pageNumber)]
     cell.text = [cell.text, add.text].filter(s => s.trim()).join("\n")
+    joinCellEdges(cell, add)
+    // 표는 이 조각이 놓인 쪽에서 끝난다 — 다음 쪽 표 조각이 이 칸의 나머지로 시작하면(세 쪽에 걸친 칸) 쪽 넘김 잇기가 여기서 잇는다.
+    // 칸 글줄도 이어 붙여 끝줄이 이 조각의 끝줄이 되게 한다 (글 이어짐 판정)
+    const lines = CELL_LINES.get(add)
+    if (lines?.length) CELL_LINES.set(cell, [...(CELL_LINES.get(cell) ?? []), ...lines])
+    if (part.pageNumber && part.bbox) TABLE_TAIL.set(prev.table, TABLE_TAIL.get(part.table) ?? { page: part.pageNumber, y: part.bbox.y, height: part.bbox.height })
     // 앞 쪽 조각이 빈 칸뿐이던 표(쪽 끝에 머리 행만 남은 칸)도 이어진 글을 받았으면 더는 빈 조각이 아니다 — 쪽 넘김 잇기가 버리지 않게
     if (cell.text.trim() || cell.blocks?.length) EMPTY_PARTS.delete(prev.table)
     blocks.splice(j, 1)
@@ -98,5 +105,6 @@ function fillNestedContinuation(blocks: IRBlock[], at: number): void {
   if (!cell || !add || cell.text.trim() || cell.blocks?.length) return
   cell.text = add.text
   if (add.blocks) cell.blocks = add.blocks
+  joinCellEdges(cell, add)
   blocks.splice(at, 1)
 }

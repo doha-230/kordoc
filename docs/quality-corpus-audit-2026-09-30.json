@@ -1,0 +1,620 @@
+{
+  "schema": "kordoc-quality-audit-v1",
+  "generatedAt": "2026-09-30T08:57:41.733Z",
+  "scope": {
+    "odlAndCorpusParsing": "immutable B versus finalG/a4158ee and original baseline",
+    "fullScore": "C current work prepublish report versus B and primary full-score baseline",
+    "qualityRatioScale": "0..1",
+    "performanceClaim": false,
+    "allQualityMetricsAtLeast99": false
+  },
+  "sources": {
+    "originalBaseline": "/tmp/kordoc-baseline-20260930",
+    "finalG": "/tmp/kordoc-quality99-finalG",
+    "immutableB": "/tmp/kordoc-quality-followup-B",
+    "C": "/Users/mong-e/workspace/kordoc-quality-99",
+    "distSHA256": {
+      "G": "2d83663e2af4500db9a9d1a499f034cc60906d72c8fc6a38942dee5b66c77244",
+      "B": "0e999ad006ee194453be42d60c6690d69bc28d50b4b4c26a02b8a95929d38989",
+      "C": "e6aab45b10cee65c978904c2f84080a4fde290d1524470b1d2b60f94b0e57c40"
+    },
+    "CFreezeSourceSHA256": {
+      "src/hwp5/body.ts": "01eea86b183137c7000a452fa731ea0ae6b01c09d0d26b40c1b4910365dc6982",
+      "src/hwpx/styles.ts": "fc05c1edd6c34a5f3c14788fa8f81207af0d19ec662d18c41f06fa2163edf263",
+      "src/hwpx/text-metrics.ts": "844c9391144dd0d5fe06763707168d852632c282184a65cd258581aa2313553f",
+      "src/hwpx/font-metrics.ts": "0bef92a1f330c47f5ac29d6a85d9e5476b36910e2514eb8b060e8da11e222f45",
+      "src/hwpx/outline.ts": "7a1b530c7ab5cff3743960b000d6a06ad039e02a6350d8eab6535533d43ed56a",
+      "src/pdf/image-regions.ts": "f47fc343e9056b48889c8f5c51cb3871000993f6b4c11f8cc3c943d815f51355",
+      "src/pdf/image-panels.ts": "699722ac7acf1977859f7ef141a113fc566b57834ef21214c7406251c965028c",
+      "src/pdf/page-blocks.ts": "208d07285c795693db1d1103752bba9582ea4d4d0b60dd68364711a1c6851765",
+      "src/pdf/formula/models.ts": "b2ddd72a6552870ed4d99cdfaefa2b1fdd3f6e117614fc93d669ccc7b8a1b61f",
+      "src/pdf/formula/model-partials.ts": "aa640946352ccdf8182511ccf95a6e35ed73ec90cded9863ec4b65a53996992c",
+      "dist/index.js": "e6aab45b10cee65c978904c2f84080a4fde290d1524470b1d2b60f94b0e57c40"
+    },
+    "benchmarkScriptsUnchangedGtoB": true,
+    "benchmarkScriptSHA256": {
+      "bench/score.mjs": "bd3d269e1127ab1c9c6f9fe526e5897fe450038cee30d0ad926c4c26173f59ba",
+      "bench/pdf-text-gt.mjs": "cdac2c73964a058ecbb39af61d582fe1023df6e60f4a915032e583a0a648deea",
+      "bench/pdf-table-gt.mjs": "a03ef50d30d6bcb3876b020b579d5c6edce9b25d52b63f775a8de6d381c2e36d",
+      "bench/annex-gt.mjs": "d6abda36ca8e8baa409c7c253c6c3581e51f986536471001e00ee3ab017a54eb",
+      "bench/ocr-accuracy.mjs": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60"
+    },
+    "odlOriginalEvaluatorSHA256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "CFreezeVerification": {
+      "filesCompared": 11,
+      "changedFiles": []
+    }
+  },
+  "odl": {
+    "population": {
+      "documentsPerMode": 200,
+      "nid": 200,
+      "teds": 42,
+      "mhs": 107,
+      "failures": 0,
+      "missing": 0
+    },
+    "default": {
+      "aggregate": {
+        "overall_mean": 0.9604023202745556,
+        "nid_mean": 0.9608759169736125,
+        "nid_s_mean": 0.9647433700135438,
+        "teds_mean": 0.9789524108694445,
+        "teds_s_mean": 0.9906982529854047,
+        "mhs_mean": 0.9459239841738709,
+        "mhs_s_mean": 0.9794903007932144
+      },
+      "versusG": {
+        "overall": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "nid": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "nid_s": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "teds": {
+          "comparable": 42,
+          "improved": 0,
+          "regressed": 0,
+          "unchanged": 42
+        },
+        "teds_s": {
+          "comparable": 42,
+          "improved": 0,
+          "regressed": 0,
+          "unchanged": 42
+        },
+        "mhs": {
+          "comparable": 107,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 106
+        },
+        "mhs_s": {
+          "comparable": 107,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 106
+        }
+      }
+    },
+    "plainHtml": {
+      "aggregate": {
+        "overall_mean": 0.9720162877922346,
+        "nid_mean": 0.9764221642297596,
+        "nid_s_mean": 0.9762261174153737,
+        "teds_mean": 0.9827577018320368,
+        "teds_s_mean": 0.9908039556438265,
+        "mhs_mean": 0.9558109230721217,
+        "mhs_s_mean": 0.9794903007932144
+      },
+      "versusG": {
+        "overall": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "nid": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "nid_s": {
+          "comparable": 200,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 199
+        },
+        "teds": {
+          "comparable": 42,
+          "improved": 0,
+          "regressed": 0,
+          "unchanged": 42
+        },
+        "teds_s": {
+          "comparable": 42,
+          "improved": 0,
+          "regressed": 0,
+          "unchanged": 42
+        },
+        "mhs": {
+          "comparable": 107,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 106
+        },
+        "mhs_s": {
+          "comparable": 107,
+          "improved": 1,
+          "regressed": 0,
+          "unchanged": 106
+        }
+      }
+    },
+    "outputs": {
+      "compared": 400,
+      "markdownUnchanged": 398,
+      "changedDocuments": [
+        "01030000000163"
+      ],
+      "ocrWarningDifferences": 0,
+      "htmlTables": {
+        "default": {
+          "documents": 10,
+          "tags": 10
+        },
+        "plainHtml": {
+          "documents": 44,
+          "tags": 56
+        }
+      },
+      "unchangedTablesMarkdown": true
+    }
+  },
+  "pdfScore": {
+    "snapshot": "B; C score identical including metadata",
+    "population": {
+      "documents": 1911,
+      "scored": 1729,
+      "ocrOnly": 114,
+      "weak": 68
+    },
+    "aggregate": {
+      "coverage": 0.99774
+    },
+    "versusG": {
+      "documentsUnchanged": 1911,
+      "qualityOrMetadataDifferences": 0,
+      "improved": 0,
+      "regressed": 0
+    }
+  },
+  "pdfText": {
+    "snapshot": "B",
+    "population": {
+      "pairs": 744,
+      "refChars": 2857823,
+      "recall": 0.99826,
+      "precision": 0.99582,
+      "order": 0.99146,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "versusG": {
+      "rows": 744,
+      "qualityOrMetadataDifferences": 0
+    },
+    "versusOriginal": {
+      "recall": {
+        "comparable": 744,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 742
+      },
+      "precision": {
+        "comparable": 744,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 742
+      },
+      "order": {
+        "comparable": 744,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 742
+      },
+      "spaceF1": {
+        "comparable": 744,
+        "improved": 5,
+        "regressed": 0,
+        "unchanged": 739
+      }
+    },
+    "exclusionListUnchanged": true
+  },
+  "pdfTable": {
+    "snapshot": "B",
+    "population": {
+      "rows": 730,
+      "scoredPairs": 708,
+      "refTables": 2331,
+      "nestedPairs": 29,
+      "nestedRefTables": 101
+    },
+    "aggregate": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "versusG": {
+      "rowsUnchanged": 730,
+      "qualityOrMetadataDifferences": 0
+    },
+    "versusOriginal": {
+      "matched": {
+        "comparable": 721,
+        "improved": 1,
+        "regressed": 0,
+        "unchanged": 720
+      },
+      "exact": {
+        "comparable": 721,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 719
+      },
+      "cellF1": {
+        "comparable": 721,
+        "improved": 3,
+        "regressed": 0,
+        "unchanged": 718
+      },
+      "cellExactRate": {
+        "comparable": 721,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 719
+      },
+      "contentNED": {
+        "comparable": 721,
+        "improved": 2,
+        "regressed": 0,
+        "unchanged": 719
+      }
+    },
+    "CFinalReport": {
+      "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/out/pdf-table.json",
+      "pass": true,
+      "qualityOrMetadataDifferencesFromB": 0,
+      "rows": 730
+    }
+  },
+  "annex": {
+    "snapshot": "B",
+    "population": {
+      "rows": 544,
+      "hwp": 272,
+      "pdf": 272
+    },
+    "aggregate": {
+      "hwp": {
+        "docs": 272,
+        "recall": 1,
+        "phantom": 0.00001,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 346,
+        "tableExact": 1,
+        "cellF1": 1,
+        "eqRef": 11,
+        "eqHit": 11
+      },
+      "pdf": {
+        "docs": 272,
+        "recall": 0.99965,
+        "phantom": 0.00053,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 335,
+        "tableExact": 0.96821,
+        "cellF1": 0.99529,
+        "eqRef": 11,
+        "eqHit": 7
+      }
+    },
+    "versusG": {
+      "rowsUnchanged": 544,
+      "qualityOrMetadataDifferences": 0
+    }
+  },
+  "ocr": {
+    "snapshot": "B",
+    "population": {
+      "rows": 56,
+      "scoredDocs": 53,
+      "skippedDocs": 3,
+      "pages": 102,
+      "skippedPages": 4,
+      "refTables": 67,
+      "skippedRefTables": 37
+    },
+    "aggregate": {
+      "cerMicro": 0.05188,
+      "cerMedian": 0.0216,
+      "charRecallMicro": 0.99001,
+      "charPrecisionMicro": 0.99355,
+      "charF1": 0.99178,
+      "hangulRecallMicro": 0.99363,
+      "cerMicroStrict": 0.09542,
+      "cerMedianStrict": 0.0719,
+      "tables": {
+        "refTables": 67,
+        "matched": 52,
+        "exact": 22,
+        "matchedRate": 0.7761,
+        "exactRate": 0.3284,
+        "cellF1Mean": 0.5465,
+        "skippedRefTables": 37
+      }
+    },
+    "versusG": {
+      "rowsUnchanged": 56,
+      "qualityOrTableOrExclusionMetadataDifferences": 0,
+      "improved": 0,
+      "regressed": 0
+    },
+    "versusOriginal": {
+      "fairMetricsAndTablesUnchanged": true,
+      "strictCER": {
+        "microOriginal": 0.09531,
+        "microFinal": 0.09542,
+        "regressedDocs": 1,
+        "document": "sbc-budget-review.pdf",
+        "documentOriginal": 0.0206,
+        "documentFinal": 0.0255,
+        "alreadyPresentInG": true
+      }
+    }
+  },
+  "hwpx": {
+    "snapshot": "C score; identical B",
+    "population": {
+      "docs": 2286,
+      "visibleTables": 9865,
+      "exactTables": 9834
+    },
+    "aggregate": {
+      "recallMicro": 1,
+      "recallDoc": 1,
+      "phantom": 0,
+      "tableExact": 0.996858,
+      "cellF1": 0.997993,
+      "contentNED": 0.999627,
+      "cellExact": 0.999677,
+      "orderAvg": 1,
+      "eqPresence": 1,
+      "fnPresence": 1
+    },
+    "versusB": {
+      "qualityOrMetadataDifferences": 0
+    },
+    "versusPrimary": {
+      "recall": {
+        "comparable": 2286,
+        "improved": 0,
+        "regressed": 0,
+        "unchanged": 2286
+      },
+      "tableExact": {
+        "comparable": 2286,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 2282
+      },
+      "cellF1": {
+        "comparable": 2286,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 2282
+      },
+      "cellExact": {
+        "comparable": 2286,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 2282
+      },
+      "contentNED": {
+        "comparable": 2286,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 2282
+      },
+      "order": {
+        "comparable": 2286,
+        "improved": 0,
+        "regressed": 0,
+        "unchanged": 2286
+      }
+    }
+  },
+  "hwp5": {
+    "snapshot": "C",
+    "population": {
+      "pairs": 1120,
+      "parseOK": 1120
+    },
+    "aggregate": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "versusB": {
+      "similarity": {
+        "comparable": 1120,
+        "improved": 0,
+        "regressed": 0,
+        "unchanged": 1120
+      },
+      "tableExact": {
+        "comparable": 1120,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 1116
+      },
+      "cellF1": {
+        "comparable": 1120,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 1116
+      },
+      "cellExact": {
+        "comparable": 1120,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 1116
+      },
+      "contentNED": {
+        "comparable": 1120,
+        "improved": 4,
+        "regressed": 0,
+        "unchanged": 1116
+      }
+    },
+    "metadataChanges": {
+      "changedDocs": 8,
+      "docsWithQualityImprovement": 4,
+      "docsWithFalseGridRemoved": 5,
+      "overlap": 1
+    },
+    "transition": {
+      "BPass": false,
+      "CPass": true,
+      "originalReferenceTables": 4249,
+      "BReferenceTables": 4244,
+      "CReferenceTables": 4244,
+      "BExactTables": 4239,
+      "CExactTables": 4244,
+      "reason": "Shared visible-grid recognition removed five non-content decorative grids from HWPX-derived pair references. C applies equivalent recognition to HWP5. GT files, evaluator, corpus, and exclusions were not edited."
+    }
+  },
+  "generation": {
+    "sweep": {
+      "cases": 6,
+      "zipEntries": 36,
+      "allEntryHashesIdenticalG": true,
+      "initialBInvocation": "missing required output path; CLI usage exit1",
+      "correctedInvocation": "node bench/gen-sweep.mjs bench/out/gen-after.json",
+      "correctedExitCode": 0,
+      "entryHashProof": {
+        "baseline": "/tmp/kordoc-quality99-finalG/bench/out/gen-after.json",
+        "candidate": "/tmp/kordoc-quality-followup-B/bench/out/gen-after.json",
+        "baselineEntries": 36,
+        "candidateEntries": 36,
+        "missing": [],
+        "added": [],
+        "changed": [],
+        "hashMapSHA256": "59e23604676d0be39e193fba6b35a2822285a7b1aaa0f20596e8c1a407210c57"
+      }
+    },
+    "reproduction": {
+      "cases": 5,
+      "scoreAndStyleStatisticsIdenticalG": true,
+      "styleAgreementMin": 0.7704861111111111,
+      "styleAgreementMax": 0.864406779661017,
+      "diagnosticSnippetChanges": 1
+    }
+  },
+  "auxiliary": {
+    "pages": "pass",
+    "roundtrip": {
+      "pass": true,
+      "qualityDifferencesG": 0
+    },
+    "formats": {
+      "pass": true,
+      "qualityDifferencesG": 0
+    },
+    "reflow": "pass",
+    "redact": "pass"
+  },
+  "rawEvidence": {
+    "odl": "/tmp/kordoc-odl-quality-followup-B/audit.json",
+    "corpus": "/tmp/kordoc-odl-quality-followup-B/corpus-quality-audit.json",
+    "CScore": "/tmp/kordoc-odl-quality-followup-C/score-quality-audit.json",
+    "BReports": "/tmp/kordoc-quality-followup-B/bench/out",
+    "CScoreReport": "/Users/mong-e/workspace/kordoc-quality-99/bench/out/score.json"
+  }
+}

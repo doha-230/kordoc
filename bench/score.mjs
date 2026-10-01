@@ -5,6 +5,8 @@
 //
 // 트랙:
 //   HWPX : 자기참조 XML GT — text_recall / phantom / table_structure / cell_content / order / specials
+//          표 정답은 hp:tbl 이 아니라 보이는 표(v4.17.0 채점 기준 변경, ref/visible-tables.mjs) — 틀 행 칸 글은 재현율 유닛으로만,
+//          칸으로 조립한 분수는 수식(eqPresence 모수)
 //   PDF  : pdftotext+pdfjs consensus 교차검증 — pdf_cross_coverage (needsOcr 페이지 격리)
 //   HWP5 : 같은 newsId의 .hwpx 쌍이 있으면 상호 정렬 기반 2차 트랙 (게이트 없음, 보고만)
 //
@@ -278,11 +280,11 @@ async function scoreHwpx(file, buf) {
       contentNum: tbl.contentNum, contentDen: tbl.contentDen,
       splitTables: tbl.splitTables, decorForgiven: tbl.decorForgiven,
       unmatchedRef: tbl.unmatchedRef, unmatchedIr: tbl.unmatchedIr,
-      nested: ref.counters.nestedTables,
+      nested: ref.counters.nestedTables, hwpx: ref.counters.hwpxTables,
       mismatches: tbl.details.filter(d => !d.exact).slice(0, 5),
     },
     specials: {
-      eqRef, eqOut: mdEqCount, eqPresence: round(eqPresence),
+      eqRef, eqOut: mdEqCount, eqPresence: round(eqPresence), fractions: ref.specials.fractions,
       fnRef, fnOut: mdFnCount, fnPresence: round(fnPresence),
       headers: ref.specials.headers.length, footers: ref.specials.footers.length,
       headerViolations,
@@ -535,6 +537,7 @@ const hwpxAgg = (() => {
     docs: hwpxDocs.length, refChars, matched, gates,
     tableCount, exactCount,
     nestedTables: sum(hwpxDocs, d => d.tables.nested),
+    hwpxTables: sum(hwpxDocs, d => d.tables.hwpx), fractions: sum(hwpxDocs, d => d.specials.fractions),
     splitTables: sum(hwpxDocs, d => d.tables.splitTables),
     pass: Object.values(gates).every(x => x.pass),
   }
@@ -652,7 +655,7 @@ if (hwpxAgg) {
     const extra = v.failDocs !== undefined ? ` 미달문서=${v.failDocs}` : v.violations !== undefined ? ` 위반=${v.violations}` : ""
     console.log(`  ${v.pass ? "✅" : "❌"} ${k.padEnd(12)} ${detail}${extra}`)
   }
-  console.log(`  표: ref=${hwpxAgg.tableCount} exact=${hwpxAgg.exactCount} | 중첩표(셀 내 보존, 비교 포함)=${hwpxAgg.nestedTables} | 분할보정=${hwpxAgg.splitTables}`)
+  console.log(`  표: ref=${hwpxAgg.tableCount} exact=${hwpxAgg.exactCount} | 중첩표(셀 내 보존, 비교 포함)=${hwpxAgg.nestedTables} | 분할보정=${hwpxAgg.splitTables} | 원본 hp:tbl ${hwpxAgg.hwpxTables} → 보이는 표 ${hwpxAgg.tableCount} · 칸 분수 ${hwpxAgg.fractions}`)
 
   const worst = [...hwpxDocs].sort((a, b) => a.recall - b.recall).slice(0, 10)
   console.log(`\n[HWPX recall 하위 10]`)

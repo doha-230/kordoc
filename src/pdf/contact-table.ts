@@ -7,8 +7,8 @@
 
 import type { IRBlock, IRCell } from "../types.js"
 
-const HEAD = /^(?:담당\s*부서|<[^<>]+>)$/
-const ROLE = /^(?:책임자|담당자)$/
+export const CONTACT_HEAD = /^(?:담당\s*부서|<[^<>]+>)$/
+export const CONTACT_ROLE = /^(?:책임자|담당자)$/
 /** 직위(띄어 쓴 두 글자 "과 장" 포함) · 이름 2~4자 · 연락처(괄호 전화·전자우편) */
 const PERSON = /^(.+?)\s+([가-힣]{2,4})\s+(\([^()]*\d[^()]*\)|\S+@\S+)$/
 
@@ -17,9 +17,9 @@ export function splitContactTables(blocks: IRBlock[]): void {
     const t = b.type === "table" ? b.table : undefined
     if (!t || t.cols !== 4 || t.rows < 2) continue
     const rows = t.cells
-    if (!HEAD.test(rows[0][0].text.replace(/\s+/g, " ").trim())) continue
+    if (!CONTACT_HEAD.test(rows[0][0].text.replace(/\s+/g, " ").trim())) continue
     const people = rows.map(r => PERSON.exec(r[3].text.replace(/\s+/g, " ").trim()))
-    if (people.some(p => !p) || rows.some(r => !ROLE.test(r[2].text.replace(/\s+/g, "")) || r[2].rowSpan !== 1 || r[3].rowSpan !== 1)) continue
+    if (people.some(p => !p) || rows.some(r => !CONTACT_ROLE.test(r[2].text.replace(/\s+/g, "")) || r[2].rowSpan !== 1 || r[3].rowSpan !== 1)) continue
     // 앞 두 열 — 전 행 병합 칸만 줄마다 나눈다 (행마다 칸이면 그대로)
     const lead: string[][] = []
     let ok = true

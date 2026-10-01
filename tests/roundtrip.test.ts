@@ -34,7 +34,7 @@ const SYNTH_MD = `# 사업 개요
 async function makeSynthetic(): Promise<{ original: Uint8Array; markdown: string }> {
   const buf = await markdownToHwpx(SYNTH_MD)
   const original = new Uint8Array(buf)
-  const parsed = await parseHwpx(buf)
+  const parsed = await parseHwpx(buf, { layoutTables: "keep" })
   assert.ok(parsed.success, "합성 HWPX 파싱 성공")
   return { original, markdown: parsed.markdown }
 }
@@ -44,7 +44,7 @@ function toAB(u8: Uint8Array): ArrayBuffer {
 }
 
 async function reparse(data: Uint8Array) {
-  const r = await parseHwpx(toAB(data))
+  const r = await parseHwpx(toAB(data), { layoutTables: "keep" })
   assert.ok(r.success, "패치본 재파싱 성공")
   return r
 }
@@ -371,7 +371,7 @@ describe("patchHwpx: 실파일 e2e (corpus 존재 시)", { skip: !existsSync(COR
     const name = readdirSync(dir).find(f => f.endsWith(".hwpx"))
     if (!name) return
     const original = new Uint8Array(readFileSync(join(dir, name)))
-    const parsed = await parseHwpx(toAB(original))
+    const parsed = await parseHwpx(toAB(original), { layoutTables: "keep" })
     assert.ok(parsed.success)
     const md = parsed.markdown
 

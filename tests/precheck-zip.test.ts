@@ -132,6 +132,21 @@ describe("precheckZipSize", () => {
     assert.equal(result.entryCount, 2)      // EOCD에서 읽은 값
     assert.equal(result.totalUncompressed, 0) // CD 파싱 조기 중단
   })
+
+  it("그림 파트: skip 이면 합계에서 빼고, 아니면 한도 초과 메시지에 크기를 적는다 (#108)", () => {
+    const zip = makeMinimalZip([
+      { name: "word/document.xml", uncompressedSize: 1024 },
+      { name: "word/media/image1.png", uncompressedSize: 101 * 1024 * 1024 },
+    ])
+    const re = /^word\/(?:media|embeddings)\//
+    assert.equal(precheckZipSize(zip, 100 * 1024 * 1024, 500, { re, skip: true }).totalUncompressed, 1024)
+    assert.throws(() => precheckZipSize(zip, 100 * 1024 * 1024, 500, { re, skip: false }),
+      (err: Error) => err.message.includes("ZIP 비압축 크기 초과: 101.0MB") && err.message.includes("그림·개체 파트가 101.0MB"))
+    // 그림 파트가 아닌 엔트리는 skip 이어도 센다
+    const xmlBomb = makeMinimalZip([{ name: "word/document.xml", uncompressedSize: 101 * 1024 * 1024 }])
+    assert.throws(() => precheckZipSize(xmlBomb, 100 * 1024 * 1024, 500, { re, skip: true }),
+      (err: Error) => err.message.includes("ZIP 비압축 크기 초과") && !err.message.includes("그림"))
+  })
 })
 
 // ─── 간접 통합 테스트: parseHwpxDocument를 통한 방어 검증 ──────

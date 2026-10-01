@@ -1,0 +1,1018 @@
+{
+  "date": "2026-10-01",
+  "version": "4.17.6",
+  "status": "released-and-verified",
+  "baseline": {
+    "version": "4.17.5",
+    "sourceCommit": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+    "indexSHA256": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991"
+  },
+  "fixedBuild": {
+    "date": "2026-10-01",
+    "version": "4.17.6",
+    "baselineVersion": "4.17.5",
+    "baselineSourceCommit": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+    "baselineIndexSHA256": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+    "files": {
+      "dist/index.js": "5d5170f6ea14517b6d957bc328a73595d9656ea501285810b3b3b8c6d86d9d0a",
+      "dist/index.cjs": "a9504d0be0021194aba788eec7fecbe90924532fc13271d245eebfb0d940fa85",
+      "dist/cli.js": "2f71c77f0ce5a2ab88a4e15e3acf62f44c52f1507f43abaa589fc3685145f729",
+      "src/pdf/xy-cut.ts": "d633453e58915b6f95e6f48d7b7abf9902914ff4ee59f8a8a160c61df44fd56b",
+      "src/pdf/paragraph-lines.ts": "6308419a34c4e0b7fa94faeeda84d4b001ed20a7679ec47b28ddd79ffffbb801",
+      "tests/pdf-xycut-wrap-spacing.test.ts": "22e64f73584552da2fadba387cae41826a861aa32975211f8dc633f4815777d5"
+    }
+  },
+  "policy": {
+    "sourceGroundTruthFilesChanged": false,
+    "evaluatorChanged": false,
+    "populationsChanged": false,
+    "exclusionsChanged": false,
+    "legacyDerivedGTMayChangeWithIR": true
+  },
+  "originalRegression": {
+    "sourceBaseline": "4.17.5 / ad93e01",
+    "sourceHashes": {
+      "src/pdf/xy-cut.ts": "d633453e58915b6f95e6f48d7b7abf9902914ff4ee59f8a8a160c61df44fd56b",
+      "src/pdf/paragraph-lines.ts": "6308419a34c4e0b7fa94faeeda84d4b001ed20a7679ec47b28ddd79ffffbb801",
+      "tests/pdf-xycut-wrap-spacing.test.ts": "22e64f73584552da2fadba387cae41826a861aa32975211f8dc633f4815777d5"
+    },
+    "changedFiles": [
+      "src/pdf/xy-cut.ts",
+      "src/pdf/paragraph-lines.ts",
+      "tests/pdf-xycut-wrap-spacing.test.ts"
+    ],
+    "rules": [
+      "Separate numeric run of 1–4 digits and actual label-to-number gap ≥ max(2em,30pt)",
+      "Two completed entries with aligned numeric right edges and compatible font size prove a page column, including nonadjacent entries",
+      "Only boundaries after completed entries are protected, so wrapped labels still join",
+      "Candidate numeric columns are sorted; adjacent candidates checked in O(n log n), with rows<2 fast path"
+    ],
+    "tdd": {
+      "initial": "red.log: three anonymous new TOC fixtures failed against 4.17.5 source",
+      "predecessor": "wrapped-predecessor-red.log: 17 pass/1 fail; predecessor merged with next wrapped entry",
+      "green": "wrapped-predecessor-green.log: 18 pass/0 fail",
+      "focused": "focused-green.log: 70 pass/0 fail/0 skip",
+      "typecheck": "typecheck.log: exit0",
+      "diffCheck": "git diff --check: exit0"
+    },
+    "leaderReuse": "Existing dropTabLeaderDots combines single/chunked/per-glyph middot runs into a tab with original leader extent; PAGE_NO /1–4 digits/, four+ dots and same-baseline guard. No tab-leaders changes.",
+    "nativeProof": {
+      "options": {
+        "pages": "5,6",
+        "removeHeaderFooter": false,
+        "ocr": false,
+        "layoutTables": "keep"
+      },
+      "before": [
+        {
+          "type": "list",
+          "text": "2. 세입·세출 예산 현황 총괄표 \t11 【일반회계】 \t13",
+          "bbox": {
+            "page": 5,
+            "x": 78,
+            "y": 571,
+            "width": 446,
+            "height": 44
+          }
+        },
+        {
+          "type": "list",
+          "text": "나. 세출 예산 현황 총괄표 \t19 【광역지역발전 특별회계】 \t85",
+          "bbox": {
+            "page": 5,
+            "x": 78,
+            "y": 478,
+            "width": 446,
+            "height": 45
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "가. 세출 예산 현황 총괄표 \t87 <지역개발계정 > \t89 <광역발전계정 > \t93",
+          "bbox": {
+            "page": 5,
+            "x": 92,
+            "y": 386,
+            "width": 432,
+            "height": 75
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "【광역지역발전 특별회계】 \t615",
+          "bbox": {
+            "page": 6,
+            "x": 71,
+            "y": 251,
+            "width": 454,
+            "height": 14
+          }
+        }
+      ],
+      "after": [
+        {
+          "type": "list",
+          "text": "2. 세입·세출 예산 현황 총괄표 \t11",
+          "bbox": {
+            "page": 5,
+            "x": 85,
+            "y": 601,
+            "width": 439,
+            "height": 14
+          }
+        },
+        {
+          "type": "list",
+          "text": "나. 세출 예산 현황 총괄표 \t19",
+          "bbox": {
+            "page": 5,
+            "x": 92,
+            "y": 509,
+            "width": 432,
+            "height": 14
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "【광역지역발전 특별회계】 \t85",
+          "bbox": {
+            "page": 5,
+            "x": 78,
+            "y": 478,
+            "width": 446,
+            "height": 14
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "가. 세출 예산 현황 총괄표 \t87",
+          "bbox": {
+            "page": 5,
+            "x": 92,
+            "y": 447,
+            "width": 432,
+            "height": 14
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "【광역지역발전 특별회계】 \t615",
+          "bbox": {
+            "page": 6,
+            "x": 71,
+            "y": 251,
+            "width": 454,
+            "height": 14
+          }
+        }
+      ]
+    },
+    "limits": [
+      "No full corpus score/performance claims before root final immutable build validation",
+      "List hierarchy is preserved; legacy flat OCR GT extraction is unchanged",
+      "No build, full benchmark, GT/evaluator, or corpus changes performed by this agent"
+    ]
+  },
+  "unitTests": {
+    "tests": 2893,
+    "suites": 826,
+    "passed": 2893,
+    "failed": 0,
+    "skipped": 0,
+    "logSHA256": "92a6e86fcc44a0af1c67b1248e693a157274301b6dcdb319145cc5033e11893f"
+  },
+  "typecheck": {
+    "pass": true
+  },
+  "independentReview": {
+    "schemaVersion": 1,
+    "scope": "Independent frozen source review for native PDF TOC row boundary fix",
+    "verdict": "No blocking issue found in the reviewed source fix; full-corpus release validation remains parent responsibility",
+    "sourceHashes": {
+      "src/pdf/xy-cut.ts": "d633453e58915b6f95e6f48d7b7abf9902914ff4ee59f8a8a160c61df44fd56b",
+      "src/pdf/paragraph-lines.ts": "6308419a34c4e0b7fa94faeeda84d4b001ed20a7679ec47b28ddd79ffffbb801",
+      "tests/pdf-xycut-wrap-spacing.test.ts": "22e64f73584552da2fadba387cae41826a861aa32975211f8dc633f4815777d5"
+    },
+    "unchangedSinceIndependentTests": true,
+    "executed": {
+      "focused": {
+        "command": "node --import tsx --test tests/pdf-xycut-wrap-spacing.test.ts",
+        "exitCode": 0,
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "skipped": 0
+      },
+      "adversarial": {
+        "command": "node --import tsx /tmp/kordoc-verify-toc-fix-20261001/adversarial.mts",
+        "exitCode": 0,
+        "tests": 7,
+        "pass": 7,
+        "fail": 0
+      },
+      "nativeRepro": {
+        "command": "node --import tsx /tmp/kordoc-verify-toc-fix-20261001/native-repro.mts",
+        "exitCode": 0,
+        "pdfSha256": "690627cbae6baed93f786b644246e20e4c641fb997d68b874a257581c3cd787d",
+        "checks": {
+          "naSeparate": true,
+          "accountSeparate": true,
+          "threeFurtherEntriesSeparate": true
+        }
+      },
+      "diffCheck": {
+        "command": "git diff --check",
+        "exitCode": 0
+      }
+    },
+    "review": {
+      "noDocumentOrLabelHardcoding": true,
+      "noEvaluatorGtOrCorpusChanges": true,
+      "genericSeparateNumericRunAndActualGap": true,
+      "nonAdjacentCompletedEntriesProveSharedColumn": true,
+      "onlyCompletedEntryTailBoundariesProtected": true,
+      "existingCjkParentBandAndSourceIdentityGuardsPreserved": true,
+      "earlyReturnForSingleRow": true
+    },
+    "limitations": [
+      "No own rebuild while parent freezes build and benchmarks.",
+      "Parent reported typecheck and full 2893 tests/826 suites pass; not claimed as independently rerun.",
+      "New aggregate quality/performance and authoritative strict OCR gate values remain pending parent original corpus runs.",
+      "Two sparse no-leader rows may be split into numeric columns by existing XY extraction: 4.17.4 and candidate produced the same three blocks in an auxiliary test; not a regression from this fix."
+    ],
+    "testCorrection": {
+      "initialAdversarialRun": {
+        "tests": 7,
+        "pass": 6,
+        "fail": 1
+      },
+      "reason": "The no-leader sparse numeric-gap test assumed the unrelated XY vertical-column extractor would return exactly two records. Old baseline and candidate both return the same three blocks. The amended test verifies this change's tocRecordBoundaries proof directly.",
+      "baselineOutput": [
+        "Anonymous label 0 Anonymous label 1",
+        "21",
+        "23"
+      ],
+      "candidateOutput": [
+        "Anonymous label 0 Anonymous label 1",
+        "21",
+        "23"
+      ]
+    }
+  },
+  "odl": {
+    "evaluatorSHA256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "modes": {
+      "default": {
+        "before": {
+          "score": {
+            "overall_mean": 0.960623284045334,
+            "nid_mean": 0.9608749102830914,
+            "nid_s_mean": 0.9647329252682801,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9467502754472125,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.960623284045334,
+            "nid_mean": 0.9608749102830914,
+            "nid_s_mean": 0.9647329252682801,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9467502754472125,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "summary": {
+          "mode": "default",
+          "options": {},
+          "documents": 200,
+          "failures": 0,
+          "elapsedMs": 157551.044333,
+          "maxRSSBytes": 1958985728,
+          "peakObservedRSSBytes": 1952546816,
+          "ocrCached": true,
+          "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+        },
+        "changedDocuments": [],
+        "changedMarkdownDocuments": [
+          "01030000000172.md"
+        ],
+        "summaryFile": "/tmp/kordoc-odl-toc-fix-20261001/prediction/default/summary.json",
+        "summarySHA256": "1d13b81b13911a27954040a1afbef71c9d0cba1e0a9e898472863488b1ac88f0"
+      },
+      "plain-html": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9722347290173252,
+            "nid_mean": 0.9764292957563357,
+            "nid_s_mean": 0.97623324894195,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9566125726473823,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9722347290173252,
+            "nid_mean": 0.9764292957563357,
+            "nid_s_mean": 0.97623324894195,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9566125726473823,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "summary": {
+          "mode": "plain-html",
+          "options": {
+            "plain": true,
+            "htmlTables": true
+          },
+          "documents": 200,
+          "failures": 0,
+          "elapsedMs": 157267.695875,
+          "maxRSSBytes": 1915043840,
+          "peakObservedRSSBytes": 1915043840,
+          "ocrCached": true,
+          "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+        },
+        "changedDocuments": [],
+        "changedMarkdownDocuments": [
+          "01030000000172.md"
+        ],
+        "summaryFile": "/tmp/kordoc-odl-toc-fix-20261001/prediction/plain-html/summary.json",
+        "summarySHA256": "805c60a51b6d9ea7655bb8cfdc891cca9588ca85ac8c1ec7362de9098b9ab8dc"
+      },
+      "native-off": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9373300110698137,
+            "nid_mean": 0.9382549823115746,
+            "nid_s_mean": 0.9437122770592574,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9373300110698137,
+            "nid_mean": 0.9382549823115746,
+            "nid_s_mean": 0.9437122770592574,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "summary": {
+          "mode": "native-off",
+          "options": {
+            "ocr": false,
+            "formulaOcr": false
+          },
+          "documents": 200,
+          "failures": 0,
+          "elapsedMs": 13233.876625,
+          "maxRSSBytes": 841809920,
+          "peakObservedRSSBytes": 841760768,
+          "ocrCached": true,
+          "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+        },
+        "changedDocuments": [],
+        "changedMarkdownDocuments": [
+          "01030000000172.md"
+        ],
+        "summaryFile": "/tmp/kordoc-odl-toc-fix-20261001/prediction/native-off/summary.json",
+        "summarySHA256": "63e69d3a756679e19d4a93dfaf075c46a8d11e7482b0ec523b00177207d852a8"
+      }
+    },
+    "baselineGroundTruthManifestSHA256": "59c4847fe1428bb3161fdb8f7ca1d7d02e3bc57b52c3be7d27bc53f1d4a4b5b8",
+    "currentGroundTruthManifest": {
+      "files": 200,
+      "definition": "SHA256 of JSON.stringify(sorted [{file,sha256}])",
+      "sha256": "57697b578a15c365a58208890f9114d893abd7d7fe7732ff90db66918c825522"
+    },
+    "markdownBoundaryDeltas": {
+      "default": {
+        "document": "01030000000172.md",
+        "nonWhitespaceIdentical": true,
+        "beforeSHA256": "57f5137cf0b84c21abb3e176e0619fb4a9161c48b3ae48fb004b5f740d4274e3",
+        "afterSHA256": "e8f361ac2d73b83b14c3362187915873cb2b79c10bd6ed5968ade35d9db53df0"
+      },
+      "plain-html": {
+        "document": "01030000000172.md",
+        "nonWhitespaceIdentical": true,
+        "beforeSHA256": "5069ef7610a2c984242f6853d80c994e59eebd05bf3892fee29940da353befab",
+        "afterSHA256": "068dd24aaaea8d5656541abe8a5c9ff1cfba2f8eb3c36e604d6f592bcc30dd91"
+      },
+      "native-off": {
+        "document": "01030000000172.md",
+        "nonWhitespaceIdentical": true,
+        "beforeSHA256": "57f5137cf0b84c21abb3e176e0619fb4a9161c48b3ae48fb004b5f740d4274e3",
+        "afterSHA256": "e8f361ac2d73b83b14c3362187915873cb2b79c10bd6ed5968ade35d9db53df0"
+      }
+    },
+    "original172Audit": {
+      "record": "pdf-toc-original-172-audit-2026-10-01.json",
+      "sha256": "59624240a47b3c1b869f19239b9618ce7bd6b91c5af563aa1154e8e672edda5b",
+      "conclusion": "Independent original TOC rows confirmed; only four whitespace boundaries changed per mode; original evaluator scores unchanged"
+    }
+  },
+  "performance": {
+    "roots": [
+      "/tmp/kordoc-toc-baseline-4.17.5-20261001",
+      "/Users/mong-e/workspace/kordoc-quality-99"
+    ],
+    "runtime": "v26.10.0",
+    "options": {
+      "ocr": false,
+      "formulaOcr": false
+    },
+    "warmups": 2,
+    "samples": 7,
+    "order": "alternating AB/BA",
+    "scope": "Eight fixed documents, local diagnostic only; not a claim for all PDFs. Other local benchmarks/tests stopped.",
+    "rows": [
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000001.pdf",
+        "bytes": 88466,
+        "sha256": "cd34bf0452e0bc9b7f26515c7426f9a197480478f52f464e67a0a5912221da69",
+        "samplesMs": [
+          [
+            21.762666000000024,
+            17.864791999999966,
+            16.603917000000024,
+            15.00574999999992,
+            15.310041999999953,
+            14.488124999999968,
+            14.189625000000092
+          ],
+          [
+            20.048000000000002,
+            19.15366700000004,
+            19.094875000000002,
+            16.68674999999996,
+            15.175584000000072,
+            14.442957999999976,
+            14.772207999999978
+          ]
+        ],
+        "medianMs": [
+          15.310041999999953,
+          16.68674999999996
+        ],
+        "samplesCPUms": [
+          [
+            50.028,
+            54.772,
+            42.028,
+            26.405,
+            23.148,
+            16.703,
+            19.383
+          ],
+          [
+            51.94,
+            60.807,
+            83.156,
+            52.635,
+            24.657,
+            18.112,
+            19.811
+          ]
+        ],
+        "medianCPUms": [
+          26.405,
+          51.94
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          8,
+          8
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000125.pdf",
+        "bytes": 16426,
+        "sha256": "2183cb0d11b4e22a1fd54f2e79e9d91b280e63c24da91c4164d52a89732dd1b0",
+        "samplesMs": [
+          [
+            3.5412500000001046,
+            2.9700829999999314,
+            2.6172500000000127,
+            2.9002080000000205,
+            2.6728749999999764,
+            2.845458000000008,
+            3.199457999999936
+          ],
+          [
+            3.5282079999999496,
+            2.886250000000018,
+            2.7533750000000055,
+            2.9102920000000267,
+            3.120541000000003,
+            3.3041660000000093,
+            2.9751659999999447
+          ]
+        ],
+        "medianMs": [
+          2.9002080000000205,
+          2.9751659999999447
+        ],
+        "samplesCPUms": [
+          [
+            10.398,
+            4.579,
+            3.165,
+            6.163,
+            7.113,
+            3.262,
+            4.854
+          ],
+          [
+            5.532,
+            4.56,
+            4.038,
+            4.696,
+            6.41,
+            4.537,
+            3.97
+          ]
+        ],
+        "medianCPUms": [
+          4.854,
+          4.56
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          3,
+          3
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000188.pdf",
+        "bytes": 114941,
+        "sha256": "61070c2fe64a690c7c9cc97d12b76380e7a134feda3c5315f779306699a89a1b",
+        "samplesMs": [
+          [
+            18.49754100000007,
+            23.41766599999994,
+            19.10979199999997,
+            16.63695900000016,
+            16.368416000000025,
+            16.73333300000013,
+            17.562666000000036
+          ],
+          [
+            17.63333399999999,
+            17.066374999999994,
+            17.66233299999999,
+            16.638000000000034,
+            15.787959,
+            16.116833000000042,
+            17.62262499999997
+          ]
+        ],
+        "medianMs": [
+          17.562666000000036,
+          17.066374999999994
+        ],
+        "samplesCPUms": [
+          [
+            31.162,
+            108.963,
+            98.154,
+            30.194,
+            22.863,
+            27.373,
+            49.317
+          ],
+          [
+            26.763,
+            36.306,
+            41.254,
+            31.327,
+            24.768,
+            29.13,
+            43.524
+          ]
+        ],
+        "medianCPUms": [
+          31.162,
+          31.327
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000189.pdf",
+        "bytes": 71529,
+        "sha256": "2f972daaa81cb3949db12a39cf6910c4f9952135f7eb3850e1f60ef7d8b5aaf9",
+        "samplesMs": [
+          [
+            12.44120799999996,
+            12.47220799999991,
+            12.116624999999885,
+            12.414749999999913,
+            12.63691700000004,
+            12.762374999999793,
+            11.421333000000004
+          ],
+          [
+            11.97137500000008,
+            11.937208000000055,
+            12.150332999999819,
+            12.294250000000147,
+            13.455500000000029,
+            12.40300000000002,
+            12.168416000000207
+          ]
+        ],
+        "medianMs": [
+          12.44120799999996,
+          12.168416000000207
+        ],
+        "samplesCPUms": [
+          [
+            16.206,
+            13.499,
+            14.061,
+            34.799,
+            36.769,
+            27.41,
+            14.994
+          ],
+          [
+            15.485,
+            14.281,
+            14.767,
+            22.48,
+            27.673,
+            33.844,
+            14.969
+          ]
+        ],
+        "medianCPUms": [
+          16.206,
+          15.485
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서일문.pdf",
+        "bytes": 328904,
+        "sha256": "50c7492289878ed7e6283a34338acb25ef4eac968005d7f29ee47ceb19057de5",
+        "samplesMs": [
+          [
+            51.721500000000106,
+            54.0659169999999,
+            50.52579199999991,
+            62.447374999999965,
+            56.6752919999999,
+            53.038334000000305,
+            52.236625000000004
+          ],
+          [
+            52.553584,
+            51.53104199999984,
+            62.98866700000008,
+            52.936916999999994,
+            50.838416999999936,
+            50.4501250000003,
+            50.157500000000255
+          ]
+        ],
+        "medianMs": [
+          53.038334000000305,
+          51.53104199999984
+        ],
+        "samplesCPUms": [
+          [
+            82.256,
+            121.996,
+            72.977,
+            77.05,
+            72.866,
+            78.025,
+            104.123
+          ],
+          [
+            95.671,
+            124.637,
+            108.414,
+            69.278,
+            69.577,
+            84.531,
+            63.596
+          ]
+        ],
+        "medianCPUms": [
+          78.025,
+          84.531
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          77,
+          77
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서중문.pdf",
+        "bytes": 303966,
+        "sha256": "2be5de4a7a2feeeb8d4e8597bff2178ee0e9d893f5290178bf0a6d2e60b5afb5",
+        "samplesMs": [
+          [
+            39.673959000000195,
+            41.607708999999886,
+            39.00604199999998,
+            38.77366699999993,
+            40.225916999999754,
+            38.74620900000036,
+            40.58391699999993
+          ],
+          [
+            40.397500000000036,
+            41.35050000000001,
+            39.46225000000004,
+            39.39212499999985,
+            39.744166999999834,
+            39.10158300000012,
+            40.38362499999994
+          ]
+        ],
+        "medianMs": [
+          39.673959000000195,
+          39.744166999999834
+        ],
+        "samplesCPUms": [
+          [
+            56.654,
+            80.175,
+            56.006,
+            45.169,
+            54.138,
+            42.864,
+            50.288
+          ],
+          [
+            70.045,
+            100.762,
+            53.709,
+            49.524,
+            48.661,
+            43.557,
+            48.813
+          ]
+        ],
+        "medianCPUms": [
+          54.138,
+          49.524
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          73,
+          73
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서영문.pdf",
+        "bytes": 190656,
+        "sha256": "5298008a23ef30e501623856d9c7aeb1adfdc30a2afb9f9c3e718b983a99e602",
+        "samplesMs": [
+          [
+            35.563040999999885,
+            40.113624999999956,
+            35.305665999999746,
+            35.655874999999924,
+            32.744083000000046,
+            33.99995799999988,
+            33.19495799999959
+          ],
+          [
+            37.88274999999976,
+            36.25574999999981,
+            35.192083000000366,
+            37.7990420000001,
+            33.34854099999984,
+            33.16995799999995,
+            33.91108299999996
+          ]
+        ],
+        "medianMs": [
+          35.305665999999746,
+          35.192083000000366
+        ],
+        "samplesCPUms": [
+          [
+            57.158,
+            92.666,
+            65.054,
+            69.031,
+            45.227,
+            66.65,
+            38.072
+          ],
+          [
+            56.524,
+            57.343,
+            49.482,
+            81.935,
+            39.244,
+            63.194,
+            36.954
+          ]
+        ],
+        "medianCPUms": [
+          65.054,
+          56.524
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          48,
+          48
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/pdf/khs-budget-2014.pdf",
+        "bytes": 5132744,
+        "sha256": "690627cbae6baed93f786b644246e20e4c641fb997d68b874a257581c3cd787d",
+        "samplesMs": [
+          [
+            2231.232249999999,
+            2276.8611660000024,
+            2066.6212080000005,
+            2240.698625000001,
+            2182.3678749999963,
+            2328.9365830000024,
+            2182.7917919999963
+          ],
+          [
+            2283.4891249999982,
+            2218.3288329999996,
+            2068.372707999999,
+            2174.9051249999975,
+            2231.0862080000006,
+            2167.9817500000063,
+            2245.9292090000017
+          ]
+        ],
+        "medianMs": [
+          2231.232249999999,
+          2218.3288329999996
+        ],
+        "samplesCPUms": [
+          [
+            2752.523,
+            3042.211,
+            2540.343,
+            2951.371,
+            2667.004,
+            3125.55,
+            2693.369
+          ],
+          [
+            3046.833,
+            2750.848,
+            2756.756,
+            2637.189,
+            3032.139,
+            2643.06,
+            2978.329
+          ]
+        ],
+        "medianCPUms": [
+          2752.523,
+          2756.756
+        ],
+        "markdownEqual": false,
+        "blockCount": [
+          757,
+          779
+        ]
+      }
+    ],
+    "combinedProcessResources": {
+      "userCPUTime": 58827410,
+      "systemCPUTime": 1120985,
+      "maxRSS": 1249120,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 218443,
+      "majorPageFault": 110,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 0,
+      "involuntaryContextSwitches": 158629
+    },
+    "claims": {
+      "universalSpeedup": false,
+      "versionSpecificRSSImprovement": false
+    },
+    "supersededInitialDiagnostic": "Initial timing overlapped independent review checks; final run started after all agents reported CPU work complete. Initial preserved separately in /tmp/kordoc-native-toc-performance-before-review-complete-20261001.json."
+  },
+  "normalPublicationGates": {
+    "allPass": true,
+    "tests": 2893,
+    "suites": 826,
+    "fuzzCases": 23700,
+    "normalPublishExitCode": 0,
+    "evidence": "docs/release-4.17.6.json",
+    "pdfText": {
+      "beforePrecision": 0.99581,
+      "afterPrecision": 0.9958,
+      "originalAudit": "docs/pdf-toc-kats-original-audit-2026-10-01.json"
+    },
+    "ocr": {
+      "docs": 53,
+      "pages": 102,
+      "beforeStrictCER": 0.09665,
+      "afterStrictCER": 0.09589,
+      "fairCER": 0.05188,
+      "charF1": 0.99178
+    }
+  },
+  "releaseEvidence": {
+    "sourceCommit": "d998c61bf12ca5b032f62923afe46e5bc1a28e5c",
+    "releaseRecord": "docs/release-4.17.6.json",
+    "npmVersion": "4.17.6",
+    "npmLatest": "4.17.6",
+    "publicDistFilesExact": 136,
+    "githubRelease": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.6",
+    "githubGitlabTagIdentical": true
+  },
+  "limits": [
+    "No claim that every metric exceeds99 or100.",
+    "4.17.5 native CJK/OCR heading improvements retained; writer/renderer unchanged in this patch.",
+    "Hancom GUI visual oracle not run; existing explicit user deployment instruction retained.",
+    "No universal speedup or version-attributed RSS claim."
+  ],
+  "pinnedOCRSubset": {
+    "scope": "One pinned document / two pages; reporting-only subset, not full population gate",
+    "command": "node bench/ocr-accuracy.mjs --doc=khs-budget-2014 --dump=/tmp/kordoc-toc-ocr-dist-20261001",
+    "summary": {
+      "generatedAt": "2026-10-01T00:44:28.884Z",
+      "docs": 1,
+      "skipped": 0,
+      "pages": 2,
+      "skippedPages": [],
+      "cerMicro": 0.00337,
+      "cerMedian": 0.0034,
+      "charRecallMicro": 0.99663,
+      "charPrecisionMicro": 1,
+      "charF1": 0.99831,
+      "hangulRecallMicro": 1,
+      "cerMicroStrict": 0.14007,
+      "cerMedianStrict": 0.1401,
+      "secPerPage": 0.78,
+      "tables": null,
+      "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+    },
+    "originalOCRStrictIdentical": true,
+    "ocrStrictSHA256": "65ae2287813de86c812dfba39dcfa5c32989a68612ad57b0ca72473bc67e35f3",
+    "candidateNativeStrictGTLength": 564,
+    "candidateStrictDistance": 79,
+    "nativeFairGTUnchanged": true
+  }
+}

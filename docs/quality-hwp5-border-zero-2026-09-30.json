@@ -1,0 +1,520 @@
+[
+  {
+    "file": "licbyl/14233873_보안관찰법 시행규칙_보안관찰처분 사안 인지 승인 신청.hwp",
+    "before": {
+      "ref": 2,
+      "ir": 2,
+      "exact": 0,
+      "cellF1": 0.394584,
+      "cellTotal": 28,
+      "cellExact": 22,
+      "contentNum": 97,
+      "contentDen": 117,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "mismatches": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "3x3",
+          "irDims": "4x3",
+          "exact": false,
+          "f1": 0.3636,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "○○경찰서",
+              "ir": "[별지제23호서식]"
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "검사지휘",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 1,
+              "c": 1,
+              "ref": "가",
+              "ir": "검사지휘"
+            },
+            {
+              "r": 1,
+              "c": 2,
+              "ref": "부",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 2,
+              "c": 1,
+              "ref": "",
+              "ir": "가"
+            }
+          ],
+          "cellMissCount": 6
+        },
+        {
+          "refIdx": 1,
+          "irIdx": 1,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "11x6",
+          "irDims": "13x7",
+          "exact": false,
+          "f1": 0.4255,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      ]
+    },
+    "after": {
+      "tableCount": 2,
+      "irTableCount": 2,
+      "exactCount": 2,
+      "exactRate": 1,
+      "cellF1": 1,
+      "cellTotal": 28,
+      "cellExact": 28,
+      "cellExactRate": 1,
+      "contentNum": 109,
+      "contentDen": 109,
+      "contentNED": 1,
+      "splitTables": 0,
+      "decorForgiven": 0,
+      "reordered": 0,
+      "textMatched": 0,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "details": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "3x3",
+          "irDims": "3x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 1,
+          "irIdx": 1,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "11x6",
+          "irDims": "11x6",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      ]
+    }
+  },
+  {
+    "file": "licbyl/17882151_최저임금법 시행규칙_(정신, 신체) 장애로 인한 최저임금 적용 제외 인가신청서.hwp",
+    "before": {
+      "ref": 6,
+      "ir": 7,
+      "exact": 5,
+      "cellF1": 0.866667,
+      "cellTotal": 89,
+      "cellExact": 86,
+      "contentNum": 387,
+      "contentDen": 420,
+      "unmatchedRef": 0,
+      "unmatchedIr": 1,
+      "mismatches": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x3",
+          "irDims": "3x5",
+          "exact": false,
+          "f1": 0.2,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "접수번호",
+              "ir": "[]정신[]신체"
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "접수일",
+              "ir": "장애로인한최저임금적용제외인가신청서"
+            },
+            {
+              "r": 0,
+              "c": 2,
+              "ref": "처리기간21일",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 3
+        }
+      ]
+    },
+    "after": {
+      "tableCount": 6,
+      "irTableCount": 6,
+      "exactCount": 6,
+      "exactRate": 1,
+      "cellF1": 1,
+      "cellTotal": 89,
+      "cellExact": 89,
+      "cellExactRate": 1,
+      "contentNum": 401,
+      "contentDen": 401,
+      "contentNED": 1,
+      "splitTables": 0,
+      "decorForgiven": 0,
+      "reordered": 0,
+      "textMatched": 0,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "details": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x3",
+          "irDims": "1x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 1,
+          "irIdx": 1,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "4x3",
+          "irDims": "4x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 2,
+          "irIdx": 2,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "2x3",
+          "irDims": "2x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 3,
+          "irIdx": 3,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "7x3",
+          "irDims": "7x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 4,
+          "irIdx": 4,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x3",
+          "irDims": "1x3",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 5,
+          "irIdx": 5,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "13x9",
+          "irDims": "13x9",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      ]
+    }
+  },
+  {
+    "file": "licbyl2/17848663_아시아문화중심도시 조성에 관한 특별법 시행규칙_투자분 인정신청서.hwp",
+    "before": {
+      "ref": 6,
+      "ir": 6,
+      "exact": 5,
+      "cellF1": 0.833333,
+      "cellTotal": 23,
+      "cellExact": 16,
+      "contentNum": 215,
+      "contentDen": 229,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "mismatches": [
+        {
+          "refIdx": 5,
+          "irIdx": 5,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x7",
+          "irDims": "2x7",
+          "exact": false,
+          "f1": 0,
+          "cellMisses": [
+            {
+              "r": 0,
+              "c": 0,
+              "ref": "신고",
+              "ir": ""
+            },
+            {
+              "r": 0,
+              "c": 1,
+              "ref": "➔",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 2,
+              "ref": "접수",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 3,
+              "ref": "➔",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 0,
+              "c": 4,
+              "ref": "검토ㆍ확인",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 7
+        }
+      ]
+    },
+    "after": {
+      "tableCount": 6,
+      "irTableCount": 6,
+      "exactCount": 6,
+      "exactRate": 1,
+      "cellF1": 1,
+      "cellTotal": 23,
+      "cellExact": 23,
+      "cellExactRate": 1,
+      "contentNum": 229,
+      "contentDen": 229,
+      "contentNED": 1,
+      "splitTables": 0,
+      "decorForgiven": 0,
+      "reordered": 0,
+      "textMatched": 0,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "details": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x5",
+          "irDims": "1x5",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 1,
+          "irIdx": 1,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "2x2",
+          "irDims": "2x2",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 2,
+          "irIdx": 2,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "3x2",
+          "irDims": "3x2",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 3,
+          "irIdx": 3,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x2",
+          "irDims": "1x2",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 4,
+          "irIdx": 4,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x2",
+          "irDims": "1x2",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        },
+        {
+          "refIdx": 5,
+          "irIdx": 5,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "1x7",
+          "irDims": "1x7",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      ]
+    }
+  },
+  {
+    "file": "licbyl2/7729959_1980년해직공무원의보상등에관한특별조치법시행령_보상금수령위임장.hwp",
+    "before": {
+      "ref": 1,
+      "ir": 1,
+      "exact": 0,
+      "cellF1": 0.804878,
+      "cellTotal": 39,
+      "cellExact": 35,
+      "contentNum": 157,
+      "contentDen": 248,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "mismatches": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "15x13",
+          "irDims": "16x13",
+          "exact": false,
+          "f1": 0.8049,
+          "cellMisses": [
+            {
+              "r": 12,
+              "c": 0,
+              "ref": "1980년해직공무원의보상등에관한특별조치법시행령제4조제3항에의하여확인합니다.",
+              "ir": "(셀 없음)"
+            },
+            {
+              "r": 13,
+              "c": 0,
+              "ref": "년월일",
+              "ir": "1980년해직공무원의보상등에관한특별조치법시행령제4조제3항에의하여확인합니다."
+            },
+            {
+              "r": 14,
+              "c": 0,
+              "ref": "확인기관의장",
+              "ir": "년월일"
+            },
+            {
+              "r": 14,
+              "c": 7,
+              "ref": "(직인)",
+              "ir": "(셀 없음)"
+            }
+          ],
+          "cellMissCount": 4
+        }
+      ]
+    },
+    "after": {
+      "tableCount": 1,
+      "irTableCount": 1,
+      "exactCount": 1,
+      "exactRate": 1,
+      "cellF1": 1,
+      "cellTotal": 39,
+      "cellExact": 39,
+      "cellExactRate": 1,
+      "contentNum": 210,
+      "contentDen": 210,
+      "contentNED": 1,
+      "splitTables": 0,
+      "decorForgiven": 0,
+      "reordered": 0,
+      "textMatched": 0,
+      "unmatchedRef": 0,
+      "unmatchedIr": 0,
+      "details": [
+        {
+          "refIdx": 0,
+          "irIdx": 0,
+          "merged": false,
+          "matched": true,
+          "nested": false,
+          "refDims": "15x13",
+          "irDims": "15x13",
+          "exact": true,
+          "f1": 1,
+          "cellMisses": [],
+          "cellMissCount": 0
+        }
+      ]
+    }
+  }
+]

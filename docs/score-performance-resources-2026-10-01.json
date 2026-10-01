@@ -1,0 +1,1179 @@
+{
+  "date": "2026-10-01",
+  "version": "4.17.5",
+  "status": "fixed-build-diagnostic-complete",
+  "baseline": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+  "candidateBuild": {
+    "date": "2026-10-01",
+    "baselineCommit": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+    "baselineIndexSha256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+    "files": {
+      "dist/index.js": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+      "dist/index.cjs": "87498d4ec733fb9a37a3dbcfba5d781dcad6a8dc7c06612a4d8b7ead8a9a3062",
+      "dist/cli.js": "c7404496c885500d66e147f832a69b3e1d87239ae61d770fabe0b6cd2377f689",
+      "src/pdf/xy-cut.ts": "2f2072211e5d6e1eff58a6b892ad2035f8c66412268936382184a263cf701a42",
+      "src/pdf/paragraph-lines.ts": "6d72f3e0986bec9695cc3837a85081f5d9ec6b8f9e0f2818c307b6c948acbf31",
+      "src/pdf/heading-demote.ts": "0cfd2d0a84ac69d5f3af7809356e67af2807ee74b85ddc1186f5e60c1cbf5ccb"
+    }
+  },
+  "claims": {
+    "universalParsingSpeedup": false,
+    "versionSpecificRSSImprovement": false,
+    "writerOrRendererImprovement": false
+  },
+  "lazyAnalysis": {
+    "input": "Tight prose without a horizontal split candidate",
+    "eagerExtraTextReads": 9,
+    "lazyExtraTextReads": 0,
+    "test": "tests/pdf-xycut-wrap-spacing.test.ts"
+  },
+  "odlDiagnostics": {
+    "resourceContention": "Quality diagnostics; other validations may be concurrent. No time or RSS improvement claim.",
+    "tracks": {
+      "default": {
+        "mode": "default",
+        "options": {},
+        "documents": 200,
+        "failures": 0,
+        "elapsedMs": 106649.364792,
+        "maxRSSBytes": 1852702720,
+        "peakObservedRSSBytes": 1663991808,
+        "ocrCached": true,
+        "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+      },
+      "plain-html": {
+        "mode": "plain-html",
+        "options": {
+          "plain": true,
+          "htmlTables": true
+        },
+        "documents": 200,
+        "failures": 0,
+        "elapsedMs": 139950.43908399998,
+        "maxRSSBytes": 1856274432,
+        "peakObservedRSSBytes": 1856208896,
+        "ocrCached": true,
+        "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+      },
+      "native-off": {
+        "mode": "native-off",
+        "options": {
+          "ocr": false,
+          "formulaOcr": false
+        },
+        "documents": 200,
+        "failures": 0,
+        "elapsedMs": 14843.930167,
+        "maxRSSBytes": 788791296,
+        "peakObservedRSSBytes": 788643840,
+        "ocrCached": true,
+        "resourceContention": "Other final validation running concurrently; not a performance improvement claim"
+      }
+    }
+  },
+  "rejectedHwpxAttempt": {
+    "adopted": false,
+    "evidence": {
+      "runtime": "v26.10.0",
+      "roots": [
+        "/tmp/kordoc-score-performance-baseline-20261001",
+        "/Users/mong-e/workspace/kordoc-quality-99"
+      ],
+      "warmups": 2,
+      "samples": 7,
+      "order": "alternating AB/BA",
+      "rows": [
+        {
+          "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+          "bytes": 5838220,
+          "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+          "features": {
+            "xmlChars": 3442256,
+            "sections": 1,
+            "markerFreeSections": 1,
+            "tables": 102,
+            "captions": 70,
+            "shapeCaptions": 42,
+            "shapeCaptionElements": 438
+          },
+          "equivalent": {
+            "sections": true,
+            "fullResult": true,
+            "ir": true,
+            "markdown": true,
+            "images": true,
+            "warnings": true
+          },
+          "modes": {
+            "section": {
+              "samplesMs": [
+                [
+                  172.61574999999993,
+                  186.03254100000004,
+                  169.7579999999998,
+                  182.71829200000002,
+                  170.067458,
+                  170.15650000000005,
+                  170.29762500000015
+                ],
+                [
+                  179.9923329999997,
+                  177.97262499999988,
+                  174.58399999999983,
+                  173.1987079999999,
+                  174.39991699999973,
+                  170.81854200000043,
+                  185.9022500000001
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  269.817,
+                  346.344,
+                  254.712,
+                  345.598,
+                  249.403,
+                  245.875,
+                  241.277
+                ],
+                [
+                  292.36,
+                  262.013,
+                  248.312,
+                  266.15,
+                  244.271,
+                  238.113,
+                  320.236
+                ]
+              ],
+              "medianCPUms": [
+                254.712,
+                262.013
+              ],
+              "medianMs": [
+                170.29762500000015,
+                174.58399999999983
+              ],
+              "candidatePercentChange": 2.5169904747642136
+            },
+            "full": {
+              "samplesMs": [
+                [
+                  350.4333750000005,
+                  332.2227499999999,
+                  333.5196249999999,
+                  330.48062500000015,
+                  315.7963749999999,
+                  321.58179199999904,
+                  313.4300839999996
+                ],
+                [
+                  338.3381250000002,
+                  353.628917,
+                  338.29291700000067,
+                  336.1376249999994,
+                  321.4695419999989,
+                  323.48812499999985,
+                  321.65658299999996
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  494.941,
+                  439.791,
+                  443.421,
+                  440.433,
+                  426.759,
+                  427.641,
+                  395.563
+                ],
+                [
+                  470.684,
+                  464.124,
+                  453.975,
+                  462.749,
+                  424.795,
+                  415.734,
+                  414.855
+                ]
+              ],
+              "medianCPUms": [
+                439.791,
+                453.975
+              ],
+              "medianMs": [
+                330.48062500000015,
+                336.1376249999994
+              ],
+              "candidatePercentChange": 1.7117493650343985
+            }
+          }
+        },
+        {
+          "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwpx/aift.hwpx",
+          "bytes": 5056727,
+          "sha256": "5e27ee51825d10f0f51bd04935f0f9f8fc24f930a010367d822638964fefd491",
+          "features": {
+            "xmlChars": 4607480,
+            "sections": 3,
+            "markerFreeSections": 3,
+            "tables": 96,
+            "captions": 13,
+            "shapeCaptions": 9,
+            "shapeCaptionElements": 63
+          },
+          "equivalent": {
+            "sections": true,
+            "fullResult": true,
+            "ir": true,
+            "markdown": true,
+            "images": true,
+            "warnings": true
+          },
+          "modes": {
+            "section": {
+              "samplesMs": [
+                [
+                  244.93183300000055,
+                  245.24683300000106,
+                  239.456916000001,
+                  241.23762499999975,
+                  241.0422920000001,
+                  255.1748749999988,
+                  241.50816699999996
+                ],
+                [
+                  250.13029200000165,
+                  261.33429199999955,
+                  261.7112080000006,
+                  246.37404199999946,
+                  247.75195799999892,
+                  250.54666700000053,
+                  247.3447500000002
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  356.206,
+                  354.689,
+                  338.123,
+                  328.047,
+                  331.33,
+                  396.42,
+                  350.088
+                ],
+                [
+                  374.858,
+                  431.486,
+                  444.267,
+                  344.224,
+                  336.297,
+                  342.959,
+                  360.259
+                ]
+              ],
+              "medianCPUms": [
+                350.088,
+                360.259
+              ],
+              "medianMs": [
+                241.50816699999996,
+                250.13029200000165
+              ],
+              "candidatePercentChange": 3.570117361704672
+            },
+            "full": {
+              "samplesMs": [
+                [
+                  365.39174999999886,
+                  365.80241699999897,
+                  364.1208750000005,
+                  365.00329200000124,
+                  362.9568750000035,
+                  366.859375,
+                  362.3397499999992
+                ],
+                [
+                  391.3069170000017,
+                  370.86433300000135,
+                  373.0999580000025,
+                  368.9056670000027,
+                  372.45679200000086,
+                  368.9327919999996,
+                  372.028416000001
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  497.57,
+                  512.426,
+                  506.429,
+                  527.937,
+                  500.713,
+                  501.157,
+                  495.808
+                ],
+                [
+                  531.359,
+                  508.308,
+                  521.956,
+                  521.252,
+                  510.207,
+                  500.271,
+                  511.372
+                ]
+              ],
+              "medianCPUms": [
+                501.157,
+                511.372
+              ],
+              "medianMs": [
+                365.00329200000124,
+                372.028416000001
+              ],
+              "candidatePercentChange": 1.9246741478703644
+            }
+          }
+        },
+        {
+          "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/issue6284/child_policy_top_caption_charts.hwpx",
+          "bytes": 151614,
+          "sha256": "2e7c0b2701105814e60f670d46a813ea344e39b60416ac14729aec7d364b4c8b",
+          "features": {
+            "xmlChars": 1165587,
+            "sections": 1,
+            "markerFreeSections": 1,
+            "tables": 182,
+            "captions": 17,
+            "shapeCaptions": 9,
+            "shapeCaptionElements": 67
+          },
+          "equivalent": {
+            "sections": true,
+            "fullResult": true,
+            "ir": true,
+            "markdown": true,
+            "images": true,
+            "warnings": true
+          },
+          "modes": {
+            "section": {
+              "samplesMs": [
+                [
+                  67.6028750000005,
+                  69.32633399999759,
+                  68.8024579999983,
+                  82.88504100000137,
+                  69.14895799999795,
+                  67.6452500000014,
+                  67.25529200000165
+                ],
+                [
+                  68.9474999999984,
+                  67.94941599999947,
+                  70.65587500000038,
+                  70.60541699999885,
+                  74.01670800000284,
+                  69.38529199999903,
+                  68.26749999999811
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  95.039,
+                  95.463,
+                  97.176,
+                  175.302,
+                  108.97,
+                  101.939,
+                  92.108
+                ],
+                [
+                  99.37,
+                  91.974,
+                  102.435,
+                  94.317,
+                  108.893,
+                  93.984,
+                  95.581
+                ]
+              ],
+              "medianCPUms": [
+                97.176,
+                95.581
+              ],
+              "medianMs": [
+                68.8024579999983,
+                69.38529199999903
+              ],
+              "candidatePercentChange": 0.84711217730149
+            },
+            "full": {
+              "samplesMs": [
+                [
+                  176.87208300000202,
+                  182.56112500000017,
+                  182.89549999999872,
+                  187.51395799999955,
+                  176.8125,
+                  181.4954579999976,
+                  190.0307090000024
+                ],
+                [
+                  178.60133399999904,
+                  202.53662500000064,
+                  178.09720800000287,
+                  177.0401660000025,
+                  177.7172079999982,
+                  178.84324999999808,
+                  180.205750000001
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  253.488,
+                  268.726,
+                  264.36,
+                  344.707,
+                  245.6,
+                  244.648,
+                  328.823
+                ],
+                [
+                  241.347,
+                  351.303,
+                  248.451,
+                  239.712,
+                  247.33,
+                  252.472,
+                  247.888
+                ]
+              ],
+              "medianCPUms": [
+                264.36,
+                247.888
+              ],
+              "medianMs": [
+                182.56112500000017,
+                178.60133399999904
+              ],
+              "candidatePercentChange": -2.169022019337974
+            }
+          }
+        },
+        {
+          "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwpx/para-001.hwpx",
+          "bytes": 75779,
+          "sha256": "3feded11906a573dda366b4299428bce2de573a153d11059fa8e1e26b6fc354d",
+          "features": {
+            "xmlChars": 30828,
+            "sections": 1,
+            "markerFreeSections": 1,
+            "tables": 0,
+            "captions": 0,
+            "shapeCaptions": 0,
+            "shapeCaptionElements": 0
+          },
+          "equivalent": {
+            "sections": true,
+            "fullResult": true,
+            "ir": true,
+            "markdown": true,
+            "images": true,
+            "warnings": true
+          },
+          "modes": {
+            "section": {
+              "samplesMs": [
+                [
+                  0.9375419999996666,
+                  0.8928330000017013,
+                  0.8841670000001614,
+                  1.0656249999992724,
+                  1.0331250000017462,
+                  0.9706249999981083,
+                  0.9050000000024738
+                ],
+                [
+                  0.9598750000004657,
+                  0.9122500000012224,
+                  0.9593339999992168,
+                  0.9377500000009604,
+                  1.0216660000005504,
+                  1.50287500000195,
+                  1.0142500000001746
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  0.939,
+                  0.893,
+                  0.885,
+                  1.055,
+                  1.145,
+                  0.971,
+                  0.905
+                ],
+                [
+                  1.487,
+                  0.913,
+                  1.097,
+                  0.938,
+                  1.022,
+                  2.163,
+                  1.011
+                ]
+              ],
+              "medianCPUms": [
+                0.939,
+                1.022
+              ],
+              "medianMs": [
+                0.9375419999996666,
+                0.9598750000004657
+              ],
+              "candidatePercentChange": 2.382079949571003
+            },
+            "full": {
+              "samplesMs": [
+                [
+                  3.4130000000004657,
+                  3.2938340000000608,
+                  3.3707500000018626,
+                  3.25804099999732,
+                  3.163124999999127,
+                  3.1782920000005106,
+                  3.029207999999926
+                ],
+                [
+                  3.2352090000022145,
+                  3.193583000000217,
+                  3.4034580000006827,
+                  3.2905829999981506,
+                  3.7472500000003492,
+                  3.43566600000122,
+                  3.3004999999975553
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  3.111,
+                  3.11,
+                  3.374,
+                  3.083,
+                  2.881,
+                  2.915,
+                  2.767
+                ],
+                [
+                  2.973,
+                  3.035,
+                  3.096,
+                  2.991,
+                  4.024,
+                  3.436,
+                  3.019
+                ]
+              ],
+              "medianCPUms": [
+                3.083,
+                3.035
+              ],
+              "medianMs": [
+                3.25804099999732,
+                3.3004999999975553
+              ],
+              "candidatePercentChange": 1.3032064360230633
+            }
+          }
+        },
+        {
+          "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwp3-sample5-hwpx.hwpx",
+          "bytes": 273071,
+          "sha256": "bb85d575db9213243b10e24eb16ef181acb3859cf24839ee103d745187d4eccb",
+          "features": {
+            "xmlChars": 936654,
+            "sections": 1,
+            "markerFreeSections": 1,
+            "tables": 0,
+            "captions": 0,
+            "shapeCaptions": 0,
+            "shapeCaptionElements": 0
+          },
+          "equivalent": {
+            "sections": true,
+            "fullResult": true,
+            "ir": true,
+            "markdown": true,
+            "images": true,
+            "warnings": true
+          },
+          "modes": {
+            "section": {
+              "samplesMs": [
+                [
+                  42.513999999999214,
+                  42.607332999999926,
+                  43.400666999998066,
+                  45.13958300000013,
+                  44.45916700000089,
+                  41.92374999999811,
+                  42.2329159999972
+                ],
+                [
+                  43.07749999999942,
+                  42.99904100000276,
+                  44.86004200000025,
+                  53.18633299999783,
+                  45.364667000001646,
+                  42.58533399999942,
+                  45.70929199999955
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  59.896,
+                  59.563,
+                  61.645,
+                  82.372,
+                  79.781,
+                  59.096,
+                  65.623
+                ],
+                [
+                  58.697,
+                  60.665,
+                  60.838,
+                  107.313,
+                  57.616,
+                  59.557,
+                  67.108
+                ]
+              ],
+              "medianCPUms": [
+                61.645,
+                60.665
+              ],
+              "medianMs": [
+                42.607332999999926,
+                44.86004200000025
+              ],
+              "candidatePercentChange": 5.287139187989842
+            },
+            "full": {
+              "samplesMs": [
+                [
+                  53.94504099999904,
+                  58.84387499999866,
+                  56.31008400000064,
+                  54.52479099999982,
+                  53.597209000003204,
+                  58.318875000000844,
+                  58.927332999999635
+                ],
+                [
+                  54.652500000000146,
+                  56.709875000000466,
+                  59.05641699999978,
+                  55.51274999999805,
+                  55.34012499999881,
+                  57.61962499999936,
+                  57.836042000002635
+                ]
+              ],
+              "samplesCPUms": [
+                [
+                  73.459,
+                  115.524,
+                  94.655,
+                  71.674,
+                  76.469,
+                  98.217,
+                  72.226
+                ],
+                [
+                  76.399,
+                  89.043,
+                  68.735,
+                  74.353,
+                  75.972,
+                  105.636,
+                  71.717
+                ]
+              ],
+              "medianCPUms": [
+                76.469,
+                75.972
+              ],
+              "medianMs": [
+                56.31008400000064,
+                56.709875000000466
+              ],
+              "candidatePercentChange": 0.7099811820558077
+            }
+          }
+        }
+      ],
+      "scope": "Fixed real-document diagnostic; no GT/evaluator/population/exclusion changes. Input reading, XML feature counting, style loading and equality checks excluded from timings."
+    },
+    "reason": "Main full parsing cases slower despite identical IR/Markdown/images/warnings; baseline source restored."
+  },
+  "nativePaired": {
+    "roots": [
+      "/tmp/kordoc-score-performance-baseline-20261001",
+      "/Users/mong-e/workspace/kordoc-quality-99"
+    ],
+    "runtime": "v26.10.0",
+    "options": {
+      "ocr": false,
+      "formulaOcr": false
+    },
+    "warmups": 2,
+    "samples": 7,
+    "order": "alternating AB/BA",
+    "scope": "Seven fixed documents, local diagnostic only; not a claim for all PDFs. Other local benchmarks/tests stopped.",
+    "rows": [
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000001.pdf",
+        "bytes": 88466,
+        "sha256": "cd34bf0452e0bc9b7f26515c7426f9a197480478f52f464e67a0a5912221da69",
+        "samplesMs": [
+          [
+            21.14904199999995,
+            17.59679200000005,
+            15.88295800000003,
+            15.703458000000069,
+            14.706041000000027,
+            14.26883399999997,
+            14.08766700000001
+          ],
+          [
+            20.548416999999972,
+            17.929209000000014,
+            18.559999999999945,
+            15.800583000000074,
+            14.768417,
+            14.872125000000096,
+            14.129583000000025
+          ]
+        ],
+        "medianMs": [
+          15.703458000000069,
+          15.800583000000074
+        ],
+        "samplesCPUms": [
+          [
+            53.565,
+            43.991,
+            36.722,
+            38.688,
+            21.173,
+            16.42,
+            19.422
+          ],
+          [
+            70.916,
+            43.694,
+            63.72,
+            36.485,
+            24.147,
+            17.985,
+            18.73
+          ]
+        ],
+        "medianCPUms": [
+          36.722,
+          36.485
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          8,
+          8
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000125.pdf",
+        "bytes": 16426,
+        "sha256": "2183cb0d11b4e22a1fd54f2e79e9d91b280e63c24da91c4164d52a89732dd1b0",
+        "samplesMs": [
+          [
+            3.0132500000000846,
+            3.220916999999986,
+            2.738458000000037,
+            3.5672089999999343,
+            2.816874999999982,
+            2.7951250000000982,
+            2.7460419999999885
+          ],
+          [
+            3.0724170000000868,
+            2.94983400000001,
+            2.822416999999973,
+            2.65625,
+            2.869083000000046,
+            2.882041999999956,
+            2.934541999999965
+          ]
+        ],
+        "medianMs": [
+          2.816874999999982,
+          2.882041999999956
+        ],
+        "samplesCPUms": [
+          [
+            9.385,
+            5.243,
+            3.44,
+            8.328,
+            5.097,
+            3.226,
+            3.211
+          ],
+          [
+            3.783,
+            4.525,
+            3.189,
+            6.352,
+            4.748,
+            5.794,
+            4.514
+          ]
+        ],
+        "medianCPUms": [
+          5.097,
+          4.525
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          3,
+          3
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000188.pdf",
+        "bytes": 114941,
+        "sha256": "61070c2fe64a690c7c9cc97d12b76380e7a134feda3c5315f779306699a89a1b",
+        "samplesMs": [
+          [
+            18.863083000000074,
+            21.931500000000028,
+            24.602459000000067,
+            17.121624999999995,
+            17.861625000000004,
+            16.206707999999935,
+            16.155750000000126
+          ],
+          [
+            17.884208000000058,
+            18.216458000000102,
+            17.267499999999927,
+            17.503582999999935,
+            16.58941600000003,
+            16.588250000000016,
+            17.899040999999897
+          ]
+        ],
+        "medianMs": [
+          17.861625000000004,
+          17.503582999999935
+        ],
+        "samplesCPUms": [
+          [
+            32.154,
+            102.528,
+            114.07,
+            31.399,
+            25.443,
+            27.468,
+            47.977
+          ],
+          [
+            25.947,
+            42.707,
+            30.68,
+            33.936,
+            26.346,
+            28.318,
+            44.054
+          ]
+        ],
+        "medianCPUms": [
+          32.154,
+          30.68
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000189.pdf",
+        "bytes": 71529,
+        "sha256": "2f972daaa81cb3949db12a39cf6910c4f9952135f7eb3850e1f60ef7d8b5aaf9",
+        "samplesMs": [
+          [
+            12.023625000000038,
+            12.184375000000045,
+            11.515375000000176,
+            12.474958000000015,
+            13.722958999999946,
+            12.603624999999965,
+            11.495542000000114
+          ],
+          [
+            12.25866700000006,
+            12.611290999999937,
+            11.97158400000012,
+            12.329708999999866,
+            12.003332999999884,
+            12.813750000000027,
+            11.839707999999973
+          ]
+        ],
+        "medianMs": [
+          12.184375000000045,
+          12.25866700000006
+        ],
+        "samplesCPUms": [
+          [
+            21.759,
+            13.369,
+            13.353,
+            32.572,
+            35.021,
+            27.561,
+            16.606
+          ],
+          [
+            18.611,
+            14.745,
+            15.627,
+            24.379,
+            25.832,
+            31.269,
+            14.188
+          ]
+        ],
+        "medianCPUms": [
+          21.759,
+          18.611
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          15,
+          15
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서일문.pdf",
+        "bytes": 328904,
+        "sha256": "50c7492289878ed7e6283a34338acb25ef4eac968005d7f29ee47ceb19057de5",
+        "samplesMs": [
+          [
+            51.606583,
+            53.25400000000013,
+            49.83033300000011,
+            60.739915999999766,
+            55.83716699999968,
+            52.93766600000026,
+            51.745874999999614
+          ],
+          [
+            53.45116699999994,
+            52.856624999999894,
+            49.766166999999996,
+            58.712790999999925,
+            53.90937499999973,
+            51.22095799999988,
+            50.41849999999977
+          ]
+        ],
+        "medianMs": [
+          52.93766600000026,
+          52.856624999999894
+        ],
+        "samplesCPUms": [
+          [
+            82.84,
+            123.239,
+            68.048,
+            79.221,
+            73.647,
+            71.816,
+            100.856
+          ],
+          [
+            97.951,
+            122.86,
+            68.39,
+            113.319,
+            70.852,
+            69.764,
+            74.434
+          ]
+        ],
+        "medianCPUms": [
+          79.221,
+          74.434
+        ],
+        "markdownEqual": false,
+        "blockCount": [
+          110,
+          77
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서중문.pdf",
+        "bytes": 303966,
+        "sha256": "2be5de4a7a2feeeb8d4e8597bff2178ee0e9d893f5290178bf0a6d2e60b5afb5",
+        "samplesMs": [
+          [
+            40.569375000000036,
+            42.507040999999845,
+            41.17520800000011,
+            38.953125,
+            40.305209000000104,
+            40.28241599999956,
+            39.32187500000009
+          ],
+          [
+            41.2075420000001,
+            42.71870800000033,
+            40.45079200000009,
+            39.74766700000009,
+            39.874209000000064,
+            38.933042000000114,
+            38.862916999999925
+          ]
+        ],
+        "medianMs": [
+          40.305209000000104,
+          39.874209000000064
+        ],
+        "samplesCPUms": [
+          [
+            56.656,
+            86.166,
+            56.113,
+            45.078,
+            56.258,
+            47.291,
+            45.202
+          ],
+          [
+            73.054,
+            105.958,
+            56.138,
+            50.961,
+            48.851,
+            43.394,
+            52.883
+          ]
+        ],
+        "medianCPUms": [
+          56.113,
+          52.883
+        ],
+        "markdownEqual": false,
+        "blockCount": [
+          80,
+          73
+        ]
+      },
+      {
+        "file": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서영문.pdf",
+        "bytes": 190656,
+        "sha256": "5298008a23ef30e501623856d9c7aeb1adfdc30a2afb9f9c3e718b983a99e602",
+        "samplesMs": [
+          [
+            35.13604200000009,
+            36.01283400000011,
+            35.680459000000155,
+            34.76295800000025,
+            33.27112500000021,
+            34.30683399999998,
+            31.563000000000102
+          ],
+          [
+            36.46891700000015,
+            35.2066249999998,
+            35.522249999999985,
+            33.232082999999875,
+            33.41270899999972,
+            34.098667000000205,
+            33.400916999999936
+          ]
+        ],
+        "medianMs": [
+          34.76295800000025,
+          34.098667000000205
+        ],
+        "samplesCPUms": [
+          [
+            59.996,
+            65.034,
+            65.816,
+            59.617,
+            45.234,
+            66.016,
+            34.376
+          ],
+          [
+            51.256,
+            56.463,
+            55.475,
+            53.209,
+            38.738,
+            66.457,
+            38.508
+          ]
+        ],
+        "medianCPUms": [
+          59.996,
+          53.209
+        ],
+        "markdownEqual": true,
+        "blockCount": [
+          48,
+          48
+        ]
+      }
+    ],
+    "combinedProcessResources": {
+      "userCPUTime": 6430521,
+      "systemCPUTime": 203781,
+      "maxRSS": 506400,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 38027,
+      "majorPageFault": 110,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 6,
+      "involuntaryContextSwitches": 23744
+    },
+    "candidateBuild": {
+      "date": "2026-10-01",
+      "baselineCommit": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+      "baselineIndexSha256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+      "files": {
+        "dist/index.js": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+        "dist/index.cjs": "87498d4ec733fb9a37a3dbcfba5d781dcad6a8dc7c06612a4d8b7ead8a9a3062",
+        "dist/cli.js": "c7404496c885500d66e147f832a69b3e1d87239ae61d770fabe0b6cd2377f689",
+        "src/pdf/xy-cut.ts": "2f2072211e5d6e1eff58a6b892ad2035f8c66412268936382184a263cf701a42",
+        "src/pdf/paragraph-lines.ts": "6d72f3e0986bec9695cc3837a85081f5d9ec6b8f9e0f2818c307b6c948acbf31",
+        "src/pdf/heading-demote.ts": "0cfd2d0a84ac69d5f3af7809356e67af2807ee74b85ddc1186f5e60c1cbf5ccb"
+      }
+    },
+    "baselineBuild": {
+      "indexSHA256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3"
+    },
+    "rssLimit": "Combined process RSS is not attributable to a version. Individual paired CPU/wall samples are recorded; mixed document timings do not show universal speedup."
+  }
+}

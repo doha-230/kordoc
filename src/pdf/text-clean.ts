@@ -27,7 +27,16 @@ export function normalizeAraea(text: string): string {
  */
 const stripNoUnicodeGlyph = (text: string): string => (text.includes("\uF000") ? text.replace(/\uF000/g, "") : text)
 
-const cleanChars = (text: string): string => normalizeAraea(stripNoUnicodeGlyph(stripControlChars(text)))
+/**
+ * 홀로 선 첫소리 자모(U+1100~1112, 뒤에 가운뎃소리 없음) → 호환 자모(ㄱ~ㅎ). 한컴 PDF 가 글머리 "ㅇ" 을 조합형 첫소리 ᄋ(U+110B)로
+ * 내는 문서가 있다(규제영향분석서 "ᄋ (추진배경)", 환승센터 보도자료 "ᄋ 수도권") — 원문(HWPX)은 U+3147. 가운뎃소리가 뒤따르는
+ * 옛한글 음절 조합은 그대로 둔다(normalizeAraea 와 같은 원칙)
+ */
+const CHOSEONG_COMPAT = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"
+const normalizeLoneChoseong = (text: string): string =>
+  /[\u1100-\u1112]/.test(text) ? text.replace(/[\u1100-\u1112](?![\u1160-\u11A7\uD7B0-\uD7C6])/g, c => CHOSEONG_COMPAT[c.charCodeAt(0) - 0x1100]) : text
+
+const cleanChars = (text: string): string => normalizeLoneChoseong(normalizeAraea(stripNoUnicodeGlyph(stripControlChars(text))))
 
 /** 블록 트리의 텍스트에서 비표시 제어문자 제거 + 조합형 가운뎃점 정규화 (in-place, 셀 blocks 포함) */
 export function sanitizeBlockControlChars(blocks: IRBlock[]): void {
@@ -158,6 +167,7 @@ export function cleanPdfText(text: string, opts?: { keepLoneNumbers?: boolean })
     .replace(/~~~~/g, "")
     // 내용이 사라져 빈 밑줄 쌍(<u></u>) 정리 (escapeGfm은 <>를 건드리지 않아 복원 불필요)
     .replace(/<u>\s*<\/u>/g, "")
+    .replace(/<(sup|sub)>\s*<\/\1>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim()
 }

@@ -1,0 +1,102 @@
+{
+  "baseline": "4.17.6",
+  "candidate": "4.18.0",
+  "fixedIndexSHA256": "773353e08d451c1e6b23c679669968cf54ec563acd1b32aa8a12491f819d3485",
+  "evaluator": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/src/evaluator.py",
+  "gtEvaluatorPopulationExclusionsChanged": false,
+  "results": [
+    {
+      "mode": "default",
+      "options": {},
+      "metrics": {
+        "score": {
+          "overall_mean": 0.960623284045334,
+          "nid_mean": 0.9608749102830914,
+          "nid_s_mean": 0.9647329252682801,
+          "teds_mean": 0.9789524108694445,
+          "teds_s_mean": 0.9906982529854047,
+          "mhs_mean": 0.9467502754472125,
+          "mhs_s_mean": 0.9781551873085683
+        },
+        "nid_count": 200,
+        "teds_count": 42,
+        "mhs_count": 107,
+        "missing_predictions": 0
+      },
+      "documents": 200,
+      "allScoresExact": true,
+      "markdownByteExact": 200,
+      "changes": [],
+      "resources": {
+        "elapsedMs": 152445.046166,
+        "maxRSSBytes": 1860534272,
+        "note": "Other final validation running concurrently; not a performance improvement claim"
+      },
+      "evaluationSHA256": "e1602aa18aeaed2f6094c6112ebd8ff48a912c821e16c37b1ea0c89d4ecc462f"
+    },
+    {
+      "mode": "plain-html",
+      "options": {
+        "plain": true,
+        "htmlTables": true
+      },
+      "metrics": {
+        "score": {
+          "overall_mean": 0.9722347290173252,
+          "nid_mean": 0.9764292957563357,
+          "nid_s_mean": 0.97623324894195,
+          "teds_mean": 0.9827577018320368,
+          "teds_s_mean": 0.9908039556438265,
+          "mhs_mean": 0.9566125726473823,
+          "mhs_s_mean": 0.9781551873085683
+        },
+        "nid_count": 200,
+        "teds_count": 42,
+        "mhs_count": 107,
+        "missing_predictions": 0
+      },
+      "documents": 200,
+      "allScoresExact": true,
+      "markdownByteExact": 200,
+      "changes": [],
+      "resources": {
+        "elapsedMs": 151775.19283400002,
+        "maxRSSBytes": 1923825664,
+        "note": "Other final validation running concurrently; not a performance improvement claim"
+      },
+      "evaluationSHA256": "12ba49521f8c0c64781a87136b458c13df17b2246cbaf686a7ae0394e32cc7f8"
+    },
+    {
+      "mode": "native-off",
+      "options": {
+        "ocr": false,
+        "formulaOcr": false
+      },
+      "metrics": {
+        "score": {
+          "overall_mean": 0.9373300110698137,
+          "nid_mean": 0.9382549823115746,
+          "nid_s_mean": 0.9437122770592574,
+          "teds_mean": 0.9356993998956048,
+          "teds_s_mean": 0.9430792053663571,
+          "mhs_mean": 0.9332626255178413,
+          "mhs_s_mean": 0.9728147333699835
+        },
+        "nid_count": 200,
+        "teds_count": 42,
+        "mhs_count": 107,
+        "missing_predictions": 0
+      },
+      "documents": 200,
+      "allScoresExact": true,
+      "markdownByteExact": 200,
+      "changes": [],
+      "resources": {
+        "elapsedMs": 13047.78925,
+        "maxRSSBytes": 847462400,
+        "note": "Other final validation running concurrently; not a performance improvement claim"
+      },
+      "evaluationSHA256": "d413529964efc6807751a8412407588568084c84610d620ccc0bc5c1e12deadf"
+    }
+  ]
+}

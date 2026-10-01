@@ -410,6 +410,22 @@ export function dropInsetClipGrids(clipGrids: TableGrid[], lineGrids: TableGrid[
       && top - c.bbox.y2 >= INSET_CLIP_MIN && c.bbox.y1 - l.rowYs[r + 1] >= INSET_CLIP_MIN)))
 }
 
+/**
+ * 쪽 넘김 머리 행 클립 띠 버리기 — 한컴은 이어진 쪽의 되풀이 머리 행(과 그 아래 몇 칸)을 따로 클립해 그린다. 그 클립 격자가 선 격자와
+ * 열 경계가 같고, 선 격자 윗변에 붙어 행 경계가 모두 선 격자 행 경계 위에 놓이면 같은 표의 윗줄을 두 번 잡은 것이다 — 클립 격자가
+ * 먼저 글을 가져가 선 표 첫 행들이 빈 채 남고 쪽 넘김 잇기가 끊겼다(국제기능올림픽 선수단 명단 57행 → 29행 + 30행). 선 격자 나머지를
+ * 다른 클립이 덮으면(클립으로 그린 표 여럿이 한 틀 안에) 두고, 중첩표 클립(clipParent)은 대상이 아니다
+ */
+export function dropHeadBandClipGrids(clipGrids: TableGrid[], lineGrids: TableGrid[]): TableGrid[] {
+  if (clipGrids.length === 0 || lineGrids.length === 0) return clipGrids
+  const near = (a: number, b: number) => Math.abs(a - b) <= SHADE_CLIP_TOL
+  const overlaps = (a: TableGrid["bbox"], b: TableGrid["bbox"]) => Math.min(a.x2, b.x2) > Math.max(a.x1, b.x1) && Math.min(a.y2, b.y2) > Math.max(a.y1, b.y1)
+  return clipGrids.filter(c => c.clipParent || !c.cells?.length || !lineGrids.some(l =>
+    l.rowYs.length > c.rowYs.length && l.colXs.length === c.colXs.length && c.colXs.every((x, k) => near(x, l.colXs[k]))
+    && c.rowYs.every((y, k) => near(y, l.rowYs[k]))
+    && !clipGrids.some(o => o !== c && overlaps(o.bbox, l.bbox))))
+}
+
 /** 최소 열 폭 보장 — 너무 좁은 열은 인접 열과 병합 */
 function enforceMinWidth(colXs: number[], minWidth: number): number[] {
   if (colXs.length <= 2) return colXs

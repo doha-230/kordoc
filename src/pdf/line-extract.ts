@@ -39,7 +39,7 @@ const HIDDEN_FILL_TOL = 0.5
 export function extractLines(
   fnArray: Uint32Array | number[],
   argsArray: unknown[][],
-): { horizontals: LineSegment[]; verticals: LineSegment[]; clipRects: ClipRect[]; fillRects: ClipRect[]; hiddenBoxes: ClipRect[]; shortH: LineSegment[]; shortV: LineSegment[] } {
+): { horizontals: LineSegment[]; verticals: LineSegment[]; clipRects: ClipRect[]; fillRects: ClipRect[]; hiddenBoxes: ClipRect[]; shortH: LineSegment[]; shortV: LineSegment[]; nonRules: Set<LineSegment> } {
   const horizontals: LineSegment[] = []
   const verticals: LineSegment[] = []
   // MIN_LINE_LENGTH 미만 획 조각 — 칸 클립 격자가 없는 쪽에서 같은 좌표 조각 사슬로 이어 붙일 후보 (chainShortSegments, page-blocks)
@@ -59,6 +59,14 @@ export function extractLines(
   // 채움·획 불투명도(ExtGState ca·CA) — 0 이면 그려도 보이지 않는다
   let fillAlpha = 1, strokeAlpha = 1
   const alphaStack: Array<[number, number]> = []
+  // 칸 테두리 선이 아닌 선 — 선 격자·클립 판정은 종전대로 쓰고 칸 테두리 가시성(cell-edges)만 뺀다.
+  //  ① 흰(0xFFFFFF) 획·채움 — 흰 바탕에 안 보인다. 한컴은 흰 테두리 칸 변도 흰 획으로 긋는다(규제영향분석서 10쪽 y=503.09 흰 획
+  //    99.07~132.77). 흰 획이 먼저 그은 검은 선을 덮어 지우는 경우는 가리지 않는다
+  //  ② 두꺼운(THIN_FILL_MAX 넘는) 채움 영역의 윤곽 — 칸 음영 배경이다. 한컴은 음영 칸을 m/l 사각형 채움으로 칠해(정책브리핑 지진 대응
+  //    보도자료 붙임 1 "개 회 식" 행 242,242,242) 그 변이 칸 좌우 세로선으로 읽혔다. HWPX 는 채우기만 있고 테두리 "없음"인 칸이다
+  let strokeColor = 0
+  const strokeColorStack: number[] = []
+  const nonRules = new Set<LineSegment>()
   /** 보이지 않는(ca=0) 채움 사각형 — 슬라이드 제작기가 글상자마다 까는 틀 (text-box-table) */
   const hiddenBoxes: ClipRect[] = []
   /** 지금까지 칠한 사각형 채움 (색별) */
@@ -154,6 +162,7 @@ export function extractLines(
       for (const r of pathRects) painted.push(r)
       paintedFills.set(fillColor, painted)
     }
+    const areaFill = fromFill && (pathRects.length > 0 || thickPath(currentPath))
     pathRects = []
     pathRectSegs = []
     if (!isStroke) {
@@ -164,6 +173,9 @@ export function extractLines(
     }
     pendingClip = false
     const effWidth = lineWidth * ctmScale()
+    const outs = [horizontals, verticals, shortH, shortV, thinShortH, thinShortV]
+    const white = (fromFill ? fillColor : strokeColor) === 0xffffff
+    const from = white || areaFill ? outs.map(o => o.length) : undefined
     currentPath.forEach((seg, k) => {
       const role = segRole[k]
       if (role === "hidden") return
@@ -175,6 +187,8 @@ export function extractLines(
       }
       classifyAndAdd(seg, effWidth, horizontals, verticals, fromFill, fromFill ? undefined : { h: shortH, v: shortV })
     })
+    // 채움 영역 윤곽은 얇은 채움 괘선(thinFill·짧은 조각 thinShort)을 빼고
+    if (from) outs.forEach((o, k) => { for (let n = from[k]; n < o.length; n++) if (white || (k < 2 && !thinFill.has(o[n]))) nonRules.add(o[n]) })
     currentPath = []
   }
 
@@ -190,12 +204,14 @@ export function extractLines(
       case OPS.save:
         ctmStack.push(ctm.slice())
         colorStack.push(fillColor)
+        strokeColorStack.push(strokeColor)
         alphaStack.push([fillAlpha, strokeAlpha])
         break
 
       case OPS.restore:
         ctm = ctmStack.pop() ?? [1, 0, 0, 1, 0, 0]
         fillColor = colorStack.pop() ?? 0
+        strokeColor = strokeColorStack.pop() ?? 0
         ;[fillAlpha, strokeAlpha] = alphaStack.pop() ?? [1, 1]
         break
 
@@ -216,6 +232,11 @@ export function extractLines(
         fillColor = (c[0] << 16) | (c[1] << 8) | c[2]
         break
       }
+      case OPS.setStrokeRGBColor: {
+        const c = args as unknown as ArrayLike<number>
+        strokeColor = (c[0] << 16) | (c[1] << 8) | c[2]
+        break
+      }
 
       case OPS.transform:
       case OPS.paintFormXObjectBegin: {
@@ -225,6 +246,7 @@ export function extractLines(
         if (op === OPS.paintFormXObjectBegin) {
           ctmStack.push(ctm.slice())
           colorStack.push(fillColor)
+          strokeColorStack.push(strokeColor)
           alphaStack.push([fillAlpha, strokeAlpha])
           const m = (args as unknown[])[0]
           if (!Array.isArray(m) || m.length < 6) break
@@ -243,6 +265,7 @@ export function extractLines(
       case OPS.paintFormXObjectEnd:
         ctm = ctmStack.pop() ?? [1, 0, 0, 1, 0, 0]
         fillColor = colorStack.pop() ?? 0
+        strokeColor = strokeColorStack.pop() ?? 0
         ;[fillAlpha, strokeAlpha] = alphaStack.pop() ?? [1, 1]
         break
 
@@ -354,7 +377,7 @@ export function extractLines(
   return {
     horizontals: chainShortSegments(horizontals, thinShortH, "h", l => thinFill.has(l)),
     verticals: chainShortSegments(verticals, thinShortV, "v", l => thinFill.has(l)),
-    clipRects, fillRects, hiddenBoxes, shortH, shortV,
+    clipRects, fillRects, hiddenBoxes, shortH, shortV, nonRules,
   }
 }
 
@@ -426,6 +449,17 @@ export interface ClipRect { x1: number; y1: number; x2: number; y2: number }
 /** 클립 사각형 최소 치수 (pt) — 셀 판정은 clip-cells.ts */
 const CLIP_MIN_W = 4
 const CLIP_MIN_H = 2
+
+/** 경로 전체 bbox 의 짧은 변이 THIN_FILL_MAX 를 넘는가 — 두꺼운 채움 영역(칸 음영)과 채움으로 그은 얇은 괘선을 가른다 */
+function thickPath(path: Array<{ x1: number; y1: number; x2: number; y2: number }>): boolean {
+  if (!path.length) return false
+  let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity
+  for (const s of path) {
+    x1 = Math.min(x1, s.x1, s.x2); x2 = Math.max(x2, s.x1, s.x2)
+    y1 = Math.min(y1, s.y1, s.y2); y2 = Math.max(y2, s.y1, s.y2)
+  }
+  return Math.min(x2 - x1, y2 - y1) > THIN_FILL_MAX
+}
 
 /** 현재 경로가 축 정렬 사각형(3~5 세그먼트, 전부 수평/수직)이면 bbox 를 등록 */
 function captureClipRect(path: Array<{ x1: number; y1: number; x2: number; y2: number }>, out: ClipRect[], minW = CLIP_MIN_W, minH = CLIP_MIN_H): void {

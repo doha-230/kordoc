@@ -1,7 +1,8 @@
 /** HWP 5.x 본문 파서 — 섹션 레코드 → 문단 리스트·컨트롤 디스패치(표·그리기 개체·수식·각주·머리말·필드) → IRBlock */
 
+import { tidyScriptTags, type ScriptKind } from "../script-tags.js"
 import {
-  extractEquationText, createParaTextState, appendParaText, LEADER_TAB_MARK, LITERAL_DOLLAR_MARK, TAG_PARA_HEADER, TAG_PARA_TEXT, TAG_CHAR_SHAPE,
+  extractEquationText, createParaTextState, appendParaText, LITERAL_DOLLAR_MARK, TAG_PARA_HEADER, TAG_PARA_TEXT, TAG_CHAR_SHAPE,
   TAG_CTRL_HEADER, TAG_LIST_HEADER, TAG_TABLE, TAG_EQEDIT, TAG_SHAPE_COMPONENT, TAG_SHAPE_COMPONENT_CONTAINER,
   TAG_SHAPE_COMPONENT_PICTURE, type HwpRecord, type HwpDocInfo, type IndexedControlResolver,
 } from "./record.js"
@@ -12,6 +13,7 @@ import {
   INLINE_TABLE_MARK, blocksPlainText, buildAddressedTable, cellTextFromBlocks, emitParagraphBlocks,
 } from "./ir-assemble.js"
 import type { CellContext, IRBlock, IRTable, ParseOptions, ParseWarning, InlineStyle } from "../types.js"
+import type { Edges } from "../table/layout-frames.js"
 import { sanitizeHref } from "../utils.js"
 
 /** 중첩표/글상자 재귀 깊이 상한 — 표 "중첩 단계" 기준.
@@ -216,6 +218,8 @@ function parseParagraph(records: HwpRecord[], start: number, end: number, ctx: H
 
   const textRecords: Buffer[] = []
   const charShapeIds: number[] = []
+  /** 글자 모양 위치표 [WCHAR 위치, charShapeId] — 첨자 판정 */
+  const charShapeRuns: Array<[number, number]> = []
   const ctrls: ParsedCtrl[] = []
 
   let i = start + 1
@@ -239,6 +243,7 @@ function parseParagraph(records: HwpRecord[], start: number, end: number, ctx: H
       // 구조: [position(u32) + charShapeId(u32)] * N
       for (let offset = 0; offset + 7 < rec.data.length; offset += 8) {
         charShapeIds.push(rec.data.readUInt32LE(offset + 4))
+        charShapeRuns.push([rec.data.readUInt32LE(offset), rec.data.readUInt32LE(offset + 4)])
       }
     }
     i++
@@ -255,8 +260,8 @@ function parseParagraph(records: HwpRecord[], start: number, end: number, ctx: H
 
   // 텍스트 렌더링 — 확장 컨트롤 인덱스 ↔ CTRL_HEADER 순서 매핑
   const state = createParaTextState()
-  state.leaderMark = true
   state.dollarMark = true
+  state.scriptAt = scriptLookup(charShapeRuns, ctx.docInfo)
   const resolver: IndexedControlResolver = (idx, id) => {
     let ctrl = idx >= 0 && idx < ctrls.length ? ctrls[idx] : undefined
     if (!ctrl || (ctrl.idRaw !== id && ctrl.id !== id)) {
@@ -293,16 +298,15 @@ function parseParagraph(records: HwpRecord[], start: number, end: number, ctx: H
       if (!ctrl.href) continue
       const href = sanitizeHref(ctrl.href)
       if (!href) continue
-      if (!anchor.trim() || anchor.includes(INLINE_TABLE_MARK) || anchor.includes(LEADER_TAB_MARK)) continue
+      if (!anchor.trim() || anchor.includes(INLINE_TABLE_MARK)) continue
       text = text.slice(0, r.start) + `[${anchor}](${href})` + text.slice(r.end)
       applied.push([r.start, r.end])
     }
   }
-  // 채움 탭 뒤(목차 쪽번호)는 버린다 — HWPX 파서의 리더 탭 절단 정책(bench leader-tab-cut)과 대칭
-  const leaderAt = text.indexOf(LEADER_TAB_MARK)
-  if (leaderAt >= 0) text = text.slice(0, leaderAt)
   // 리터럴 $ → \$ (필드 위치를 다 쓴 뒤라 이제 두 글자로 늘려도 된다, escapeLiteralDollar 규약)
   if (text.includes(LITERAL_DOLLAR_MARK)) text = text.replaceAll(LITERAL_DOLLAR_MARK, "\\$")
+  // 글자마다 여닫은 첨자 태그 정리 — HWPX section-walker 와 같은 꼴로
+  text = tidyScriptTags(text)
 
   // 문단번호/글머리표/개요 처리 (DocInfo PARA_SHAPE headType)
   let headingLevel = 0
@@ -551,6 +555,8 @@ function hyperlinkUrlFromCommand(command: string): string | null {
 interface Hwp5Cell extends CellContext {
   blocks?: IRBlock[]
   isHeader?: boolean
+  /** 칸의 보이는 변 (LIST_HEADER borderFillId u16@32 → DocInfo BORDER_FILL) */
+  edges?: Edges
   /** 칸 높이가 A4 용지보다 크다 — 여러 쪽에 걸친 칸 */
   pageSpanning?: boolean
 }
@@ -679,6 +685,15 @@ function parseCell(records: HwpRecord[], lhIdx: number, end: number, ctx: Hwp5Ct
   if (hasStructure && blocks.length > 0) cell.blocks = blocks
   if (isHeader) cell.isHeader = true
   if (rec.data.length >= 24 && rec.data.readUInt32LE(20) > A4_HEIGHT) cell.pageSpanning = true
+  if (rec.data.length >= 34) {
+    const borderFillId = rec.data.readUInt16LE(32)
+    const definitions = ctx.docInfo?.borderEdges
+    // 1-based 목록이 확인되면 0은 선 없음이다. 정의가 없는 파일은 미상으로 유지한다.
+    const edges = borderFillId === 0 && definitions?.length
+      ? { t: false, b: false, l: false, r: false }
+      : definitions?.[borderFillId - 1]
+    if (edges) cell.edges = edges
+  }
   return cell
 }
 
@@ -787,6 +802,25 @@ function pictureToImageBlock(data: Buffer, ctx: Hwp5Ctx): IRBlock | null {
 }
 
 // ─── 스타일 ──────────────────────────────────────────
+
+/**
+ * 글자 위치 → 첨자 종류. CharShape attr bit 15 = 위 첨자, bit 16 = 아래 첨자(HWP5 스펙 표 35 — 계량법 별표
+ * "10⁴ m²" 의 위첨자 글자 모양 id 가 HWPX supscript charPr id 와 같음을 실측). 첨자 글자 모양이 없으면 undefined
+ */
+function scriptLookup(runs: Array<[number, number]>, docInfo: HwpDocInfo | null): ((pos: number) => ScriptKind | null) | undefined {
+  if (!docInfo || !runs.length) return undefined
+  const kindOf = (id: number): ScriptKind | null => {
+    const f = docInfo.charShapes[id]?.attrFlags ?? 0
+    return f & (1 << 15) ? "sup" : f & (1 << 16) ? "sub" : null
+  }
+  if (!runs.some(([, id]) => kindOf(id))) return undefined
+  let k = -1 // 글자 위치는 늘어나는 순서로 묻는다 — 커서를 앞으로만(되돌아가면 처음부터)
+  return (pos) => {
+    if (k >= 0 && runs[k][0] > pos) k = -1
+    while (k + 1 < runs.length && runs[k + 1][0] <= pos) k++
+    return k >= 0 ? kindOf(runs[k][1]) : null
+  }
+}
 
 /** CHAR_SHAPE ID 배열에서 대표 스타일 결정 (최빈값) */
 function resolveCharStyle(charShapeIds: number[], docInfo: HwpDocInfo): InlineStyle | undefined {

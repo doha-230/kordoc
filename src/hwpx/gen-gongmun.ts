@@ -12,10 +12,11 @@
  *   - charPr/paraPr는 StyleRegistry 동적 발급 — 손계산 id 파티션 없음.
  */
 
-import { type MdBlock, generateParagraph, generateRuns } from "./md-runs.js"
+import { type MdBlock, generateParagraph, generateRuns, parseInlineMarkdown } from "./md-runs.js"
 import { type ResolvedGongmun, GongmunNumberer, computeSuppression, mmToHwpunit } from "./gongmun.js"
 import { type Scheme, type LevelStyle, pickScheme, taHu } from "./gongmun-scheme.js"
-import { buildOutline, type Outline, type OutlineNode } from "./outline.js"
+import { buildOutline, CHAPTER_LABEL_RE, type Outline, type OutlineNode } from "./outline.js"
+import { buildSeoulChecklist, buildBangchimToc } from "./gen-frame-seoul-front.js"
 import { StyleRegistry, inlineMapper } from "./style-registry.js"
 import { TableBfRegistry } from "./gen-table-bf.js"
 import { fitOneLine, fitParagraph, fitCharBreaks } from "./fit-line.js"
@@ -36,6 +37,7 @@ import { buildNoticeHead, buildNoticeFoot, isInternalApproval } from "./gen-docf
 import {
   type FrameCtx, buildDocHeadTable, buildDocFootTable, buildReportTitleTable, buildSummaryBox,
   buildApprovalSeoul, buildReportCover, splitTitleName, resetFrameTableIds, buildChapterBand, CHAPTER_BAND_DEFAULT,
+  buildBangchimTitleTable, buildBangchimSummary, buildSquareChapter, buildBangchimSectionBand, buildBangchimSubhead,
 } from "./gen-frame-seoul.js"
 import { formatGaejosikDate } from "./gaejosik.js"
 import {
@@ -44,7 +46,7 @@ import {
   type MinistryTocChapter,
 } from "./gen-frame-ministry.js"
 
-export const V5_PRESETS = new Set(["official", "report", "plan", "notice", "minutes", "ministry"])
+export const V5_PRESETS = new Set(["official", "report", "plan", "notice", "minutes", "ministry", "bangchim"])
 export function usesV5Engine(preset: string): boolean { return V5_PRESETS.has(preset) }
 
 export interface GongmunEngineDeps {
@@ -70,7 +72,7 @@ export function chapterLabel(index: number, style: "roman" | "number"): string {
 
 /** 렌더 텍스트(강조 문법 제거) — 폭 계산용 */
 function plain(text: string): string {
-  return text.replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\*([^*]+)\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+  return parseInlineMarkdown(text).map((span) => span.text).join("")
 }
 
 export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmun, deps: GongmunEngineDeps, theme: import("./gen-ids.js").ResolvedTheme): GongmunEngineResult {
@@ -79,18 +81,36 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
   const warnings: string[] = []
   const g = gongmun
   const preset = g.preset
-  const isReport = preset === "report" || preset === "plan"
+  const isBangchim = preset === "bangchim"
+  const isReport = preset === "report" || preset === "plan" || isBangchim
   const isMinistry = preset === "ministry"
   const W = mmToHwpunit(210 - g.margins.left - g.margins.right)
+  // 서울 방침서: 제목(#) 바로 뒤 "- … -" 한 줄은 제목표 부제, ☎ 가 든 줄은 담당자 행 — 아웃라인 전에 빼야 그 뒤 인용문이 요약박스가 된다
+  let bangchimSub: string | null = null, bangchimContact: string | null = null
+  if (isBangchim) {
+    const h1 = blocks.findIndex((b) => b.type === "heading" && (b.level ?? 1) === 1)
+    let k = h1 + 1
+    while (h1 >= 0 && k < blocks.length && k <= h1 + 2) {
+      const b = blocks[k], t = (b.text ?? "").trim()
+      if (b.type !== "paragraph" && b.type !== "list_item") break
+      const sub = b.type === "list_item" ? `- ${t}` : t
+      if (!bangchimSub && /^-\s*\S.*\s-$/.test(sub) && sub.length < 60) bangchimSub = sub
+      else if (!bangchimContact && /☎/.test(t)) bangchimContact = t
+      else break
+      k++
+    }
+    if (k > h1 + 1) blocks = [...blocks.slice(0, h1 + 1), ...blocks.slice(k)]
+  }
   // 1차 아웃라인(스킴 미정) — 본문 □ 부호 자동감지용. 업무보고는 h3~h6 을 서식 틀로, 인용문은 어디서나 요약박스로
   const pre = buildOutline(blocks, isMinistry
     ? { gaejosik: true, consumeTitle: true, summaryFromQuote: true, quoteBox: true, headingFrames: true, keepMarkers: true }
-    : { gaejosik: true, consumeTitle: true, summaryFromQuote: isReport })
-  const scheme = pickScheme(g, pre.hasBoxMarkers)
+    : { gaejosik: true, consumeTitle: true, summaryFromQuote: isReport, ...(isBangchim ? { headingFrames: true, keepMarkers: true, numbered: true } : {}) })
+  const scheme = pickScheme(g, pre.hasBoxMarkers, pre.numbered)
   const gaejosik = scheme.kind === "gaejosik"
   const raw: Outline = gaejosik ? pre : buildOutline(blocks, { gaejosik: false, consumeTitle: true, summaryFromQuote: false })
   // 문자 다듬기(날짜·금액 묶음 빈칸, ‘’“”) — 폭 계산·방출이 같은 문자열을 보도록 조판 전에
   const outline: Outline = { ...raw, title: raw.title && polishGongmunText(raw.title), nodes: raw.nodes.map(polishNode) }
+
   const frame: FrameCtx = { reg, bf: bfReg, frame: scheme.frame, W }
   const lineHu = (st: LevelStyle) => Math.round(st.pt * 100 * ((st.lineSp ?? scheme.lineSp) / 100))
   const paras: string[] = []
@@ -119,7 +139,7 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
   // 요약박스 — 한 문장 3줄 이내, 넘치면 경고
   const pushSummary = (t: string) => {
     frontKind = "summary"
-    const box = buildSummaryBox(polishGongmunText(t), frame)
+    const box = (isBangchim ? buildBangchimSummary : buildSummaryBox)(polishGongmunText(t), frame)
     if (box.lines > 3) warnings.push(`요약박스가 ${box.lines}줄입니다 — 보고 목적을 한 문장(쉼표 허용) 3줄 이내 "…하고자 함"으로 줄이세요`)
     paras.push(box.xml)
   }
@@ -164,8 +184,26 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
     } else if (g.approval) {
       paras.push(buildApprovalSeoul(g.approval, null, frame))
     }
+    // 사전 검토항목 점검표 — 표지 다음 쪽(실측 16건), 쪽번호 없는 쪽
+    if (g.checklist) {
+      let xml = buildSeoulChecklist(g.checklist, frame)
+      if (g.pageNumbers) xml = xml.replace(/<hp:run charPrIDRef="(\d+)">/, `<hp:run charPrIDRef="$1">${pageHidingCtrl()}`)
+      paras.push(pendingPageBreak ? xml.replace(/^<hp:p /, `<hp:p pageBreak="1" `) : xml)
+      pendingPageBreak = true
+    }
+    // 방침서 목차 — 점검표 다음 쪽(실측 16건 중 7), 쪽번호 칸은 비움
+    if (isBangchim && g.toc && outline.chapters > 0) {
+      const chs = outline.nodes.filter((n): n is Extract<OutlineNode, { kind: "chapter" }> => n.kind === "chapter")
+        .map((n) => ({ label: n.label ?? chapterLabel(n.index, "roman").replace(/\.$/, ""), title: n.label ? plain(n.text).replace(CHAPTER_LABEL_RE, "") : plain(n.text) }))
+      const toc = buildBangchimToc(chs, frame)
+      if (g.pageNumbers) toc[0] = toc[0].replace(/<hp:run charPrIDRef="(\d+)">/, `<hp:run charPrIDRef="$1">${pageHidingCtrl()}`)
+      if (pendingPageBreak) toc[0] = toc[0].replace(/^<hp:p /, `<hp:p pageBreak="1" `)
+      paras.push(...toc)
+      warnings.push("목차 쪽번호 칸은 비워 둡니다 — 쪽은 조판 뒤에 정해지므로 한글에서 채우세요")
+      pendingPageBreak = true
+    }
     if (docTitle) {
-      const t = buildReportTitleTable(docTitle, reportInfo, frame)
+      const t = isBangchim ? buildBangchimTitleTable(docTitle, bangchimSub, reportInfo ?? bangchimContact, frame) : buildReportTitleTable(docTitle, reportInfo, frame)
       if (t.overflow) warnings.push(`제목이 길어 한 줄에 담지 못했습니다(20pt·장평 85%까지 축소) — 제목을 줄이세요: "${docTitle.slice(0, 30)}…"`)
       if (pendingPageBreak) { paras.push(t.xml.replace(/^<hp:p /, `<hp:p pageBreak="1" `).replace(/<hp:run charPrIDRef="(\d+)">/, `<hp:run charPrIDRef="$1">${newPageNumCtrl(1)}`)); pendingPageBreak = false }
       else paras.push(t.xml)
@@ -204,7 +242,7 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
   let sectionSeq = 0, subheadSeq = 0, itemBandSeq = 0
   /** 업무보고 첫 본문 문단에 쪽번호 1 리셋 */
   let pendingNewPageNum = isMinistry && (!!g.cover || !!g.toc)
-  let chapterStyle: "band" | "roman" | "number" | "box" | "none" = g.h2Marker === "box" || g.h2Marker === "number" || g.h2Marker === "none" || g.h2Marker === "band" ? g.h2Marker : "roman"
+  let chapterStyle: "band" | "roman" | "number" | "box" | "none" | "square" = g.h2Marker === "box" || g.h2Marker === "number" || g.h2Marker === "none" || g.h2Marker === "band" || g.h2Marker === "square" ? g.h2Marker : "roman"
   if (!gaejosik) chapterStyle = "number" // 기안문 본문의 h2는 1. 항목이 된다 (아래 chapter 분기)
 
   const leadLeft = (depth: number, pt: number) => (scheme.levels[Math.min(depth, 7)]?.leadTa ?? 0) * taHu(pt)
@@ -218,7 +256,7 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
     else if (gaejosik) marker = scheme.marker(depth, 0)
     else { const sup = suppress ? suppress[itemSeq] : false; marker = numberer.next(depth, sup); itemSeq++ }
     // ❶⇒↳(업무보고 보존 부호)는 스킴 부호 대신 그 글리프
-    const mk = isMinistry && node.marker ? node.marker : marker
+    const mk = (isMinistry || isBangchim) && node.marker ? node.marker : marker
     const lay = markerLayout(st.font, st.pt, st.leadTa, mk)
     // 첫 줄(탭 뒤)과 둘째 줄 이후 내용 폭이 같다 — 둘 다 left + hang 에서 시작
     const textW = W - lay.left - lay.hang
@@ -245,13 +283,13 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
     const consecutiveBox = prevKind === "item" && prevItemDepth === 0 && depth === 0
     // 하위 항목 뒤 □ 앞 간격은 BOX_BLANK_HU(10pt) — 빈 문단 27pt 는 본문 행간의 1.8배 구멍(실렌더, 라운드 3).
     // 띠 제목·제목표 바로 아래 첫 □ 는 반 줄(12pt): 제목표 하변 괘선에 □ 가 붙어 보이는 것을 막는다(시각 픽스처 gongmun-report)
-    const afterBand = depth === 0 && ((prevKind === "chapter" && chapterStyle === "band") || (prevKind === "title" && !!st.blankBefore))
+    const afterBand = depth === 0 && ((prevKind === "chapter" && (chapterStyle === "band" || chapterStyle === "square")) || (prevKind === "title" && !!st.blankBefore))
     const before = afterBand ? BOX_GAP_AFTER_BAND
       : st.blankBefore && !consecutiveBox && prevKind !== "chapter" && prevKind !== "start" && prevKind !== "summary" ? BOX_BLANK_HU : 0
     // 어절 줄바꿈(BREAK_WORD — 이름 역전 주의) + 양쪽정렬 + 외톨이줄 보호. 글자 단위(라운드 2)는 "동대/문"·"실/국"처럼
     // 낱말을 쪼갰다(유저 지시 2026-09-23). 긴 어절이 넘어가 앞 줄이 벌어지는 것은 fitParagraph 가 자간으로 완화한다.
     const keepNext = !!st.keepWithNext && !!nextNode && ((nextNode.kind === "item" && nextNode.depth > depth) || nextNode.kind === "ref")
-    const paraSpec = { align: "JUSTIFY" as const, left: lay.left, indent: -lay.hang, before, lineSp: st.lineSp ?? scheme.lineSp, keepWithNext: keepNext, keepWord: !charBreaks, autoTab: lay.hang > 0, widowOrphan: true }
+    const paraSpec = { align: st.align ?? "JUSTIFY", left: lay.left, indent: -lay.hang, before, lineSp: st.lineSp ?? scheme.lineSp, keepWithNext: keepNext, keepWord: !charBreaks, autoTab: lay.hang > 0, widowOrphan: true }
     const markerRun = mk ? markerRunXml(mk, reg.char({ font: st.font, pt: st.pt, bold: st.bold }), lay) : ""
     if (isMinistry) {
       // 실측: 문단 뒤 6~7pt(줄피치 21.7 → 문단 간 27.6~29). (키워드)는 □·❶ 파랑 bold / ㅇ 이하 검정 bold
@@ -274,7 +312,7 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
     const cb = fitCharBreaks(t, st.font, st.pt, textW, textW, g.autoFitMinRatio ?? 101)
     const f = cb ?? (g.autoFitMinRatio !== null ? fitParagraph(t, st.font, st.pt, textW, textW, g.autoFitMinRatio) : null)
     const base = { font: st.font, pt: st.pt, bold: st.bold, ratio: f?.ratio ?? 100, spacing: f?.spacing ?? 0 }
-    const paraId = reg.para({ align: "JUSTIFY", left, indent: -lay.hang, after: isMinistry ? 400 : 0, lineSp: isMinistry ? 130 : st.lineSp ?? scheme.lineSp, keepWord: !cb, autoTab: true, widowOrphan: true })
+    const paraId = reg.para({ align: st.align ?? "JUSTIFY", left, indent: -lay.hang, after: isMinistry ? 400 : 0, lineSp: isMinistry ? 130 : st.lineSp ?? scheme.lineSp, keepWord: !cb, autoTab: true, widowOrphan: true })
     const markerRun = markerRunXml(marker, reg.char({ font: st.font, pt: st.pt, bold: st.bold }), lay)
     return `<hp:p paraPrIDRef="${paraId}" styleIDRef="0">${markerRun}${generateRuns(node.text, reg.char(base), inlineMapper(reg, base))}</hp:p>`
   }
@@ -286,6 +324,16 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
       if (urls.length > 0 && !rest.trim()) {
         const pics = urls.map((u) => { const part = images.take(u); return part ? images.inlinePicXml(part) : null })
         if (pics.every(Boolean)) return `<hp:p paraPrIDRef="${reg.para({ align: "CENTER", lineSp: scheme.lineSp })}" styleIDRef="0"><hp:run charPrIDRef="${reg.char({ font: st.font, pt: st.pt })}">${pics.join("")}</hp:run></hp:p>`
+      }
+    }
+    // 서울 방침서 캡션 줄 — "< 표 제목 >" 한컴돋움 13 굵게 가운데, "【 소제목 】" HY헤드라인M 15 (정답지 8줄: 굵게 6·가운데 4, 글꼴은 작성자마다 다름)
+    if (isBangchim && !node.align) {
+      const t = plain(node.text)
+      const cap = /^<\s*[^<>]{2,60}\s*>$/.test(t) ? { font: "한컴돋움", pt: 13, bold: true, align: "CENTER" as const }
+        : /^【[^】]{1,30}】/.test(t) ? { font: "HY헤드라인M", pt: 15, bold: false, align: "LEFT" as const } : null
+      if (cap) {
+        const base = { font: cap.font, pt: cap.pt, bold: cap.bold }
+        return generateParagraph(node.text, reg.para({ align: cap.align, lineSp: scheme.lineSp, keepWithNext: true }), reg.char(base), inlineMapper(reg, base))
       }
     }
     let ratio = 100, spacing = 0, charBreaks = false
@@ -315,6 +363,15 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
           return band.xml
         })()
       return first ? xml : xml.replace(/^<hp:p /, `<hp:p pageBreak="1" `)
+    }
+    if (chapterStyle === "square") {
+      sectionSeq = 0; subheadSeq = 0
+      const before = prevKind === "start" || prevKind === "title" ? 0 : prevKind === "summary" ? BOX_GAP_AFTER_BAND : BAND_BEFORE_HU
+      // 번호칸은 작성자가 쓴 번호(Ⅰ·1·가) — 없으면 로마 숫자. "가. " 는 stripChapterNumber 가 남기므로 여기서 벗긴다
+      const title = node.label ? plain(node.text).replace(CHAPTER_LABEL_RE, "") : plain(node.text)
+      const box = buildSquareChapter(node.label ?? chapterLabel(node.index, "roman").replace(/\.$/, ""), title, frame, st, before)
+      if (box.overflow) warnings.push(`장 제목이 한 줄에 담기지 않아 축소했습니다 — 제목을 줄이세요: "${node.text.slice(0, 30)}…"`)
+      return box.xml
     }
     if (chapterStyle === "band") {
       // 요약박스 직후엔 반 줄(붙지 않게), 본문 뒤엔 실측 빈 줄보다 조금 넉넉히(20pt)
@@ -400,8 +457,19 @@ export function buildGongmunSectionV5(blocks: MdBlock[], gongmun: ResolvedGongmu
         xml = renderRef({ kind: "ref", depth: 0, text: node.text })
         break
       case "heading": {
-        // 업무보고 서식 틀 — h3 절 띠(숫자칸) / h4 소제목 박스 / h5+ 항목 띠 ①. 다른 프리셋은 outline 이 heading 을 내지 않는다
+        // 업무보고 서식 틀 — h3 절 띠(숫자칸) / h4 소제목 박스 / h5+ 항목 띠 ①. 서울 방침서 — h3 절 띠 / h4+ 과제 소제목(❶, 장 안에서 이어 셈).
+        // 다른 프리셋은 outline 이 heading 을 내지 않는다
         const before = prevKind === "chapter" || prevKind === "heading" || prevKind === "start" ? 0 : BAND_BEFORE_HU
+        if (isBangchim) {
+          if (node.level <= 3) {
+            const band = buildBangchimSectionBand(++sectionSeq, plain(node.text), frame, before)
+            if (band.overflow) warnings.push(`절 제목이 띠 한 줄에 담기지 않아 축소했습니다 — 제목을 줄이세요: "${node.text.slice(0, 30)}…"`)
+            xml = band.xml
+          } else xml = buildBangchimSubhead(++subheadSeq, node.text, frame, prevKind === "heading" ? 0 : Math.round(before / 2))
+          lastItemFromHeading = true
+          lastTextNode = node
+          break
+        }
         if (node.level <= 3) { subheadSeq = 0; itemBandSeq = 0; xml = buildMinistrySectionBand(++sectionSeq, node.text, frame, before) }
         else if (node.level === 4) { itemBandSeq = 0; xml = buildMinistrySubheadBox(++subheadSeq, node.text, frame, before) }
         else xml = buildMinistryItemBand(++itemBandSeq, node.text, frame, before)
@@ -486,4 +554,3 @@ function legalDepthOf(marker: string): number {
   if (/^\([가-힣]\)$/.test(marker)) return 5
   return 6
 }
-

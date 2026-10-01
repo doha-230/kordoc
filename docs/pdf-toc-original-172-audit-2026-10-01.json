@@ -1,0 +1,586 @@
+{
+  "schemaVersion": 1,
+  "documentId": "01030000000172",
+  "verdict": "Original visual and geometry confirm five independent TOC records. All changes are four restored paragraph boundaries in each mode, with other content, headings, and evaluation values unchanged.",
+  "originalVisualInspected": true,
+  "originalPDF": "/Users/mong-e/workspace/odl-bench-breakthrough-20260925/pdfs/01030000000172.pdf",
+  "page": 1,
+  "hashes": {
+    "pdf": "4a23b09904c5fbb871fcf792e30b87c4b7cae0cdd0079b5ee0e3e34a353638b7",
+    "gtMarkdown": "d0965d4affa9c1add9fef6b6a2220faa8dae05a9443877e13e1eb5269a2d765e",
+    "evaluator": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "readingOrderEvaluator": "9417db70bb475216d1b702e1e85f6e0af1ed113357aa8131f61fd2bcb3d21334",
+    "headingEvaluator": "839dd188a6f90eea30fd7e2f541e2431d51eb65a46500c9b1d08d619f2e1c173",
+    "originalRenderedPNG": "3e28bf62531e6b0b71bd506232cbfb7dc0ef3dcab98172fc398327c445941ec3",
+    "originalBboxHTML": "01231409366613616eab18d7101cd4e159a7d4a0fbd5bc3f735fd9b6430c30ae"
+  },
+  "sourceGeometry": {
+    "entries": [
+      {
+        "label": {
+          "xMin": 85.0394,
+          "yMin": 88.1479,
+          "xMax": 207.3674,
+          "yMax": 99.6679,
+          "text": "Section 5.1: The Linear Model"
+        },
+        "pageReference": {
+          "xMin": 528.6647,
+          "yMin": 88.1479,
+          "xMax": 538.5827,
+          "yMax": 99.6679,
+          "text": "35"
+        },
+        "gap": 321.29730000000006
+      },
+      {
+        "label": {
+          "xMin": 85.0394,
+          "yMin": 104.7979,
+          "xMax": 392.5694,
+          "yMax": 116.3179,
+          "text": "Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up"
+        },
+        "pageReference": {
+          "xMin": 528.3677,
+          "yMin": 104.7979,
+          "xMax": 538.5827,
+          "yMax": 116.3179,
+          "text": "36"
+        },
+        "gap": 135.79830000000004
+      },
+      {
+        "label": {
+          "xMin": 85.0394,
+          "yMin": 121.4479,
+          "xMax": 453.4814,
+          "yMax": 132.9679,
+          "text": "Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up"
+        },
+        "pageReference": {
+          "xMin": 528.3677,
+          "yMin": 121.4479,
+          "xMax": 538.5827,
+          "yMax": 132.9679,
+          "text": "39"
+        },
+        "gap": 74.8863
+      },
+      {
+        "label": {
+          "xMin": 85.0394,
+          "yMin": 138.0979,
+          "xMax": 469.7984,
+          "yMax": 149.6179,
+          "text": "Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up"
+        },
+        "pageReference": {
+          "xMin": 528.6917,
+          "yMin": 138.0979,
+          "xMax": 538.5827,
+          "yMax": 149.6179,
+          "text": "43"
+        },
+        "gap": 58.893299999999954
+      },
+      {
+        "label": {
+          "xMin": 85.0394,
+          "yMin": 154.7479,
+          "xMax": 228.5804,
+          "yMax": 166.2679,
+          "text": "Section 5.5: Chapter Five Self-Test"
+        },
+        "pageReference": {
+          "xMin": 529.5557,
+          "yMin": 154.7479,
+          "xMax": 538.5827,
+          "yMax": 166.2679,
+          "text": "47"
+        },
+        "gap": 300.9753
+      }
+    ],
+    "rowPitches": [
+      16.64999999999999,
+      16.650000000000006,
+      16.650000000000006,
+      16.649999999999977
+    ],
+    "numericRightEdge": 538.5827,
+    "pageReferenceColumn": true,
+    "typographicFontSizeInIR": 9
+  },
+  "modes": [
+    {
+      "mode": "default",
+      "population": 200,
+      "markdownByteIdentical": 199,
+      "changedFiles": [
+        "01030000000172.md"
+      ],
+      "beforeSha256": "57f5137cf0b84c21abb3e176e0619fb4a9161c48b3ae48fb004b5f740d4274e3",
+      "afterSha256": "e8f361ac2d73b83b14c3362187915873cb2b79c10bd6ed5968ade35d9db53df0",
+      "exactReplacement": "four ASCII spaces preceding Section 5.2/5.3/5.4/5.5 replaced with two LF characters each",
+      "exactFourBoundariesOnly": true,
+      "lengthDelta": 4,
+      "canonicalWhitespaceEqual": true,
+      "allEvaluationDocumentRowsEqual": true,
+      "allEvaluationMetricsEqual": true,
+      "doc172Evaluation": {
+        "document_id": "01030000000172",
+        "scores": {
+          "overall": 0.9922189428494768,
+          "nid": 0.9922189428494768,
+          "nid_s": 0.9922189428494768,
+          "teds": null,
+          "teds_s": null,
+          "mhs": null,
+          "mhs_s": null
+        },
+        "prediction_available": true
+      },
+      "beforeSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35 Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36 Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39 Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43 Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 76
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "afterSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 745,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 728,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 711,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 695,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "allOtherIRBlocksByteEqual": true
+    },
+    {
+      "mode": "plain-html",
+      "population": 200,
+      "markdownByteIdentical": 199,
+      "changedFiles": [
+        "01030000000172.md"
+      ],
+      "beforeSha256": "5069ef7610a2c984242f6853d80c994e59eebd05bf3892fee29940da353befab",
+      "afterSha256": "068dd24aaaea8d5656541abe8a5c9ff1cfba2f8eb3c36e604d6f592bcc30dd91",
+      "exactReplacement": "four ASCII spaces preceding Section 5.2/5.3/5.4/5.5 replaced with two LF characters each",
+      "exactFourBoundariesOnly": true,
+      "lengthDelta": 4,
+      "canonicalWhitespaceEqual": true,
+      "allEvaluationDocumentRowsEqual": true,
+      "allEvaluationMetricsEqual": true,
+      "doc172Evaluation": {
+        "document_id": "01030000000172",
+        "scores": {
+          "overall": 0.9959601400484783,
+          "nid": 0.9959601400484783,
+          "nid_s": 0.9959601400484783,
+          "teds": null,
+          "teds_s": null,
+          "mhs": null,
+          "mhs_s": null
+        },
+        "prediction_available": true
+      },
+      "beforeSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35 Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36 Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39 Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43 Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 76
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "afterSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 745,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 728,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 711,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 695,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "allOtherIRBlocksByteEqual": true
+    },
+    {
+      "mode": "native-off",
+      "population": 200,
+      "markdownByteIdentical": 199,
+      "changedFiles": [
+        "01030000000172.md"
+      ],
+      "beforeSha256": "57f5137cf0b84c21abb3e176e0619fb4a9161c48b3ae48fb004b5f740d4274e3",
+      "afterSha256": "e8f361ac2d73b83b14c3362187915873cb2b79c10bd6ed5968ade35d9db53df0",
+      "exactReplacement": "four ASCII spaces preceding Section 5.2/5.3/5.4/5.5 replaced with two LF characters each",
+      "exactFourBoundariesOnly": true,
+      "lengthDelta": 4,
+      "canonicalWhitespaceEqual": true,
+      "allEvaluationDocumentRowsEqual": true,
+      "allEvaluationMetricsEqual": true,
+      "doc172Evaluation": {
+        "document_id": "01030000000172",
+        "scores": {
+          "overall": 0.9922189428494768,
+          "nid": 0.9922189428494768,
+          "nid_s": 0.9922189428494768,
+          "teds": null,
+          "teds_s": null,
+          "mhs": null,
+          "mhs_s": null
+        },
+        "prediction_available": true
+      },
+      "beforeSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35 Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36 Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39 Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43 Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 76
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "afterSectionBlocks": [
+        {
+          "type": "paragraph",
+          "text": "Section 5.1: The Linear Model\t35",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 745,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.2: Simple Regression Assumptions, Interpretation, and Write Up\t36",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 728,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.3: Multiple Regression Explanation, Assumptions, Interpretation, and Write Up\t39",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 711,
+            "width": 453,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.4: Hierarchical Regression Explanation, Assumptions, Interpretation, and Write Up\t43",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 695,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        },
+        {
+          "type": "paragraph",
+          "text": "Section 5.5: Chapter Five Self-Test\t47",
+          "pageNumber": 1,
+          "bbox": {
+            "page": 1,
+            "x": 85,
+            "y": 678,
+            "width": 454,
+            "height": 9
+          },
+          "style": {
+            "fontSize": 9,
+            "fontName": "g_d171_f2"
+          }
+        }
+      ],
+      "allOtherIRBlocksByteEqual": true
+    }
+  ],
+  "officialFunctionsReexecuted": {
+    "modeResults": [
+      {
+        "mode": "default",
+        "normalizedEqual": true,
+        "normalizedSha256": "5dc0677147c93f4e9fbd747c80f6ab2b5a0b5fca81efab96c8a66e2890f805f8",
+        "nidBefore": [
+          0.9922189428494768,
+          0.9922189428494768
+        ],
+        "nidAfter": [
+          0.9922189428494768,
+          0.9922189428494768
+        ],
+        "mhsBefore": [
+          null,
+          null
+        ],
+        "mhsAfter": [
+          null,
+          null
+        ]
+      },
+      {
+        "mode": "plain-html",
+        "normalizedEqual": true,
+        "normalizedSha256": "174db6d00057285f9b5773f2a5c87295337887e19025e32ecbd000df573abf9d",
+        "nidBefore": [
+          0.9959601400484783,
+          0.9959601400484783
+        ],
+        "nidAfter": [
+          0.9959601400484783,
+          0.9959601400484783
+        ],
+        "mhsBefore": [
+          null,
+          null
+        ],
+        "mhsAfter": [
+          null,
+          null
+        ]
+      },
+      {
+        "mode": "native-off",
+        "normalizedEqual": true,
+        "normalizedSha256": "5dc0677147c93f4e9fbd747c80f6ab2b5a0b5fca81efab96c8a66e2890f805f8",
+        "nidBefore": [
+          0.9922189428494768,
+          0.9922189428494768
+        ],
+        "nidAfter": [
+          0.9922189428494768,
+          0.9922189428494768
+        ],
+        "mhsBefore": [
+          null,
+          null
+        ],
+        "mhsAfter": [
+          null,
+          null
+        ]
+      }
+    ],
+    "evaluatorUnmodified": true,
+    "gtSha256": "d0965d4affa9c1add9fef6b6a2220faa8dae05a9443877e13e1eb5269a2d765e"
+  },
+  "whyScoresUnchanged": {
+    "NID": "Original _normalize uses re.sub(r\"\\s+\", \" \", text).strip(); canonical old/new converted strings are identical.",
+    "MHS": "GT has no Markdown # heading nodes, so original evaluate_heading_level returns None/None. Additionally existing parser combines all nonheading content lines beneath a heading and ignores paragraph boundaries.",
+    "TEDS": "Doc172 original published evaluation rows have null table metrics; this TOC change adds no tables."
+  },
+  "limitations": [
+    "This proves legitimate TOC row restoration, not an aggregate ODL score increase.",
+    "Original GT/evaluators/population and source code were not modified."
+  ],
+  "cpuWorkStopped": true
+}

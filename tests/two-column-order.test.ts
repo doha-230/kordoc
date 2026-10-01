@@ -3,6 +3,37 @@ import assert from "node:assert/strict"
 import { detectColumnGutter, detectPersistentColumnGutter, orderByGutter, type ColRect } from "../src/pdf/two-column.js"
 import { extractPageBlocksFallback } from "../src/pdf/page-blocks.js"
 import type { NormItem } from "../src/pdf/text-line.js"
+import { splitImagePanels } from "../src/pdf/image-panels.js"
+
+describe("그림을 포함한 3단 리플릿", () => {
+  const items: NormItem[] = [
+    item("Left title", 44, 570, 178), item("Left first", 30, 540, 200), item("Left middle", 30, 200, 200), item("Left final", 30, 30, 200),
+    item("Middle heading", 306, 539, 178), item("Middle caption first", 355, 85, 141), item("Middle caption second", 350, 72, 155), item("Middle caption final", 392, 31, 70),
+    item("Right title", 542, 491, 233), item("Right subtitle", 553, 461, 217), item("Right date", 635, 400, 51),
+  ]
+  const figures = [rect(528, 8, 264, 612), rect(276, 309, 240, 235), rect(292, 104, 208, 208)]
+  it("중간 단 그림 아래 설명을 오른쪽 표지보다 먼저 읽는다", () => {
+    const blocks = extractPageBlocksFallback(items, 1, true, true, undefined, figures)
+    const text = blocks.map(b => b.text ?? "").join("\n")
+    assert.ok(text.indexOf("Middle caption final") < text.indexOf("Right title"), text)
+    assert.ok(text.indexOf("Left final") < text.indexOf("Middle heading"), text)
+    for (const source of items) assert.ok(text.includes(source.text), source.text)
+  })
+  it("그림이 있어도 같은 행으로 정렬된 3열 표는 분리하지 않는다", () => {
+    const tableItems: NormItem[] = []
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 3; c++) {
+      tableItems.push(item(r === 0 ? ["구분", "항목", "내용"][c] : ["항목" + r, "종류" + r, "값" + r][c], 30 + c * 300, 500 - r * 100, 150))
+    }
+    const baseline = extractPageBlocksFallback(tableItems, 1, true, true)
+    const withFigure = extractPageBlocksFallback(tableItems, 1, true, true, undefined, [rect(630, 50, 150, 100)])
+    assert.deepEqual(withFigure, baseline)
+    assert.equal(withFigure[0].table?.cols, 3)
+  })
+  it("전폭 제목이 여러 텍스트 조각으로 나뉘어도 단을 가르지 않는다", () => {
+    const title = [item("제목 앞", 30, 650, 215), item("제목 중간", 265, 650, 280), item("제목 끝", 565, 650, 215)]
+    assert.equal(splitImagePanels([...title, ...items], figures), null)
+  })
+})
 
 /**
  * #64 — 2단 시험지 읽기 순서. 좌표 모델은 이슈 제보 블록 덤프(2026학년도 수능

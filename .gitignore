@@ -39,7 +39,7 @@ output/
 # 폐쇄망 반입 번들 (pack-offline·build-msi 산출물)
 dist-offline/
 # 벤치 코퍼스 — 실제 공문서, 저장소 미포함
-bench/corpus/
+bench/corpus
 bench/out/
 bench/visual/out/
 

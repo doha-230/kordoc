@@ -50,7 +50,7 @@ function wantsCrop(kind: TableClassificationSummary["kind"], policy: TableVisual
 export async function extractTables(input: string | ArrayBuffer | Buffer, options: ExtractTableVisualOptions = {}): Promise<ExtractedTable[]> {
   const policy = options.policy ?? "non-tabular-and-uncertain"
   const buffer = typeof input === "string" ? toArrayBuffer(await readFile(input)) : Buffer.isBuffer(input) ? toArrayBuffer(input) : input
-  const parsed = await parse(buffer, { classifyTables: true })
+  const parsed = await parse(buffer, { classifyTables: true, layoutTables: "keep" }) // region 조인 키(sourceId)가 원본 표 단위
   if (!parsed.success) throw new KordocError(`파싱 실패: ${parsed.error}`)
   const blocks: IRBlock[] = collectTableBlocks(parsed.blocks)
   const out: ExtractedTable[] = blocks.map((b, i) => ({

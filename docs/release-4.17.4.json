@@ -1,0 +1,371 @@
+{
+  "date": "2026-10-01",
+  "version": "4.17.4",
+  "status": "released",
+  "sourceCommit": "94ddf96962a0e78c54eb0d32f2001ae7b104a0c2",
+  "normalPublishCommand": "npm publish --access public",
+  "sourceCI": {
+    "run": 36779289018,
+    "conclusion": "success",
+    "nodes": [
+      20,
+      22,
+      24
+    ]
+  },
+  "sourceMirror": {
+    "run": 36779288995,
+    "conclusion": "success",
+    "main": "94ddf96962a0e78c54eb0d32f2001ae7b104a0c2"
+  },
+  "unitTests": {
+    "tests": 2868,
+    "suites": 824,
+    "pass": 2868,
+    "fail": 0,
+    "skip": 0
+  },
+  "visual": {
+    "hancomGui": "not-run",
+    "deploymentAuthorization": "Existing explicit user instruction to deploy is retained; no visual-pass claim"
+  },
+  "expectedGates": [
+    "pages",
+    "score",
+    "roundtrip",
+    "pdf-table",
+    "pdf-text",
+    "annex",
+    "formats",
+    "fuzz",
+    "reflow",
+    "redact",
+    "ocr"
+  ],
+  "publishLog": "/tmp/kordoc-publish-4.17.4-20261001.log",
+  "gates": {
+    "score": {
+      "generatedAt": "2026-09-30T21:36:17.629Z",
+      "pass": true,
+      "summary": null
+    },
+    "roundtrip": {
+      "generatedAt": "2026-09-30T21:36:19.157Z",
+      "pass": true,
+      "summary": null
+    },
+    "pdf-table": {
+      "generatedAt": "2026-09-30T21:40:47.847Z",
+      "pass": true,
+      "summary": {
+        "pairs": 708,
+        "refTables": 2331,
+        "reordered": 5,
+        "matchedRate": 0.998284,
+        "exactRate": 0.979408,
+        "cellF1": 0.990863,
+        "cellExactRate": 0.985981,
+        "contentNED": 0.982072,
+        "parseErrors": 0,
+        "nested": {
+          "pairs": 29,
+          "refTables": 101,
+          "reordered": 0,
+          "matchedRate": 1,
+          "exactRate": 0.930693,
+          "cellF1": 0.99802,
+          "cellExactRate": 0.981723,
+          "contentNED": 0.990894
+        }
+      }
+    },
+    "pdf-text": {
+      "generatedAt": "2026-09-30T21:45:30.706Z",
+      "pass": true,
+      "summary": {
+        "pairs": 744,
+        "refChars": 2857775,
+        "recall": 0.99829,
+        "precision": 0.99581,
+        "order": 0.99145,
+        "spaceF1": 0.98804,
+        "parseErrors": 0,
+        "excluded": 22
+      }
+    },
+    "annex": {
+      "generatedAt": "2026-09-30T21:45:41.541Z",
+      "pass": true,
+      "summary": {
+        "hwp": {
+          "docs": 272,
+          "recall": 1,
+          "phantom": 0.00001,
+          "order": 1,
+          "tables": 346,
+          "tableExactCount": 346,
+          "tableExact": 1,
+          "cellF1": 1,
+          "eqRef": 11,
+          "eqHit": 11
+        },
+        "pdf": {
+          "docs": 272,
+          "recall": 0.99965,
+          "phantom": 0.00053,
+          "order": 1,
+          "tables": 346,
+          "tableExactCount": 336,
+          "tableExact": 0.9711,
+          "cellF1": 0.99564,
+          "eqRef": 11,
+          "eqHit": 7
+        }
+      }
+    },
+    "formats": {
+      "generatedAt": "2026-09-30T21:46:10.678Z",
+      "pass": true,
+      "summary": null
+    },
+    "fuzz": {
+      "generatedAt": "2026-09-30T22:01:09.387Z",
+      "pass": true,
+      "summary": null,
+      "runs": 23700,
+      "incidents": []
+    },
+    "ocr-accuracy": {
+      "pass": true,
+      "summary": {
+        "generatedAt": "2026-09-30T22:05:43.612Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09589,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 1.03,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      }
+    }
+  },
+  "publishExitCode": 0,
+  "publishLogSHA256": "95b5285e08d996346c4fddebd194eae003c3ece2a9fe356cf476059fc43c3455",
+  "registry": {
+    "version": "4.17.4",
+    "gitHead": "94ddf96962a0e78c54eb0d32f2001ae7b104a0c2",
+    "dist": {
+      "shasum": "7684a4268c47113a863b5bb24fdd0be5c6ba3c14",
+      "tarball": "https://registry.npmjs.org/kordoc/-/kordoc-4.17.4.tgz",
+      "fileCount": 151,
+      "integrity": "sha512-9TSiraPT4h3zX+w6Hk+tsrue9iH2Hsu5p1bDGZzKFMma6WRsWItRgh7/Y1JKbX7uYwF4p3TIduZm3rqELXDdgA==",
+      "signatures": [
+        {
+          "sig": "MEUCIEctRAi9Id1dNXnv9vAhYoLxo2JpIBMZx5xs3ibOU4SIAiEAvQ9egEZb5v2r1kIIzF+WEKrrFGuQd7d2cNva5wXPxPE=",
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+        },
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIGWb6TtwEBN5vm9EXDs51SAeJwhK1gczOSkavDnlFhshAiEArXfT1yz2u4sGLxQQhmBOVZXICpuOnSTNk/yVt6DnlX8="
+        }
+      ],
+      "unpackedSize": 20316816
+    },
+    "distTags": {
+      "latest": "4.17.4"
+    },
+    "time": "2026-09-30T22:08:56.375Z"
+  },
+  "publicPackage": {
+    "version": "4.17.4",
+    "tarball": "kordoc-4.17.4.tgz",
+    "tarballSHA256": "d7c1de7eded47f7a6e03baf8b0994e5fa9ba4e78843bb322f10a078002696062",
+    "indexSHA256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+    "cliSHA256": "74375949f9590db75c551f2ef21c5bcee1deca912eb5364bd7b5ca9f77783a2c",
+    "cjsSHA256": "b3b271e2ae2be37fd8966774fbfe8fb52f22075f3f4e3bedcc8d1cf17a4c7b5f",
+    "results": [
+      {
+        "mode": "ESM",
+        "success": true
+      },
+      {
+        "mode": "CJS",
+        "success": true
+      }
+    ],
+    "distFilesExact": 136,
+    "dependencySource": "Validated lockfile dependencies; npm exec verifies CLI with independently installed public package",
+    "unpacked": "/tmp/kordoc-public-4.17.4-20261001/unpacked/package"
+  },
+  "publicCli": {
+    "version": "4.17.4",
+    "command": "npm exec --yes --package=<public registry tarball> -- kordoc --version",
+    "freshDependencies": true,
+    "gpuDownload": "ONNXRUNTIME_NODE_INSTALL=skip, same CPU-only install setting as repository CI"
+  },
+  "release": {
+    "url": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.4",
+    "draft": false,
+    "assetSHA256": "d7c1de7eded47f7a6e03baf8b0994e5fa9ba4e78843bb322f10a078002696062"
+  },
+  "tag": {
+    "name": "v4.17.4",
+    "annotatedObject": "bf3a8a4cde20211c7dd3d85f4787a29bc6a861d8",
+    "peeledCommit": "94ddf96962a0e78c54eb0d32f2001ae7b104a0c2",
+    "githubGitlabObjectsEqual": true,
+    "mirrorRun": 36784110513,
+    "mirrorConclusion": "success"
+  },
+  "ocrComparison": {
+    "before": {
+      "generatedAt": "2026-09-30T13:36:12.899Z",
+      "docs": 53,
+      "skipped": 3,
+      "pages": 102,
+      "skippedPages": [
+        {
+          "doc": "eval-perf-2024.pdf",
+          "page": 5,
+          "inlineGlyphImages": 10,
+          "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+        },
+        {
+          "doc": "eval-perf-2024.pdf",
+          "page": 4,
+          "inlineGlyphImages": 9,
+          "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+        },
+        {
+          "doc": "nanet-seoul-minutes.pdf",
+          "page": 1,
+          "glyphCoverage": 0.088,
+          "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+        },
+        {
+          "doc": "nanet-seoul-minutes.pdf",
+          "page": 2,
+          "glyphCoverage": 0.071,
+          "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+        }
+      ],
+      "cerMicro": 0.05188,
+      "cerMedian": 0.0216,
+      "charRecallMicro": 0.99001,
+      "charPrecisionMicro": 0.99355,
+      "charF1": 0.99178,
+      "hangulRecallMicro": 0.99363,
+      "cerMicroStrict": 0.09542,
+      "cerMedianStrict": 0.0719,
+      "secPerPage": 1.01,
+      "tables": {
+        "refTables": 67,
+        "matched": 52,
+        "exact": 22,
+        "matchedRate": 0.7761,
+        "exactRate": 0.3284,
+        "cellF1Mean": 0.5465,
+        "skippedRefTables": 37
+      },
+      "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+    },
+    "after": {
+      "generatedAt": "2026-09-30T22:05:43.612Z",
+      "docs": 53,
+      "skipped": 3,
+      "pages": 102,
+      "skippedPages": [
+        {
+          "doc": "eval-perf-2024.pdf",
+          "page": 5,
+          "inlineGlyphImages": 10,
+          "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+        },
+        {
+          "doc": "eval-perf-2024.pdf",
+          "page": 4,
+          "inlineGlyphImages": 9,
+          "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+        },
+        {
+          "doc": "nanet-seoul-minutes.pdf",
+          "page": 1,
+          "glyphCoverage": 0.088,
+          "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+        },
+        {
+          "doc": "nanet-seoul-minutes.pdf",
+          "page": 2,
+          "glyphCoverage": 0.071,
+          "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+        }
+      ],
+      "cerMicro": 0.05188,
+      "cerMedian": 0.0216,
+      "charRecallMicro": 0.99001,
+      "charPrecisionMicro": 0.99355,
+      "charF1": 0.99178,
+      "hangulRecallMicro": 0.99363,
+      "cerMicroStrict": 0.09589,
+      "cerMedianStrict": 0.0719,
+      "secPerPage": 1.03,
+      "tables": {
+        "refTables": 67,
+        "matched": 52,
+        "exact": 22,
+        "matchedRate": 0.7761,
+        "exactRate": 0.3284,
+        "cellF1Mean": 0.5465,
+        "skippedRefTables": 37
+      },
+      "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+    },
+    "strictChangedDocument": {
+      "doc": "naacc-2019-settle.pdf",
+      "before": 0.1064,
+      "after": 0.1825,
+      "fairCER": 0,
+      "note": "Strict v1 worsens while fair v2 CER/character F1/table F1 remain equal. Cause requires a current before/after dump; no evaluator change."
+    }
+  }
+}

@@ -12,11 +12,12 @@
 import { charWidthEm1000, SPACE_EM_FIXED } from "./text-metrics.js"
 import { gaejosikMarker, gaejosikLevelIndent, type GaejosikSizeOverrides } from "./gaejosik.js"
 import { KordocError } from "../utils.js"
+import { CHECKLIST_ITEMS } from "./gen-frame-seoul-front.js"
 import { hangulOrdinal, circledNumber, circledHangul } from "../shared/numbering.js"
 
 // ─── 옵션 타입 ──────────────────────────────────────
 
-export type GongmunPreset = "official" | "report" | "plan" | "notice" | "minutes" | "gaejosik" | "press" | "ministry"
+export type GongmunPreset = "official" | "report" | "plan" | "notice" | "minutes" | "gaejosik" | "press" | "ministry" | "bangchim"
 export type GongmunNumbering = "standard" | "report" | "gaejosik"
 export type GongmunFont = "myeongjo" | "gothic"
 
@@ -31,6 +32,7 @@ export type GongmunPresetInput =
   | "개조식" | "개조식보고서" | "정부보고서" | "정부표준개조식보고서"
   | "보도자료"
   | "업무보고" | "부처업무보고" | "중앙부처보고서"
+  | "서울방침" | "방침서" | "방침"
 
 /** 항목부호 단계 하나의 타이포 — 셋 다 선택(미지정=본문 계열 유지) */
 export interface GongmunLevelStyle {
@@ -104,12 +106,15 @@ export interface GongmunOptions {
   approval?: string[]
   /** 본문 첫 페이지 제목 박스(개조식) — 목차 뒤 본문 시작에 제목 반복(실측 관행). 기본: 표지 있으면 켜짐 */
   bodyTitleBox?: boolean
+  /** 개조식 장 헤더 제목 칸을 글자 폭에 맞춤. 기본: 꺼짐(제목 칸이 본문 폭까지) */
+  chapterFit?: boolean
   /**
    * h2 장 제목 표기 (v5): 'band'=로마자 채움 칸 + 제목 띠 표(보고서·계획서 기본 — 계획서 장르 실측 37~39%) /
-   * 'roman'=Ⅰ. Ⅱ. 텍스트 / 'number'=1. 2. (통지 기본) / 'box'=장 없이 □ 대항목으로 / 'none'=번호 없음.
+   * 'roman'=Ⅰ. Ⅱ. 텍스트 / 'number'=1. 2. (통지 기본) / 'box'=장 없이 □ 대항목으로 / 'none'=번호 없음 /
+   * 'square'=[Ⅰ] 테두리 번호 상자 + 위아래 괘선 제목(서울 방침서 기본).
    * 기안문 본문의 h2는 항상 법정 1. 항목.
    */
-  h2Marker?: "band" | "roman" | "box" | "number" | "none"
+  h2Marker?: "band" | "roman" | "box" | "number" | "none" | "square"
   /**
    * 띠 제목(h2Marker 'band') 번호칸 채움색 `#RRGGBB` — 기본 #003366(서울 plan 띠 표 실측 최다).
    * 교육청형 밝은 띠는 `bandColor: "#DFE6F7", bandTextColor: "#000000"`.
@@ -144,6 +149,11 @@ export interface GongmunOptions {
   summary?: string
   /** 보고서 표지 문서정보표 — 문서번호·결재일자·공개여부·방침번호 (cover와 함께) */
   docInfo?: { docNum?: string; date?: string; disclosure?: string; policyNo?: string }
+  /**
+   * 서울 사전 검토항목 점검표(표지 다음 쪽 — 서울 시장방침 16건 모두 실측) — 보고서·계획서·방침서 전용.
+   * true = 표시 없는 빈 서식. 객체면 na 에 적은 문항(1~14)은 해당없음 ■, 나머지는 검토완료 ■, notes = 문항 번호별 비고 글
+   */
+  checklist?: boolean | { na?: number[]; notes?: Record<number, string> }
   /** 업무보고 우상단 보고정보 행 — "(보고일시, 보고자, 연락처)" (실측 t3: 휴먼명조 12pt RIGHT) */
   reportInfo?: string
   /** 공고문 두문·결문 — 공고번호(본문 위)·날짜·발신명의(본문 아래 우측, 실측 바이오헬스 공고) */
@@ -172,6 +182,8 @@ export interface ResolvedGongmun {
   summary: string | null
   /** 보고서 표지 문서정보표 */
   docInfo: NonNullable<GongmunOptions["docInfo"]> | null
+  /** 사전 검토항목 점검표 — 문항 번호(1부터)별 표시·비고, null 이면 없음 */
+  checklist: { marks: Map<number, "done" | "na">; notes: Map<number, string> } | null
   /** 목차 자동 생성 여부 (개조식 프리셋 기본 true) */
   toc: boolean
   /** 요소별 글꼴 오버라이드 (GongmunOptions.fonts) */
@@ -190,8 +202,10 @@ export interface ResolvedGongmun {
   approval: string[] | null
   /** 본문 첫 페이지 제목 박스(개조식, 실측 GT3 표④) — 표지 있을 때 기본 켜짐 */
   bodyTitleBox: boolean
+  /** 개조식 장 헤더 제목 칸 글자 폭 맞춤 — 기본 꺼짐 */
+  chapterFit: boolean
   /** h2 장 제목 표기 — 보고서·계획서 'roman', 통지·공고 'number' (v5) */
-  h2Marker: "band" | "roman" | "box" | "number" | "none"
+  h2Marker: "band" | "roman" | "box" | "number" | "none" | "square"
   /** 띠 제목 번호칸 채움색·글자색 (#RRGGBB, 대문자 정규화) */
   bandColor: string
   bandTextColor: string
@@ -250,6 +264,8 @@ const PRESET_DEFAULTS: Record<
   press: { bodyPt: 14, lineSpacing: 160, numbering: "report" },
   // 중앙부처 업무보고 — 실측(재경부 2차 업무보고): 함초롬바탕 15pt, 줄피치 21.7pt(≈145%), □→ㅇ→-→*(각주)
   ministry: { bodyPt: 15, lineSpacing: 145, numbering: "report" },
+  // 서울 방침서 — 실측(시장방침 「청년취업사관학교 2.0」 추진계획 외 4건): □ HY견고딕 17 · ㅇ 한컴돋움 15b · - 휴먼명조 14, 줄간격 200%
+  bangchim: { bodyPt: 15, lineSpacing: 190, numbering: "report" },
 }
 
 /** 프리셋 별칭(한글/영문) → 내부 preset 키. CLI·라이브러리 공용 */
@@ -262,6 +278,7 @@ export const PRESET_ALIAS: Record<string, GongmunPreset> = {
   gaejosik: "gaejosik", 개조식: "gaejosik", 개조식보고서: "gaejosik", 정부보고서: "gaejosik", 정부표준개조식보고서: "gaejosik",
   press: "press", 보도자료: "press",
   ministry: "ministry", 업무보고: "ministry", 부처업무보고: "ministry", 중앙부처보고서: "ministry",
+  bangchim: "bangchim", 서울방침: "bangchim", 방침서: "bangchim", 방침: "bangchim",
 }
 
 /** 프리셋 입력(영문 키 또는 한글 별칭)을 내부 GongmunPreset로 정규화. 미상은 'official' */
@@ -277,7 +294,7 @@ export function normalizeGongmunPreset(preset?: string): GongmunPreset {
  * (전자결재·일반 공문 관행).
  */
 export function usesReportFonts(preset: GongmunPreset): boolean {
-  return preset === "gaejosik" || preset === "report" || preset === "plan"
+  return preset === "gaejosik" || preset === "report" || preset === "plan" || preset === "bangchim"
 }
 
 /** 3단계 부호로 *(참고)를 쓰는 프리셋인지 — 실측: 추진계획안·보도자료 공통 □→ㅇ→* 계층.
@@ -324,6 +341,12 @@ function validateGongmunOptions(opts: GongmunOptions): void {
   }
   if (opts.approval && opts.approval.length > 6) {
     throw new KordocError("approval must contain at most 6 labels")
+  }
+  if (opts.checklist && typeof opts.checklist === "object") {
+    const nums = [...(opts.checklist.na ?? []), ...Object.keys(opts.checklist.notes ?? {}).map(Number)]
+    for (const n of nums) {
+      if (!Number.isInteger(n) || n < 1 || n > CHECKLIST_ITEMS) throw new KordocError(`checklist: item number must be an integer between 1 and ${CHECKLIST_ITEMS} (got ${n})`)
+    }
   }
   if (opts.levels) {
     for (const [key, st] of Object.entries(opts.levels)) {
@@ -375,6 +398,7 @@ export function incompatibleGongmunWarnings(opts: GongmunOptions): string[] {
   if (opts.docFoot && preset !== "official") warns.push(`doc_foot(결문)는 기안문(official) 전용 — '${preset}' 프리셋에서 무시됨`)
   if (opts.noticeHead && preset !== "notice") warns.push(`notice_head(공고번호·발신명의)는 통지(notice) 전용 — '${preset}' 프리셋에서 무시됨`)
   if (opts.press && preset !== "press") warns.push(`press(머리박스·부제·담당)는 보도자료(press) 전용 — '${preset}' 프리셋에서 무시됨`)
+  if (opts.checklist && !SEOUL_REPORT_PRESETS.has(preset)) warns.push(`checklist(사전 검토항목 점검표)는 보고서·계획서·방침서 전용 — '${preset}' 프리셋에서 무시됨`)
   if (preset === "press" && (opts.cover === true || typeof opts.cover === "object" || opts.toc === true)) {
     warns.push("보도자료는 머리박스 서식과 양립 불가라 표지·목차가 무시됨")
   }
@@ -385,6 +409,20 @@ export function incompatibleGongmunWarnings(opts: GongmunOptions): string[] {
     warns.push(`suppress_single(단일 형제 부호 생략)은 법정 번호(standard) 전용 — '${preset}' 프리셋(불릿 체계)에서 무동작`)
   }
   return warns
+}
+
+/** 서울 보고서형 골격(제목표·간이기안 표지·사전 검토 점검표)을 쓰는 프리셋 */
+const SEOUL_REPORT_PRESETS = new Set<GongmunPreset>(["report", "plan", "bangchim"])
+
+function resolveChecklist(c: GongmunOptions["checklist"], preset: GongmunPreset): ResolvedGongmun["checklist"] {
+  if (!c || !SEOUL_REPORT_PRESETS.has(preset)) return null
+  const marks = new Map<number, "done" | "na">(), notes = new Map<number, string>()
+  if (typeof c === "object") {
+    const na = new Set(c.na ?? [])
+    for (let i = 1; i <= CHECKLIST_ITEMS; i++) marks.set(i, na.has(i) ? "na" : "done")
+    for (const [k, v] of Object.entries(c.notes ?? {})) notes.set(Number(k), String(v))
+  }
+  return { marks, notes }
 }
 
 /** `#RRGGBB` 색 옵션 검증·대문자 정규화 — 미지정은 undefined(기본값은 호출부) */
@@ -418,7 +456,7 @@ export function resolveGongmun(opts: GongmunOptions): ResolvedGongmun {
     bodyHeight: Math.round(bodyPt * 100),
     lineSpacing: opts.lineSpacing ?? d.lineSpacing,
     numbering: opts.numbering ?? d.numbering,
-    margins: opts.margins ?? (ministry ? MINISTRY_MARGINS : preset === "report" || preset === "plan" ? SEOUL_REPORT_MARGINS : reportFamily ? GAEJOSIK_MARGINS : OFFICIAL_MARGINS),
+    margins: opts.margins ?? (ministry ? MINISTRY_MARGINS : preset === "report" || preset === "plan" || preset === "bangchim" ? SEOUL_REPORT_MARGINS : reportFamily ? GAEJOSIK_MARGINS : OFFICIAL_MARGINS),
     centerTitle: opts.centerTitle ?? true,
     autoFitMinRatio,
     // 보도자료는 머리박스가 1페이지 최상단을 차지하는 서식이라 표지·목차와 양립 불가 —
@@ -429,16 +467,17 @@ export function resolveGongmun(opts: GongmunOptions): ResolvedGongmun {
     bodyFontExplicit: opts.bodyFont !== undefined,
     summary: opts.summary?.trim() || null,
     docInfo: opts.docInfo ?? null,
+    checklist: resolveChecklist(opts.checklist, preset),
     toc: preset !== "press" && (opts.toc ?? (gaejosik || ministry)),
     fonts: opts.fonts ?? {},
     sizes: opts.sizes ?? {},
     levels: resolveLevels(opts.levels, Math.round(bodyPt * 100)),
     // 쪽번호 — 보고서 계열 관행(실측: 2_보고서 양식·추진계획·공고문 전부 하단 중앙)
-    pageNumbers: opts.pageNumbers ?? (gaejosik || ministry || preset === "report" || preset === "plan"),
+    pageNumbers: opts.pageNumbers ?? (gaejosik || ministry || preset === "report" || preset === "plan" || preset === "bangchim"),
     // 머리말·꼬리말 — 실측: 보고서 계열 15mm(GT3·t2·춘천·브라더), 공고·보도 10mm,
     // 기안문 0(실결재 41/60건 h0/f0)
     headerFooter: ministry ? MINISTRY_HEADER_FOOTER
-      : preset === "report" || preset === "plan" ? SEOUL_REPORT_HEADER_FOOTER
+      : preset === "report" || preset === "plan" || preset === "bangchim" ? SEOUL_REPORT_HEADER_FOOTER
       : usesReportFonts(preset) ? GAEJOSIK_HEADER_FOOTER
       : preset === "notice" || preset === "press" ? 2835 : 0,
     // "끝." — 기안문 규정(본문 끝 2타+"끝."). 그 외는 opt-in
@@ -446,9 +485,10 @@ export function resolveGongmun(opts: GongmunOptions): ResolvedGongmun {
     approval: opts.approval && opts.approval.length > 0 ? opts.approval : null,
     // 본문 제목박스 — 실측(GT3·GT12): 목차 뒤 본문 시작에 제목 반복. 표지 켜진 개조식 기본
     bodyTitleBox: opts.bodyTitleBox ?? (gaejosik && coverOn),
+    chapterFit: opts.chapterFit ?? false,
     // h2 말머리 — 실측: 보고서 양식 □ 대항목(QA-2), 공고문 아라비아("1. 사업개요", 바이오헬스 실측)
     // v5 라운드 3: 보고서·계획서 기본 band(띠 표) — 서울 plan 7/19·교육청 7/18 실측, 실무자 요청
-    h2Marker: opts.h2Marker ?? (preset === "report" || preset === "plan" ? "band" : preset === "notice" ? "number" : "none"),
+    h2Marker: opts.h2Marker ?? (preset === "report" || preset === "plan" ? "band" : preset === "bangchim" ? "square" : preset === "notice" ? "number" : "none"),
     // 띠 제목 색 — 실측 최다 #003366/흰 글자(계획서 띠 표 14개). 교육청형 밝은 띠는 옵션으로
     bandColor: hexColorOption("bandColor", opts.bandColor) ?? "#003366",
     bandTextColor: hexColorOption("bandTextColor", opts.bandTextColor) ?? "#FFFFFF",

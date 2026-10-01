@@ -90,6 +90,31 @@ describe("detectEvenSpacedItems — 공백 글리프 경계에서 run 분리", (
     assert.equal(result[2], false)
   })
 
+  it("줄 전체가 한 음절 글자이고 틈마다 pdfjs 합성 공백(syntheticSpace)뿐이면 배분 정렬 — 줄 일부면 종전대로 공백에서 끊는다", () => {
+    // 해외직접투자 표 칸 "보 험 업": 글자마다 0.78em 틈, 공백 글리프 없음
+    const items: TextItem[] = [ti("보", 60.8, 13), ti("험", 83.9, 13, { hasSpaceBefore: true, syntheticSpace: true }), ti("업", 106.9, 13, { hasSpaceBefore: true, syntheticSpace: true })]
+    assert.deepEqual(detectEvenSpacedItems(items, true), [false, true, true])
+    // 틈 일부에만 합성 공백이 든 배분 칸("법 무 연 수 원", 틈 20pt 고름)도 공백 글리프가 없으면 배분
+    const part: TextItem[] = [ti("법", 59, 15), ti("무", 94, 15, { hasSpaceBefore: true, syntheticSpace: true }), ti("연", 130, 15), ti("수", 166, 15), ti("원", 201, 15, { hasSpaceBefore: true, syntheticSpace: true })]
+    assert.deepEqual(detectEvenSpacedItems(part, true), [false, true, true, true, true])
+    // 줄 전체가 고르지 않으면(두 낱말 사이 큰 틈) 종전 규칙대로 공백에서 끊은 부분 run 만 — "전문업종 건설업"
+    const two: TextItem[] = [ti("전", 0, 10), ti("문", 12, 10, { hasSpaceBefore: true, syntheticSpace: true }), ti("업", 24, 10), ti("종", 36, 10),
+      ti("건", 120, 10, { hasSpaceBefore: true, syntheticSpace: true }), ti("설", 132, 10), ti("업", 144, 10)]
+    const r2 = detectEvenSpacedItems(two, true)
+    assert.equal(r2[4], false)
+    assert.deepEqual([r2[5], r2[6]], [true, true])
+    // 쪽 줄(칸 밖)에선 종전대로 — 칸 경계를 넘는 한 글자씩 찍은 행을 한 낱말로 붙이지 않는다
+    assert.deepEqual(detectEvenSpacedItems(items), [false, false, false])
+    // 한 글자씩 찍고 낱말 틈에만 합성 공백이 든 글("아침 브리핑 자료")은 붙이지 않는다
+    const words: TextItem[] = [ti("아", 100, 9), ti("침", 109, 9), ti("브", 121, 9, { hasSpaceBefore: true, syntheticSpace: true }), ti("리", 130, 9), ti("핑", 139, 9),
+      ti("자", 151, 9, { hasSpaceBefore: true, syntheticSpace: true }), ti("료", 160, 9)]
+    assert.ok(detectEvenSpacedItems(words).every(v => !v))
+    // 한 음절 낱말이 틈마다 합성 공백으로 이어져도 줄에 다른 글이 있으면 끊는다("더 잘 할 수 있다")
+    const mixed: TextItem[] = [ti("더", 100, 9), ti("잘", 115, 9, { hasSpaceBefore: true, syntheticSpace: true }), ti("할", 130, 9, { hasSpaceBefore: true, syntheticSpace: true }),
+      ti("수", 145, 9, { hasSpaceBefore: true, syntheticSpace: true }), ti("있다", 160, 18, { hasSpaceBefore: true, syntheticSpace: true })]
+    assert.ok(detectEvenSpacedItems(mixed).every(v => !v))
+  })
+
   it("진짜 균등배분 (공백 글리프 없음)은 여전히 감지", () => {
     const items: TextItem[] = [
       ti("홍", 100, 9), ti("보", 114, 9), ti("담", 128, 9), ti("당", 142, 9), ti("관", 156, 9),
@@ -616,5 +641,16 @@ describe("removeHeaderFooterBlocks — 본문 오탐 방지", () => {
     ]
     const removed = removeHeaderFooterBlocks(blocks, heights, [])
     assert.deepEqual(removed, [1, 3, 5], "페이지 번호만 제거, 본문 첫 줄은 유지")
+  })
+})
+
+describe("ocrImageRegions — 그림 영역 OCR 대상", () => {
+  it("ocr: true 는 모든 후보, 기본값(자동 OCR)은 쪽 면적 5% 넘는 큰 그림만 — 큰 그림 없는 쪽은 빠진다", async () => {
+    const { ocrImageRegions } = await import("../src/pdf/parser.js")
+    const big = { x1: 0, y1: 0, x2: 300, y2: 300 }, logo = { x1: 0, y1: 700, x2: 60, y2: 740 }, chart = { x1: 0, y1: 0, x2: 200, y2: 100 }
+    const regions = new Map([[1, [big, logo]], [2, [chart]]])
+    const large = new Set([big])
+    assert.deepEqual([...ocrImageRegions(regions, large, true)].map(([p, rs]) => [p, rs.length]), [[1, 2], [2, 1]])
+    assert.deepEqual([...ocrImageRegions(regions, large, false)].map(([p, rs]) => [p, rs.length]), [[1, 1]])
   })
 })

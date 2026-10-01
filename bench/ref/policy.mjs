@@ -27,7 +27,6 @@ export const CATEGORY_ELEMENTS = {
 // ─── 화이트리스트: 파서의 의도적 드롭/변형 (모수 제외 또는 참조에 동일 적용) ───
 // 항목 수가 비대해지면 그 자체가 품질 적신호 — 리포트에 노출
 export const WHITELIST = [
-  { id: "leader-tab-cut", desc: "목차 리더탭(leader≠0) 이후 페이지번호 절단 — 파서 \\x1F 정책과 동일 적용" },
   { id: "shape-alt-strip", desc: "도형/OLE 대체텍스트 패턴 제거 ('사각형입니다.', '그림입니다. 원본 그림의 이름…') — 참조에 동일 적용" },
   { id: "equation-presence", desc: "수식 hp:script ↔ LaTeX 문자 비교 불가 — presence 채점 분리" },
   { id: "trailing-col-trim", desc: "후행 빈 열 제거(builder trimAndReturn) — 참조 그리드에 동일 적용" },
@@ -43,6 +42,9 @@ export const WHITELIST = [
   { id: "page-text-parts", desc: "머리말·꼬리말은 조각(문단 글·표 셀·글상자, 문서 순서) 단위로 이어 찾는다 — 파서가 머리말 표를 ' / '·줄바꿈으로 평탄화. 전 머리말을 1회씩 소비한 뒤 재등장만 위반. 본문 문자 6자 미만은 문서 첫머리(머리말)·끝(꼬리말) 구간에서만 소비" },
   { id: "clickhere-placeholder", desc: "미기입 누름틀(CLICK_HERE·dirty≠1)의 값 자리 글이 안내문(Direction) 그대로면 한컴이 화면에만 흐리게 보이고 인쇄하지 않는다 — 파서는 IR 글에 placeholder span 으로 표시하고 마크다운에서 뺀다, 참조도 모수 제외(표 채점은 placeholder span 을 뺀 칸 글). rhwp form-01·form-02·issue1893 (v4.14.3)" },
   { id: "autonum-forms", desc: "자동번호 phantom 관용·셀 장식 관용에 한컴 번호 서식 전 계열 — 자모(ㄱ.)·괄호형((1)·(가))·로마자(I.) 추가, OUTLINE(개요) 문단도 자동부호 문단 (한컴 2020 PDF '1. 3. 단계별…')" },
+  // v4.17.0 채점 기준 변경 — 정답 표 = 원본 한글 문서에서 눈에 보이는 표 (ref/visible-tables.mjs 정의, 파서와 독립 구현)
+  { id: "visible-tables", desc: "표 채점 정답은 hp:tbl 이 아니라 보이는 표 — 칸 테두리(borderFill)가 그리는 행 띠만 표, 선이 안 보이는 틀 행은 글(칸 글은 재현율 유닛 그대로, 표 번호 없음). 보이는 변 밖 빈 들여쓰기 칸은 버리고 유령 격자선은 접는다. 칸 안 틀 표에서 풀린 글은 부모 칸 글. 법령 별표 272건 중 103건이 본문 전체를 틀 표에 담는다" },
+  { id: "cell-fraction", desc: "칸 두 개와 가로선으로 조립한 분수(할부거래법 시행령 [별표 1] 'A=P×r×(1+r)n/((1+r)n-1)') — 두 칸 글은 수식: 글 재현율 유닛에서 빼고 수식 존재(eqPresence) 모수에 1개로. 파서 출력 $\\frac{…}{…}$ 는 mdToPlain 이 세고 걷는다" },
 ]
 
 // ─── 블랙리스트: 출력 마크다운에 있으면 안 되는 문자열 (phantom 보조, pitfall #7) ───
@@ -57,11 +59,14 @@ export const BLACKLIST = [
 // 2026-07-17 전 지표 만점 잠금: 꼬리 결함 전량 수리(페이지번호 꼬리말·수식 whitelist
 // 대칭·중첩표 캡션 순서·하이퍼링크 extent·href 괄호 인코딩)로 HWPX 347건 전 지표 1.0,
 // HWP5쌍 유사도/커버 1.0 도달 — 새 플로어가 기준 (회귀 절대 불가).
+// 2026-09-30 v4.17.0 채점 기준 변경: 표 정답이 원본에서 보이는 표(visible-tables.mjs)로 바뀌어 표 4지표를 새 정답 실측으로 다시 잠근다
+// (원본 hp:tbl 13,041 → 보이는 표 9,865, 파서 9,829 일치). 남은 36표(21문서)는 서식의 1칸 상자·칸 테두리로 그린 도식처럼 정답 정의와
+// 파서 구현이 가장자리에서 갈리는 경우다. 글·순서·수식 지표는 그대로 1
 export const GATES = {
   hwpx: {
     recallMicro: 1, recallDoc: 1, missRun: 20,
     phantom: 0, blacklistHits: 0,
-    tableExact: 1, cellF1: 1, contentNED: 1, cellExact: 1,
+    tableExact: 0.9963, cellF1: 0.9976, contentNED: 0.9995, cellExact: 0.9995,
     orderDoc: 1, orderAvg: 1,
     eqPresence: 1, footnotePresence: 1, headerViolations: 0,
   },
@@ -80,10 +85,11 @@ export const GATES = {
 /** 정책 드롭 카운터 생성 — 문서별 리포트용 */
 export function newPolicyCounters() {
   return {
-    leaderTabChars: 0,    // 리더탭 이후 절단된 문자수
     shapeAltChars: 0,     // 대체텍스트 패턴으로 제거된 문자수
     excludedElements: {}, // 제외 요소 태그별 카운트
-    nestedTables: 0,      // 중첩표 수 (v3.0: 부모 IRCell.blocks에 보존 — 전부 비교 대상)
+    nestedTables: 0,      // 보이는 표 칸 안에 든 보이는 표 수 (v3.0: 부모 IRCell.blocks에 보존 — 전부 비교 대상)
+    hwpxTables: 0,        // 원본 hp:tbl 수 (v4.17.0 — 보이는 표로 나누기 전)
+    visibleTables: 0,     // 보이는 표 수 (= 표 채점 모수)
     trimmedCols: 0,       // 후행 빈 열 트림된 표 수
     autoNumHeadingParas: 0, // NUMBER/BULLET heading paraPr 사용 문단 수 — phantom 자동번호 관용 게이트
 

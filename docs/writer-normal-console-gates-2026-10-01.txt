@@ -1,0 +1,145 @@
+══ fuzz 스윕 — 5910파일 × 4변형 + mdgen 60런 = 23700런 (906s) ══
+  ✅ crash   0 (기준 0)
+  ✅ hang    0 (기준 0)
+  ✅ noCode  0 (기준 0)
+  ✅ slow    0 (기준 0)
+  ✅ genInvalid 0 (기준 0)
+  성공 파싱 12545 / 정상 실패 11155 | 에러코드 분포: PARSE_ERROR×6293 CORRUPTED×4056 UNSUPPORTED_FORMAT×366 ZIP_BOMB×5 NO_SECTIONS×386 ENCRYPTED×14 DECOMPRESSION_BOMB×35
+report → bench/out/fuzz.json | PASS ✅
+reflow 자기일관성 — bench/corpus/seoul 59건
+✅ 36262206_결재문서본문_2026년+전입직원+실무적응++교육+결과+제
+✅ 36262602_결재문서본문_구조장비+점검완료+알림(호흡기,+부력○○○)
+✅ 36262848_결재문서본문_초과근무내역서(현장대응단,+2026-06-0
+✅ 36263253_결재문서본문_직인날인+의뢰.hwpx
+✅ 36263324_결재문서본문_초과근무명령서+보고(현장대응단,+2026-0
+✅ 36263333_결재문서본문_응답소+민원에+대한+처리+결과+회신.hwpx
+✅ 36263399_결재문서본문_현장대응단+3팀+교육여비+지급계획(5월+1차
+✅ 36263625_결재문서본문_초과근무명령서(현장대응단,+2026-06-0
+✅ 36263725_결재문서본문_2026년+5월+중+국내여비+지급(2차+5.
+✅ 36263818_결재문서본문_정보공개+결정+통지서+(16763452).h
+✅ 36264177_결재문서본문_초과근무명령서(현장대응단,+2026-06-1
+✅ 36264184_결재문서본문_근무변경(쌍문119안전센터,+2026-06)
+✅ 36264235_결재문서본문_관내+출장(2026년+소방차량(구조버스,+지
+✅ 36264270_결재문서본문_화재발생종합보고서+작성기간+연장+보고.hwp
+✅ 36264560_결재문서본문_2026년+5월+중+재난대비훈련팀+특근매식비
+✅ 36264704_결재문서본문_-+2026년+서울도서관+-실내공기질+측정+
+✅ 36264887_결재문서본문_제19회+초급현장지휘관+자격인증평가+결과+보
+✅ 36264961_결재문서본문_2026년+5월+훈련+시뮬레이터+유지관리+결
+✅ 36265035_결재문서본문_근무변경(현장대응단,+2026-06-11~0
+✅ 36265189_결재문서본문_세외수입(기타잡수입)+납부+안내.hwpx
+✅ 36265289_결재문서본문_2026년+노원소방서+구내식당+집기비품+등+
+✅ 36265633_결재문서본문_2026년+공무직+피복+구매.hwpx
+✅ 36265701_결재문서본문_과태료+부과처분+면제+협조요청(998오682
+✅ 36265763_결재문서본문_초과근무명령서(현장대응단,+2026-06-1
+✅ 36265845_결재문서본문_73.+안전사고조사서+작성보고['26.+5.
+✅ 36265925_결재문서본문_2026년+5월+상황관리+당직비+지급(5.1
+✅ 36265969_결재문서본문_2026년+상반기+직원+소통+활동+추진+계획
+✅ 36266185_결재문서본문_기동대원(신규·보직변경)+교육훈련+결과+알림
+✅ 36266211_결재문서본문_초과근무명령서(현장대응단,+2026-06-1
+✅ 36266283_결재문서본문_[신촌지역+마포4구역+12지구+도시정비형+재
+✅ 36266301_결재문서본문_공공기관+소방합동훈련+보고(군○+초등학교).
+✅ 36266319_결재문서본문_근무변경(현장대응단,+2026-06-15,1
+✅ 36266354_결재문서본문_장애인공무원+원스톱상담센터+접수+및+처리+현
+✅ 36266519_결재문서본문_초과근무명령서+보고(현장대응단,+2026-0
+✅ 36266563_결재문서본문_현장대응단+소방차량(100호)+교통사고+발생
+✅ 36266925_결재문서본문_관내+출장(제11회+인명구조사+2급+자격시험
+✅ 36267200_결재문서본문_관내+출장(2026년+상반기+산악사고+특별구
+✅ 36267312_결재문서본문_찾아가는+한방의료+서비스+신청자+명단+제출(
+✅ 36267488_결재문서본문_2026년도+2분기+송파소방서+직장교육+참석
+✅ 36267750_결재문서본문_화재증거물+감정+결과+회시(26-77).hw
+✅ 36267852_결재문서본문_초과근무명령서(현장대응단,+2026-06-1
+✅ 36267867_결재문서본문_소방차량(서대문+100호)+교통사고+발생에+
+✅ 36267892_결재문서본문_제안서평가위원회+개최결과+안내+및+협상적격자
+✅ 36267988_결재문서본문_화재발생종합보고서+작성기간+연장+보고.hwp
+✅ 36268024_결재문서본문_과태료+부과처분+면제+협조+요청(양천소방서+
+✅ 36268442_결재문서본문_초과근무명령서(현장대응단,+2026-06-1
+✅ 36268546_결재문서본문_소방시설+완공검사증명서+교부에+따른+자료조사
+✅ 36268555_결재문서본문_관외+출장+여비+지급(경.김남현+등+23명)
+✅ 36268851_결재문서본문_2026년+상반기+직원+소통+활동+추진+계획
+✅ 36268856_결재문서본문_제안서+평가위원회+개최+결과보고.hwpx
+✅ 36268867_결재문서본문_관내+출장(서울시+몸짱+소방관+달력+촬영)+
+✅ 36269472_결재문서본문_화재발생종합보고서(2026-05-102).h
+✅ 36269693_결재문서본문_응답소+민원+신청에+따른+처리자+지정(무##
+✅ 36269770_결재문서본문_2026년+5월분+공무직+선택적복지+자율항목
+✅ 36270207_결재문서본문_서대문소방서+사고조사팀+운영+결과+보고.hw
+✅ 36270287_결재문서본문_2026년+5월+팀단위+화재진압+전술훈련+결
+✅ 36270292_결재문서본문_근무변경+보고(현장대응단,+2026-06-1
+✅ 36270865_결재문서본문_2026년+5월+보안진단(일반보안분야)+실시
+✅ 36270901_결재문서본문_92.서대문소방서+사고조사팀+운영+결과+및+
+게이트: 59/59 통과
+✅ reflow 게이트 통과 (100% ≥ 100%)
+룰        TP   FP   FN   P      R      F1     exact
+룰        TP   FP   FN   P      R      F1     exact
+유형      TP   FP   FN   P      R      F1     exact
+✅ 게이트 통과
+archives-record-duty.pdf p[3,4] CER 0.16% (strict 12.82%) recall 99.8% prec 100.0% 한글recall 100.0% 0.9s/p
+assembly-minutes-1179.pdf p[1,2] CER 2.31% (strict 2.68%) recall 99.4% prec 100.0% 한글recall 99.3% 1.7s/p
+assembly-minutes-1231.pdf p[1,2] CER 1.94% (strict 2.42%) recall 99.9% prec 100.0% 한글recall 98.9% 0.9s/p
+bucheon-budget-2021.pdf p[1,2] CER 5.53% (strict 18.45%) recall 99.7% prec 99.8% 한글recall 99.7% 2.1s/p 표 2/2 cellF1 0.725
+cbe-record-guide.pdf p[2,3] CER 1.83% (strict 1.83%) recall 99.7% prec 99.8% 한글recall 99.9% 0.7s/p 표 3/4 cellF1 0.595
+changwon-plan2026.pdf p[3,5] CER 3.53% (strict 6.03%) recall 97.9% prec 99.2% 한글recall 95.6% 1.7s/p 표 1/2 cellF1 0.500
+eval-perf-2025.pdf p[3,7] CER 0.71% (strict 4.86%) recall 99.6% prec 99.4% 한글recall 100.0% 1.2s/p 표 1/1 cellF1 1.000
+eval-rda-2022.pdf p[3,4] CER 7.14% (strict 13.33%) recall 98.0% prec 97.0% 한글recall 99.8% 0.7s/p
+geumcheon-budget.pdf p[3,4] CER 2.26% (strict 68.44%) recall 98.2% prec 99.5% 한글recall 100.0% 0.7s/p
+gg-nonprofit-faq.pdf p[2,3] CER 1.09% (strict 4.48%) recall 99.4% prec 99.5% 한글recall 99.9% 0.9s/p
+goe-gongmun-guide.pdf p[1,2] CER 1.15% (strict 4.40%) recall 99.0% prec 99.5% 한글recall 99.9% 0.7s/p
+goe-school-manual.pdf p[3,4] CER 11.64% (strict 11.36%) recall 98.6% prec 99.1% 한글recall 99.6% 0.4s/p
+goesan-budget-2013.pdf p[2,4] CER 1.20% (strict 21.64%) recall 99.7% prec 99.9% 한글recall 100.0% 1.1s/p 표 2/2 cellF1 0.757
+goesan-budget-2022.pdf p[1,2] CER 24.15% (strict 24.62%) recall 99.7% prec 99.7% 한글recall 100.0% 1.3s/p 표 2/2 cellF1 0.903
+goheung-budget-culture.pdf p[1,2] CER 0.57% (strict 1.25%) recall 99.7% prec 99.7% 한글recall 99.9% 1.5s/p 표 2/2 cellF1 0.977
+goheung-plan2026.pdf p[5,9] CER 0.21% (strict 7.61%) recall 100.0% prec 99.8% 한글recall 100.0% 0.8s/p 표 0/1 cellF1 0.000
+gwd-info-plan.pdf p[3,4] CER 0.85% (strict 8.58%) recall 99.4% prec 99.7% 한글recall 99.8% 0.8s/p 표 0/1 cellF1 0.000
+hampyeong-plan2026.pdf p[3,11] CER 8.64% (strict 8.76%) recall 98.3% prec 99.0% 한글recall 99.6% 1.4s/p 표 1/1 cellF1 0.046
+ice-arc-2026.pdf p[2,3] CER 1.39% (strict 2.40%) recall 98.6% prec 98.6% 한글recall 99.8% 0.6s/p
+ice-election-cases.pdf p[3,5] CER 7.54% (strict 7.68%) recall 98.1% prec 98.5% 한글recall 100.0% 0.8s/p 표 2/2 cellF1 1.000
+ice-geomjeong-plan.pdf p[2,3] CER 2.16% (strict 5.51%) recall 99.3% prec 99.6% 한글recall 99.9% 1.2s/p 표 4/4 cellF1 0.981
+ice-jci-2026.pdf p[2,3] CER 10.80% (strict 14.56%) recall 99.9% prec 99.9% 한글recall 100.0% 0.5s/p 표 0/1 cellF1 0.000
+jangheung-plan2026.pdf p[3,10] CER 1.38% (strict 5.53%) recall 99.5% prec 99.6% 한글recall 99.8% 1.0s/p 표 0/1 cellF1 0.000
+khs-budget-2014.pdf p[5,6] CER 0.34% (strict 14.01%) recall 99.7% prec 100.0% 한글recall 100.0% 0.7s/p
+kmcc-press.pdf p[1,2] CER 7.45% (strict 7.71%) recall 99.2% prec 97.4% 한글recall 99.7% 1.0s/p 표 1/1 cellF1 1.000
+korean-press-guide.pdf p[3,4] CER 0.13% (strict 0.13%) recall 99.9% prec 99.9% 한글recall 99.8% 0.6s/p
+korean-publang-2015.pdf p[5,7] CER 0.18% (strict 3.04%) recall 99.9% prec 99.9% 한글recall 100.0% 1.0s/p 표 1/1 cellF1 1.000
+ktdb-transport-stats.pdf p[3,4] CER 1.25% (strict 1.44%) recall 99.4% prec 99.4% 한글recall 100.0% 0.7s/p 표 2/2 cellF1 1.000
+naacc-2019-settle.pdf p[3,4] CER 0.00% (strict 18.25%) recall 100.0% prec 100.0% 한글recall 100.0% 0.6s/p
+nanet-press-gwanghwamun.pdf p[1,2] CER 4.64% (strict 7.65%) recall 99.2% prec 99.7% 한글recall 99.8% 0.8s/p 표 1/1 cellF1 0.058
+pa-narabaeum-plan.pdf p[2,3] CER 1.61% (strict 68.57%) recall 98.4% prec 99.7% 한글recall 99.6% 0.7s/p
+pcccr-attach.pdf p[5,7] CER 0.88% (strict 6.22%) recall 99.4% prec 99.6% 한글recall 99.9% 1.0s/p
+pen-cyberbridge.pdf p[2,3] CER 15.75% (strict 7.98%) recall 98.4% prec 97.0% 한글recall 100.0% 1.0s/p 표 2/2 cellF1 0.944
+rda-planfarm.pdf p[3,5] CER 3.23% (strict 5.17%) recall 98.6% prec 97.9% 한글recall 99.8% 0.5s/p
+sbc-budget-review.pdf p[1,2] CER 0.51% (strict 2.55%) recall 99.5% prec 99.9% 한글recall 100.0% 1.0s/p 표 2/2 cellF1 0.862
+seoul-archives-guide.pdf p[3,4] CER 4.25% (strict 4.25%) recall 98.7% prec 99.3% 한글recall 100.0% 0.6s/p 표 2/3 cellF1 0.667
+sokcho-budget.pdf p[1,2] CER 18.66% (strict 19.97%) recall 99.9% prec 99.9% 한글recall 100.0% 1.4s/p 표 2/2 cellF1 0.697
+topik-plan2026.pdf p[1,2] CER 1.88% (strict 2.79%) recall 98.8% prec 99.6% 한글recall 99.8% 1.3s/p 표 3/3 cellF1 0.989
+web000_[산림청_공고_제2025-430호]_국산재_활용_한국형_목구조물_혁신_기술개발_사업_2026년도_신규과제_선정_계획_공고.pdf p[1,2] CER 0.94% (strict 13.21%) recall 99.5% prec 99.6% 한글recall 99.5% 0.8s/p 표 1/1 cellF1 0.429
+web001_[산림청_공고_제2025-427호]_산림_지식재산_기반_유레카_기술개발_사업_2026년도_신규과제_선정_계획_공고.pdf p[1,2] CER 0.49% (strict 13.88%) recall 99.6% prec 99.8% 한글recall 99.8% 0.9s/p 표 1/1 cellF1 0.955
+web044_(별첨3)_미래전략포럼_개요★.pdf p[1] CER 3.73% (strict 4.10%) recall 98.6% prec 98.6% 한글recall 100.0% 1.4s/p 표 1/1 cellF1 1.000
+web045_moef-251217.pdf p[1,2] CER 3.83% (strict 20.92%) recall 98.6% prec 99.6% 한글recall 98.5% 1.0s/p
+web046_제안요청서.pdf p[2,3] CER 0.48% (strict 3.65%) recall 99.6% prec 99.5% 한글recall 100.0% 0.7s/p
+web047_[별지_제5호서식]_개발행위_허가신청서(국토의_계획_및_이용에_관한_법률_시행규칙).pdf p[1,2] CER 5.50% (strict 7.19%) recall 98.1% prec 99.6% 한글recall 99.1% 0.9s/p 표 1/1 cellF1 0.000
+web048_[별지_제3호서식]_대리인선임허가신청서(행정절차법_시행규칙).pdf p[1] CER 0.34% (strict 1.04%) recall 99.7% prec 100.0% 한글recall 100.0% 0.6s/p 표 1/1 cellF1 0.103
+web049_[별지_제8호서식]_의약품등_(제조판매¸_수입_품목)_허가사항_변경허가_신청서(의약품_등의_안전에_관한_규칙).pdf p[1] CER 11.35% (strict 13.19%) recall 98.6% prec 98.6% 한글recall 99.8% 0.8s/p 표 2/3 cellF1 0.216
+web050_[별지_제35호서식]_양식업_허가신청서(양식산업발전법_시행규칙).pdf p[1] CER 5.57% (strict 6.38%) recall 99.9% prec 100.0% 한글recall 100.0% 1.1s/p 표 1/2 cellF1 0.000
+web051_[별지_제14호서식]_건축허가신청서_및_허가서(외국인투자_촉진법_시행규칙).pdf p[1,2] CER 8.63% (strict 10.62%) recall 97.6% prec 99.6% 한글recall 99.4% 1.2s/p 표 1/1 cellF1 0.000
+web066_230920_글로벌_금융안정_콘퍼런스_보도자료.pdf p[1,2] CER 4.86% (strict 4.89%) recall 98.9% prec 98.1% 한글recall 99.7% 1.1s/p 표 1/2 cellF1 0.208
+web067_downloadBoardFile.pdf p[5,6] CER 2.58% (strict 3.93%) recall 98.8% prec 98.5% 한글recall 98.8% 0.7s/p 표 1/1 cellF1 1.000
+web068_downloadFile.pdf p[2,3] CER 12.91% (strict 22.62%) recall 93.8% prec 99.3% 한글recall 90.5% 1.9s/p 표 4/7 cellF1 0.183
+web069_★(제안요청서)_WTO_수산보조금_협정_기대효과(재공고).pdf p[2,3] CER 0.00% (strict 0.00%) recall 100.0% prec 100.0% 한글recall 100.0% 0.6s/p
+yeosu-plan2026.pdf p[3,7] CER 33.06% (strict 34.39%) recall 95.7% prec 96.8% 한글recall 92.3% 1.1s/p 표 1/3 cellF1 0.333
+  "docs": 53,
+  "pages": 102,
+  "charF1": 0.99178,
+✅ cerMicro: 0.05188 (≤ 0.1)
+✅ charRecall: 0.99001 (≥ 0.988)
+✅ charPrecision: 0.99355 (≥ 0.9915)
+✅ hangulRecall: 0.99363 (≥ 0.992)
+✅ tableMatched: 0.7761 (≥ 0.76)
+✅ tableCellF1: 0.5465 (≥ 0.535)
+✅ population: 53/102 (≥ 53/102)
+✅ environment: 0 (0 (OCR 미적용 문서))
+report → bench/out/ocr-accuracy.json | PASS ✅
+npm notice 2.7kB dist/chunk-DTPALXTW.js
+npm notice 5.9kB dist/chunk-DTPALXTW.js.map
+npm notice 350.7kB dist/chunk-ELTPM4HM.cjs
+npm notice 679.2kB dist/chunk-ELTPM4HM.cjs.map
+npm notice 10.3kB dist/chunk-FPU7WPQM.js
+npm notice 55.8kB dist/chunk-FPU7WPQM.js.map

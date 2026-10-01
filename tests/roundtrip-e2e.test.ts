@@ -46,7 +46,7 @@ function corpusFiles(dir: string): string[] {
 
 async function parseFile(path: string) {
   const original = new Uint8Array(readFileSync(path))
-  const parsed = await parseHwpx(toAB(original))
+  const parsed = await parseHwpx(toAB(original), { layoutTables: "keep" })
   return parsed.success ? { original, markdown: parsed.markdown } : null
 }
 
@@ -59,7 +59,7 @@ function findPlainLine(md: string): string | undefined {
 }
 
 async function reparse(data: Uint8Array) {
-  const r = await parseHwpx(toAB(data))
+  const r = await parseHwpx(toAB(data), { layoutTables: "keep" })
   assert.ok(r.success, "패치본 재파싱 성공")
   return r
 }
@@ -161,7 +161,7 @@ describe("patchHwpx e2e: 헤딩 수정", { skip: CORPUS_SKIP }, () => {
     if (!found) {
       const buf = await markdownToHwpx("## 제2장 사업 추진 계획\n\n본문 문단 하나.\n\n### 세부 추진 일정\n\n둘째 문단.")
       const original = new Uint8Array(buf)
-      const parsed = await parseHwpx(toAB(original))
+      const parsed = await parseHwpx(toAB(original), { layoutTables: "keep" })
       assert.ok(parsed.success)
       const edited = editHeading(parsed.markdown)
       assert.ok(edited, "합성 문서에 헤딩 존재")

@@ -5,7 +5,7 @@
 
 import { type ResolvedGongmun } from "./gongmun.js"
 import { TOC_GEOM, formatGaejosikDate, gaejosikSizes, coverGeom, chapterGeom, tocBannerGeom, bodyTitleGeom, GAEJOSIK_BASE_WIDTH } from "./gaejosik.js"
-import { simulateWrap } from "./text-metrics.js"
+import { simulateWrap, measureTextWidth, faceClassForGen } from "./text-metrics.js"
 import { GJ_TABLE_ID_BASE } from "./geometry.js"
 import {
   GONGMUN_CENTER, PARA_NORMAL, CHAR_NORMAL,
@@ -52,13 +52,14 @@ function cell(opts: {
     + `</hp:tc>`
 }
 
-function table(rows: string[], w: number, h: number, cols: number, tblBf: number = 1, bodyWidth: number = GAEJOSIK_BASE_WIDTH): string {
+/** @param marginW 좌우 outMargin 판정 폭 — 기본 w. 장 헤더 chapterFit 은 본문 폭 표 기준을 넘겨 왼쪽 끝을 종전 자리에 둔다 */
+function table(rows: string[], w: number, h: number, cols: number, tblBf: number = 1, bodyWidth: number = GAEJOSIK_BASE_WIDTH, marginW: number = w): string {
   // 본문폭급 표(표지·본문 제목박스)는 outMargin 좌우 0 — 실측(t2): 283을 주면
   // treatAsChar 진행폭(w+566)이 컬럼폭을 넘어 좌우 1mm씩 밀려 우측 여백을 침범한다 (GAP-01 잔여).
   // 실물도 48180 표지 표 2개만 0, 좁은 표(배너·목차박스·장헤더)는 283.
   // 판정은 실제 컬럼폭(bodyWidth) 기준 — 절대 임계 48000은 커스텀 여백(예: 좌우 35mm,
   // 본문폭 39685)에서 본문폭급 표에 283이 붙어 우측 침범을 재현시켰다 (v4.0.5 영역6).
-  const outLR = w + 566 > bodyWidth ? 0 : 283
+  const outLR = marginW + 566 > bodyWidth ? 0 : 283
   return `<hp:tbl id="${++gjTableId}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="${rows.length}" colCnt="${cols}" cellSpacing="0" borderFillIDRef="${tblBf}" noAdjust="1">`
     + `<hp:sz width="${w}" widthRelTo="ABSOLUTE" height="${h}" heightRelTo="ABSOLUTE" protect="0"/>`
     + `<hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="PARA" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>`
@@ -180,19 +181,27 @@ export function buildGaejosikBodyTitle(title: string, gongmun: ResolvedGongmun, 
 
 // ─── 장 헤더 표 ─────────────────────────────────────
 
+/** chapterFit 제목 칸 여유 — 셀 안 여백(141×2) + 폭표 오차로 한 글자가 꺾이지 않게 둔 조판 여유 */
+const CHAPTER_FIT_PAD = 282 + 300
+
 /**
  * 장 헤더 — [Ⅰ(흰 글자·파랑 음영)] [간격(좌선)] [제 목(회색 상하선·연회색 음영)]
  * 1×3 표, 실측 기하. n은 1-based 장 번호.
+ * chapterFit 이면 제목 칸을 글자 실폭(앞 공백만큼 뒤 여백 포함)에 맞추되 본문 폭 제목 칸을 넘지 않는다.
  */
 export function buildGaejosikChapter(n: number, title: string, gongmun?: ResolvedGongmun, bodyWidth: number = GAEJOSIK_BASE_WIDTH, srcLevel: number = 2): string {
   // 행높이는 chapter 크기에, 폭은 본문폭에 비례 스케일 (A3 기하연동 + margins 대응)
   const g = gongmun ? chapterGeom(gongmun.bodyHeight, gongmun.sizes, bodyWidth) : chapterGeom(1500, {}, bodyWidth)
+  const titleW = gongmun?.chapterFit
+    ? Math.min(g.titleW, Math.ceil(measureTextWidth(` ${title} `, gaejosikSizes(gongmun.bodyHeight, gongmun.sizes).chapter, 100,
+      { faceClass: faceClassForGen(gongmun.fonts.heading ?? "HY헤드라인M") })) + CHAPTER_FIT_PAD)
+    : g.titleW
   const numPara = `<hp:p paraPrIDRef="${GONGMUN_CENTER}" styleIDRef="0"><hp:run charPrIDRef="${GJ_CHAR_CHAPTER_NUM}"><hp:t>${chapterRoman(n)}</hp:t></hp:run></hp:p>`
   const titlePara = `<hp:p paraPrIDRef="${PARA_NORMAL}" styleIDRef="0"><hp:run charPrIDRef="${GJ_CHAR_CHAPTER_TITLE}"><hp:t> ${escapeTextXml(title)}</hp:t></hp:run></hp:p>`
   // 왕복 채널 (P2) — 제목 셀에 원본 헤딩 레벨 마커. 재파싱 시 장식표 대신 헤딩으로 복원
   const row = cell({ bf: GJ_BF_CHAPTER_NUM, col: 0, w: g.numW, h: g.rowH, paras: numPara })
     + cell({ bf: GJ_BF_CHAPTER_GAP, col: 1, w: g.gapW, h: g.rowH })
-    + cell({ bf: GJ_BF_CHAPTER_TITLE, col: 2, w: g.titleW, h: g.rowH, paras: titlePara, name: `__kordoc_h${Math.min(Math.max(srcLevel, 1), 6)}` })
-  const tbl = table([row], g.numW + g.gapW + g.titleW, g.rowH, 3, 1, bodyWidth)
+    + cell({ bf: GJ_BF_CHAPTER_TITLE, col: 2, w: titleW, h: g.rowH, paras: titlePara, name: `__kordoc_h${Math.min(Math.max(srcLevel, 1), 6)}` })
+  const tbl = table([row], g.numW + g.gapW + titleW, g.rowH, 3, 1, bodyWidth, g.numW + g.gapW + g.titleW)
   return `<hp:p paraPrIDRef="${GJ_PARA_CHAPTER}" styleIDRef="0"><hp:run charPrIDRef="${CHAR_NORMAL}">${tbl}</hp:run></hp:p>`
 }

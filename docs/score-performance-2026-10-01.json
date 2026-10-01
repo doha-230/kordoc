@@ -1,0 +1,3091 @@
+{
+  "date": "2026-10-01",
+  "version": "4.17.5",
+  "status": "released-with-confirmed-native-toc-boundary-regression",
+  "baseline": {
+    "version": "4.17.4",
+    "commit": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+    "indexSHA256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3"
+  },
+  "candidate": {
+    "date": "2026-10-01",
+    "baselineCommit": "6b771f8be29d13716bca053676a72bbdf3eb2e94",
+    "baselineIndexSha256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+    "files": {
+      "dist/index.js": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+      "dist/index.cjs": "87498d4ec733fb9a37a3dbcfba5d781dcad6a8dc7c06612a4d8b7ead8a9a3062",
+      "dist/cli.js": "c7404496c885500d66e147f832a69b3e1d87239ae61d770fabe0b6cd2377f689",
+      "src/pdf/xy-cut.ts": "2f2072211e5d6e1eff58a6b892ad2035f8c66412268936382184a263cf701a42",
+      "src/pdf/paragraph-lines.ts": "6d72f3e0986bec9695cc3837a85081f5d9ec6b8f9e0f2818c307b6c948acbf31",
+      "src/pdf/heading-demote.ts": "0cfd2d0a84ac69d5f3af7809356e67af2807ee74b85ddc1186f5e60c1cbf5ccb"
+    }
+  },
+  "scoringPolicy": {
+    "groundTruthChanged": false,
+    "evaluatorChanged": false,
+    "populationsChanged": false,
+    "exclusionsChanged": false,
+    "note": "Source GT files, scorer code, populations and exclusions unchanged. Native-derived legacy OCR strict GT changes with candidate IR children; this is explicitly audited."
+  },
+  "odl": {
+    "gtMarkdownManifestSHA256": "59c4847fe1428bb3161fdb8f7ca1d7d02e3bc57b52c3be7d27bc53f1d4a4b5b8",
+    "evaluatorSHA256": "2f25d6075dc58c6ecc78b20e800cc3e369529543300340d92638440ef020ef5f",
+    "documents": 200,
+    "tracks": {
+      "default": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9603991404735508,
+            "nid_mean": 0.9608686889707626,
+            "nid_s_mean": 0.9647267039559515,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9459239841738709,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.960623284045334,
+            "nid_mean": 0.9608749102830914,
+            "nid_s_mean": 0.9647329252682801,
+            "teds_mean": 0.9789524108694445,
+            "teds_s_mean": 0.9906982529854047,
+            "mhs_mean": 0.9467502754472125,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "changed": [
+          {
+            "id": "01030000000141",
+            "before": {
+              "overall": 0.6265413665054576,
+              "nid": 0.9607225372820836,
+              "nid_s": 0.9607225372820836,
+              "teds": null,
+              "teds_s": null,
+              "mhs": 0.29236019572883165,
+              "mhs_s": 0.7142857142857143
+            },
+            "after": {
+              "overall": 0.6713700808621078,
+              "nid": 0.9619667997478462,
+              "nid_s": 0.9619667997478462,
+              "teds": null,
+              "teds_s": null,
+              "mhs": 0.38077336197636946,
+              "mhs_s": 0.5714285714285714
+            }
+          }
+        ]
+      },
+      "plainHtml": {
+        "before": {
+          "score": {
+            "overall_mean": 0.972017156193075,
+            "nid_mean": 0.9764230326306,
+            "nid_s_mean": 0.9762269858162143,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9558109230721217,
+            "mhs_s_mean": 0.9794903007932144
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9722347290173252,
+            "nid_mean": 0.9764292957563357,
+            "nid_s_mean": 0.97623324894195,
+            "teds_mean": 0.9827577018320368,
+            "teds_s_mean": 0.9908039556438265,
+            "mhs_mean": 0.9566125726473823,
+            "mhs_s_mean": 0.9781551873085683
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        }
+      },
+      "nativeOff": {
+        "before": {
+          "score": {
+            "overall_mean": 0.9373300110698137,
+            "nid_mean": 0.9382549823115746,
+            "nid_s_mean": 0.9437122770592574,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        },
+        "after": {
+          "score": {
+            "overall_mean": 0.9373300110698137,
+            "nid_mean": 0.9382549823115746,
+            "nid_s_mean": 0.9437122770592574,
+            "teds_mean": 0.9356993998956048,
+            "teds_s_mean": 0.9430792053663571,
+            "mhs_mean": 0.9332626255178413,
+            "mhs_s_mean": 0.9728147333699835
+          },
+          "nid_count": 200,
+          "teds_count": 42,
+          "mhs_count": 107,
+          "missing_predictions": 0
+        }
+      }
+    },
+    "headingNote": {
+      "document": "01030000000141",
+      "originalRoles": "First two lines are headings; Eventually line is prose.",
+      "mhsBefore": 0.29236019572883165,
+      "mhsAfter": 0.38077336197636946,
+      "mhsStructureBefore": 0.7142857142857143,
+      "mhsStructureAfter": 0.5714285714285714,
+      "gtNodes": 7,
+      "beforeNodes": 6,
+      "afterNodes": 4,
+      "structureEditBefore": 2,
+      "structureEditAfter": 3,
+      "limitation": "Two true banner headings remain missing. Flat text-blind structural metric decreases despite corrected roles; no fake heading or scorer adjustment."
+    }
+  },
+  "koreanPdfText": {
+    "before": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98804,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "after": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98809,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "pass": true,
+    "exclusionsUnchanged": true,
+    "fullAfterReportSHA256": "996783bbc48775194550a988c9851dc993b657f957103f73a2870e888e5666ae",
+    "representativeCases": [
+      {
+        "before": {
+          "pair": "lo-pairs/kpipa-계약서영문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 10823,
+          "recall": 1,
+          "precision": 0.99972,
+          "order": 1,
+          "spaceF1": 0.99898
+        },
+        "after": {
+          "pair": "lo-pairs/kpipa-계약서영문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 10823,
+          "recall": 1,
+          "precision": 0.99972,
+          "order": 1,
+          "spaceF1": 0.99898
+        }
+      },
+      {
+        "before": {
+          "pair": "lo-pairs/kpipa-계약서일문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 5163,
+          "recall": 0.99981,
+          "precision": 0.99845,
+          "order": 1,
+          "spaceF1": 0.83107
+        },
+        "after": {
+          "pair": "lo-pairs/kpipa-계약서일문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 5163,
+          "recall": 0.99981,
+          "precision": 0.99845,
+          "order": 1,
+          "spaceF1": 0.90835
+        }
+      },
+      {
+        "before": {
+          "pair": "lo-pairs/kpipa-계약서중문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 3661,
+          "recall": 0.99918,
+          "precision": 0.99891,
+          "order": 1,
+          "spaceF1": 0.82909
+        },
+        "after": {
+          "pair": "lo-pairs/kpipa-계약서중문",
+          "set": "lo-pairs",
+          "ok": true,
+          "refChars": 3661,
+          "recall": 0.99918,
+          "precision": 0.99891,
+          "order": 1,
+          "spaceF1": 0.8582
+        }
+      }
+    ],
+    "baselineRowProvenanceAudit": {
+      "status": "complete",
+      "scope": "20 changed rows within unchanged full744 population, diagnostic only",
+      "baselineCount": 20,
+      "candidateCount": 20,
+      "baselineErrors": 0,
+      "candidateErrors": 0,
+      "staleBaseline": [],
+      "staleCandidate": [],
+      "provenance": {
+        "baselineIndex": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3",
+        "candidateIndex": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991",
+        "baselineRowsGeneratedAt": "2026-09-30T21:45:30.706Z",
+        "candidateRowsGeneratedAt": "2026-09-30T23:06:44.229Z",
+        "scorerSHA": "cdac2c73964a058ecbb39af61d582fe1023df6e60f4a915032e583a0a648deea",
+        "subset": [
+          "korea-kr-pairs/156782217_[260917 16시반보도] 제4차 개인정보 미래포럼 개최(혁신기획담당관)",
+          "korea-kr-pairs/156782395_(별첨3) 혁신형 제약기업 인증 등에 관한 규정 일부개정고시안",
+          "korea-kr-pairs/156782522_[9.21.월 조간] ‘일하는 즐거움, 당당한 어르신, 활기찬 대한민국’ 노인일자리가 만들어 갑니다",
+          "korea-kr-pairs2/156775654_[26-686](공동보도자료) 정부, 서해 북방한계선(NLL) 불법조업 외국어선 대응 방안 발표",
+          "korea-kr-pairs2/156775689_(별첨2) 지역의사선발전형 선발 등에 관한 고시 일부개정고시안",
+          "korea-kr-pairs2/156775701_2026년 벼 고추 재배면적조사 결과 보도자료",
+          "korea-kr-pairs2/156775932_260828 청년일자리 회복방안",
+          "korea-kr-pairs2/156775963_(보도자료) 중앙·지방 외국인정책 담당자 한자리에, 현장 중심 정책역량 높인다 (배포즉시보도)",
+          "lo-pairs/kpipa-계약서일문",
+          "lo-pairs/kpipa-계약서중문",
+          "lo-pairs/web056_Full-Template",
+          "rhwp/2025 행정업무운영 편람(최종)",
+          "rhwp/3-09월_교육_통합_2022",
+          "rhwp/3-09월_교육_통합_2023",
+          "rhwp/3-10월_교육_통합_2022",
+          "rhwp/3-11월_실전_통합_2022",
+          "rhwp/hwp3-sample11-hwpx",
+          "rhwp/hwp3-sample16-hwp5",
+          "rhwp/hwpx/issue2019_floating_form_74312",
+          "rhwp/tac-img-02"
+        ],
+        "note": "benchmark scoring formulas/normalization/exclusion/policies unchanged; only absolute imports, selected20 filter, diagnostic output capture and labels changed"
+      },
+      "inputHashes": [
+        {
+          "pair": "korea-kr-pairs/156782217_[260917 16시반보도] 제4차 개인정보 미래포럼 개최(혁신기획담당관)",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782217_[260917 16시반보도] 제4차 개인정보 미래포럼 개최(혁신기획담당관).pdf",
+            "bytes": 191677,
+            "sha256": "b8d76c4be0a816226f1ebf00a4402553ac0a60a9e551108c93344106703ae31b"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782217_[260917 16시반보도] 제4차 개인정보 미래포럼 개최(혁신기획담당관).hwpx",
+            "bytes": 322881,
+            "sha256": "28acc4c060602cd55df006065cc29bd33df4b5e5a9c9eb7beeadc72108f6cd8d"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs/156782395_(별첨3) 혁신형 제약기업 인증 등에 관한 규정 일부개정고시안",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782395_(별첨3) 혁신형 제약기업 인증 등에 관한 규정 일부개정고시안.pdf",
+            "bytes": 145128,
+            "sha256": "8f69d89b878d881a640eea71315a028867b0a0e2256afa8db27f07d6bc2d1a10"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782395_(별첨3) 혁신형 제약기업 인증 등에 관한 규정 일부개정고시안.hwpx",
+            "bytes": 38191,
+            "sha256": "1c171d4615fb642b0950650a6d03b096f33e1bcab40b0f370537785f96317a7a"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs/156782522_[9.21.월 조간] ‘일하는 즐거움, 당당한 어르신, 활기찬 대한민국’ 노인일자리가 만들어 갑니다",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782522_[9.21.월 조간] ‘일하는 즐거움, 당당한 어르신, 활기찬 대한민국’ 노인일자리가 만들어 갑니다.pdf",
+            "bytes": 1493690,
+            "sha256": "95588a374df12c86246c4d3f03b62848307e2f6a9e8aa4ccb013552239b2987f"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs/156782522_[9.21.월 조간] ‘일하는 즐거움, 당당한 어르신, 활기찬 대한민국’ 노인일자리가 만들어 갑니다.hwpx",
+            "bytes": 10390463,
+            "sha256": "383b82688cd557b986bfe599baebe96fe6c7b6ceda0191fb8a735d3acdf46eb5"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775654_[26-686](공동보도자료) 정부, 서해 북방한계선(NLL) 불법조업 외국어선 대응 방안 발표",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775654_[26-686](공동보도자료) 정부, 서해 북방한계선(NLL) 불법조업 외국어선 대응 방안 발표.pdf",
+            "bytes": 185100,
+            "sha256": "d1e86f70894478c60f2456cff0af97792fad311e4e22ed825370ba508f96c049"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775654_[26-686](공동보도자료) 정부, 서해 북방한계선(NLL) 불법조업 외국어선 대응 방안 발표.hwpx",
+            "bytes": 130985,
+            "sha256": "6520400d499f268cd8090de5d98c553c32d16004c9830ab60222215d86ca7f56"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775689_(별첨2) 지역의사선발전형 선발 등에 관한 고시 일부개정고시안",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775689_(별첨2) 지역의사선발전형 선발 등에 관한 고시 일부개정고시안.pdf",
+            "bytes": 142017,
+            "sha256": "772f3fe4c8ac440a1626a3daa7d0acc14cb2071088a08054c74f692df6f0a9db"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775689_(별첨2) 지역의사선발전형 선발 등에 관한 고시 일부개정고시안.hwpx",
+            "bytes": 40035,
+            "sha256": "861bf1c0f6240e4e7599a626d3bb62020ae820bc227a64e78f2db901cac70cc7"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775701_2026년 벼 고추 재배면적조사 결과 보도자료",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775701_2026년 벼 고추 재배면적조사 결과 보도자료.pdf",
+            "bytes": 955874,
+            "sha256": "6771da177ebdb58faa8a4d6af42d51da927215dce91346ad5252cb4b51a5c604"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775701_2026년 벼 고추 재배면적조사 결과 보도자료.hwpx",
+            "bytes": 1650840,
+            "sha256": "f11174a39423dfb5ae294ac9361a476b06a96574efcef4ca8bd0ac7f0b27ca7b"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775932_260828 청년일자리 회복방안",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775932_260828 청년일자리 회복방안.pdf",
+            "bytes": 1683172,
+            "sha256": "d9f4f07b6e33604f4c1ad0d85b2d1b76089a2292dd21fd8312ea2f8ef0ef5e78"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775932_260828 청년일자리 회복방안.hwpx",
+            "bytes": 440282,
+            "sha256": "601f4cd35c51fbd383b1bc3595d6062486b8ac8cb322aeb22a63a9f7d5927b22"
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775963_(보도자료) 중앙·지방 외국인정책 담당자 한자리에, 현장 중심 정책역량 높인다 (배포즉시보도)",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775963_(보도자료) 중앙·지방 외국인정책 담당자 한자리에, 현장 중심 정책역량 높인다 (배포즉시보도).pdf",
+            "bytes": 144069,
+            "sha256": "d3d8f9e966d3dfa26f4b9d493a696a923af2522cc65fd8af50151c6eb2f3ed54"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/korea-kr-pairs2/156775963_(보도자료) 중앙·지방 외국인정책 담당자 한자리에, 현장 중심 정책역량 높인다 (배포즉시보도).hwpx",
+            "bytes": 175268,
+            "sha256": "b2cc21aff9edc3efb0d5c31b277d0bf4ab72798d51b8a1bfd5fe4e5fe31ea659"
+          }
+        },
+        {
+          "pair": "lo-pairs/kpipa-계약서일문",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서일문.pdf",
+            "bytes": 328904,
+            "sha256": "50c7492289878ed7e6283a34338acb25ef4eac968005d7f29ee47ceb19057de5"
+          },
+          ".docx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서일문.docx",
+            "bytes": 26123,
+            "sha256": "9af9d125846e6d13da51fd542057acc9354f7f94287bd5e1ae7448671f40fb4c"
+          }
+        },
+        {
+          "pair": "lo-pairs/kpipa-계약서중문",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서중문.pdf",
+            "bytes": 303966,
+            "sha256": "2be5de4a7a2feeeb8d4e8597bff2178ee0e9d893f5290178bf0a6d2e60b5afb5"
+          },
+          ".docx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/kpipa-계약서중문.docx",
+            "bytes": 26475,
+            "sha256": "352cdd1d86b3984bfddf3bc42a3dbaaaa77cb11df32b7bf1b745a9ba89e2ed2c"
+          }
+        },
+        {
+          "pair": "lo-pairs/web056_Full-Template",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/web056_Full-Template.pdf",
+            "bytes": 556307,
+            "sha256": "5ac6af9ca783eb8ad7d999a412fa0e172c05f3ddd681dfd650c311d74c64fe3d"
+          },
+          ".docx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/lo-pairs/web056_Full-Template.docx",
+            "bytes": 119603,
+            "sha256": "e312ca6bc157c4c799e4976b0406f3315aeef7756ddf2716da3a4dcc34a20ccc"
+          }
+        },
+        {
+          "pair": "rhwp/2025 행정업무운영 편람(최종)",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/2025 행정업무운영 편람(최종).pdf",
+            "bytes": 4520984,
+            "sha256": "25c957087ec0331ab1bd243f38e89e152d8eb463db97e74dbc8223ef59ef52e1"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/2025 행정업무운영 편람(최종).hwpx",
+            "bytes": 13639865,
+            "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+          }
+        },
+        {
+          "pair": "rhwp/3-09월_교육_통합_2022",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-09월_교육_통합_2022.pdf",
+            "bytes": 1443904,
+            "sha256": "748900124e771baf6ce7d90c2ef869b9078b53437c59bc47bdbcc42cba81bb80"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-09월_교육_통합_2022.hwpx",
+            "bytes": 4668977,
+            "sha256": "b3ed3d5c4f0f95f9a8990b17720da3bef566b5a36174153aa3def28fd46e6029"
+          }
+        },
+        {
+          "pair": "rhwp/3-09월_교육_통합_2023",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-09월_교육_통합_2023.pdf",
+            "bytes": 813408,
+            "sha256": "bfd4de7927a82b4ef521fc78663075cae952424a2615ef9b86c36c37325bf01b"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-09월_교육_통합_2023.hwpx",
+            "bytes": 1305942,
+            "sha256": "9ff4ba0f8530621c0ad89be3bc563135cc88f75052949e4d444cfcd715375340"
+          }
+        },
+        {
+          "pair": "rhwp/3-10월_교육_통합_2022",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-10월_교육_통합_2022.pdf",
+            "bytes": 920895,
+            "sha256": "0b8acaf2a1fc99fdb3b800707e5c39603b7c884be48865a4d79c2bd167f46449"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-10월_교육_통합_2022.hwpx",
+            "bytes": 2677940,
+            "sha256": "f37246219339c8900b19f3da65afc105fbf6823afe5f2bb357a7e4c2b14b0314"
+          }
+        },
+        {
+          "pair": "rhwp/3-11월_실전_통합_2022",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-11월_실전_통합_2022.pdf",
+            "bytes": 1461874,
+            "sha256": "efad255e305326b5b84507481b2158e59941ae2bf4d87dbf97cb5a93b9664a57"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/3-11월_실전_통합_2022.hwpx",
+            "bytes": 4776776,
+            "sha256": "9efbf79140da8182e10380b140c714f54bcee5c57e05844ee7496febe9219fa4"
+          }
+        },
+        {
+          "pair": "rhwp/hwp3-sample11-hwpx",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwp3-sample11-hwpx.pdf",
+            "bytes": 26386991,
+            "sha256": "ee680352c2503bf237659ae52a8a9687f70c25cfdd41a50e7d08a62218770daf"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwp3-sample11-hwpx.hwpx",
+            "bytes": 548221,
+            "sha256": "986884775fc5cc3d8e21d6cbaaa012163e7510a5906f83bdd6be4d478fe28a1f"
+          }
+        },
+        {
+          "pair": "rhwp/hwp3-sample16-hwp5",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwp3-sample16-hwp5.pdf",
+            "bytes": 2233415,
+            "sha256": "b246ed9ac7050afd099f297f4ed489ea7fdd6fa38eb4340ece9676cf0fe75e3a"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwp3-sample16-hwp5.hwpx",
+            "bytes": 3061900,
+            "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+          }
+        },
+        {
+          "pair": "rhwp/hwpx/issue2019_floating_form_74312",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwpx/issue2019_floating_form_74312.pdf",
+            "bytes": 170566,
+            "sha256": "1362031ba8eebc23e579922159c4d88a73714f0187cf4e5bac38d0315744622e"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/hwpx/issue2019_floating_form_74312.hwpx",
+            "bytes": 75276,
+            "sha256": "092651a9cd41b9ece41abf0b4431a0e5c0a07d811ebb88375d208a1c92ba3d54"
+          }
+        },
+        {
+          "pair": "rhwp/tac-img-02",
+          ".pdf": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/tac-img-02.pdf",
+            "bytes": 1346452,
+            "sha256": "f52adaf3a4268be5075cf20359f085d91e08addcc4d672999a9b8fef5336fc01"
+          },
+          ".hwpx": {
+            "path": "/Users/mong-e/workspace/kordoc-quality-99/bench/corpus/rhwp/tac-img-02.hwpx",
+            "bytes": 4148807,
+            "sha256": "aefaf3913470056723e8e58e0fb8f8ae4054cb57b31bc764a6dba5d6c8df2975"
+          }
+        }
+      ],
+      "sourceHashes": {
+        "/tmp/kordoc-score-performance-baseline-20261001": {
+          "src/pdf/xy-cut.ts": "5bdf1d1d34bd70a1688a5692d5d3adffdf454bf828d3bb3629ab6470e1983eff",
+          "src/pdf/paragraph-lines.ts": "c60c7a825758c4517d4314f5975a2f6604884e025ef4ed58f7416b24d02d6c1c",
+          "src/pdf/text-line.ts": "fa4961fcc3fd7542a314d3b2a84a46ce8fd0c9acedceaebfba69e36360853439",
+          "src/pdf/line-wrap.ts": "9dabd5e1eeff635eb731cb8dcaf15bf9196253b07114ed230909a45c00042a68",
+          "src/pdf/page-blocks.ts": "1094cddf97ca787ac4e17daf40e4f54bb03b8e71a4b1365e3f3c5398bdcd6fa5",
+          "src/table/builder.ts": "2b619b60e77dee9b9b9ab2b561a9502f8215a3dc57db7fb343eefdbe0f9d9ff0",
+          "src/hwpx/parser.ts": "f8d1c7c9837c8292c037233f84a90e9f498aa90fc2779a5ba9fa91563be75e08",
+          "package.json": "b37197e3247534540aa82236a5d73c200e14d6a195d48f424e85e7926d5da274"
+        },
+        "/Users/mong-e/workspace/kordoc-quality-99": {
+          "src/pdf/xy-cut.ts": "2f2072211e5d6e1eff58a6b892ad2035f8c66412268936382184a263cf701a42",
+          "src/pdf/paragraph-lines.ts": "6d72f3e0986bec9695cc3837a85081f5d9ec6b8f9e0f2818c307b6c948acbf31",
+          "src/pdf/text-line.ts": "fa4961fcc3fd7542a314d3b2a84a46ce8fd0c9acedceaebfba69e36360853439",
+          "src/pdf/line-wrap.ts": "9dabd5e1eeff635eb731cb8dcaf15bf9196253b07114ed230909a45c00042a68",
+          "src/pdf/page-blocks.ts": "1094cddf97ca787ac4e17daf40e4f54bb03b8e71a4b1365e3f3c5398bdcd6fa5",
+          "src/table/builder.ts": "2b619b60e77dee9b9b9ab2b561a9502f8215a3dc57db7fb343eefdbe0f9d9ff0",
+          "src/hwpx/parser.ts": "f8d1c7c9837c8292c037233f84a90e9f498aa90fc2779a5ba9fa91563be75e08",
+          "package.json": "7c7aa7228f52e7ae73204e95993b44419826a7f2ca0674a3a093f48fdfc81a69"
+        }
+      },
+      "rows": [
+        {
+          "pair": "korea-kr-pairs/156782217_[260917 16시반보도] 제4차 개인정보 미래포럼 개최(혁신기획담당관)",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.97373,
+              "candidate": 0.98418
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs/156782395_(별첨3) 혁신형 제약기업 인증 등에 관한 규정 일부개정고시안",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.95309,
+              "candidate": 0.96257
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs/156782522_[9.21.월 조간] ‘일하는 즐거움, 당당한 어르신, 활기찬 대한민국’ 노인일자리가 만들어 갑니다",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.96784,
+              "candidate": 0.97158
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775654_[26-686](공동보도자료) 정부, 서해 북방한계선(NLL) 불법조업 외국어선 대응 방안 발표",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.9904,
+              "candidate": 0.99279
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775689_(별첨2) 지역의사선발전형 선발 등에 관한 고시 일부개정고시안",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.9676,
+              "candidate": 0.98696
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775701_2026년 벼 고추 재배면적조사 결과 보도자료",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.99248,
+              "candidate": 0.99373
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775932_260828 청년일자리 회복방안",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.96693,
+              "candidate": 0.96659
+            }
+          }
+        },
+        {
+          "pair": "korea-kr-pairs2/156775963_(보도자료) 중앙·지방 외국인정책 담당자 한자리에, 현장 중심 정책역량 높인다 (배포즉시보도)",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.96017,
+              "candidate": 0.9789
+            }
+          }
+        },
+        {
+          "pair": "lo-pairs/kpipa-계약서일문",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.83107,
+              "candidate": 0.90835
+            }
+          }
+        },
+        {
+          "pair": "lo-pairs/kpipa-계약서중문",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.82909,
+              "candidate": 0.8582
+            }
+          }
+        },
+        {
+          "pair": "lo-pairs/web056_Full-Template",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.98752,
+              "candidate": 0.98612
+            }
+          }
+        },
+        {
+          "pair": "rhwp/2025 행정업무운영 편람(최종)",
+          "changes": {
+            "precision": {
+              "baseline": 0.99959,
+              "candidate": 0.99958
+            },
+            "spaceF1": {
+              "baseline": 0.99093,
+              "candidate": 0.99092
+            }
+          }
+        },
+        {
+          "pair": "rhwp/3-09월_교육_통합_2022",
+          "changes": {
+            "precision": {
+              "baseline": 0.97462,
+              "candidate": 0.97451
+            },
+            "order": {
+              "baseline": 0.88356,
+              "candidate": 0.87671
+            }
+          }
+        },
+        {
+          "pair": "rhwp/3-09월_교육_통합_2023",
+          "changes": {
+            "precision": {
+              "baseline": 0.97082,
+              "candidate": 0.97083
+            }
+          }
+        },
+        {
+          "pair": "rhwp/3-10월_교육_통합_2022",
+          "changes": {
+            "recall": {
+              "baseline": 0.99181,
+              "candidate": 0.99169
+            },
+            "order": {
+              "baseline": 0.80909,
+              "candidate": 0.8
+            }
+          }
+        },
+        {
+          "pair": "rhwp/3-11월_실전_통합_2022",
+          "changes": {
+            "precision": {
+              "baseline": 0.97578,
+              "candidate": 0.97589
+            },
+            "order": {
+              "baseline": 0.88298,
+              "candidate": 0.89362
+            }
+          }
+        },
+        {
+          "pair": "rhwp/hwp3-sample11-hwpx",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.99289,
+              "candidate": 0.99278
+            }
+          }
+        },
+        {
+          "pair": "rhwp/hwp3-sample16-hwp5",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.99035,
+              "candidate": 0.99049
+            }
+          }
+        },
+        {
+          "pair": "rhwp/hwpx/issue2019_floating_form_74312",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.92928,
+              "candidate": 0.92608
+            }
+          }
+        },
+        {
+          "pair": "rhwp/tac-img-02",
+          "changes": {
+            "spaceF1": {
+              "baseline": 0.99068,
+              "candidate": 0.99031
+            }
+          }
+        }
+      ],
+      "educationEvidence": [
+        {
+          "idx": "12",
+          "needle": "문29",
+          "baselineBlocks": [
+            {
+              "type": "paragraph",
+              "text": "④ $\\frac{1}{5}$\t⑤ $\\frac{13}{60}$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 506,
+                "width": 107,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 392,
+                "width": 236,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 352,
+                "width": 263,
+                "height": 36
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 329,
+                "width": 172,
+                "height": 21
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$p+q$ 의 값을 구하시오. (단, $p$와 $q$ 는 서로소인",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 303,
+                "y": 313,
+                "width": 193,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "자연수이다.)",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 299,
+                "width": 52,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문30）집합 $X=\\{1,2,3,4,5\\}$와 함수 $f:X\\to X$ 에 대하여 함수 $f$ 의 치역을 $A$, 합성함수 $f$◦$f$ 의 치역을 $B$라 할 때, 다음 조건을 만족시키는 함수 $f$ 의 개수를 구하시오.",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 164,
+                "width": 268,
+                "height": 37
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ $n(A)\\le 3$\n㈏ $n(A)=n(B)$\n㈐ 집합 $X$의 모든 원소 $x$에 대하여 $f(x)\\ne x$이다.\n",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 304.636,
+                "y": 114.47499999999998,
+                "width": 260.61999999999995,
+                "height": 44.47100000000002
+              }
+            },
+            {
+              "type": "image",
+              "text": "image_005.png",
+              "pageNumber": 4
+            },
+            {
+              "type": "image",
+              "text": "image_006.png",
+              "pageNumber": 4
+            },
+            {
+              "type": "heading",
+              "text": "\n미적분\n",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 29.553125000000005,
+                "y": 754.38375,
+                "width": 198.38425,
+                "height": 19.909312499999942
+              }
+            }
+          ],
+          "candidateBlocks": [
+            {
+              "type": "paragraph",
+              "text": "④ $\\frac{1}{5}$\t⑤ $\\frac{13}{60}$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 506,
+                "width": 107,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가 들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 352,
+                "width": 263,
+                "height": 49
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 329,
+                "width": 172,
+                "height": 21
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$p+q$ 의 값을 구하시오. (단, $p$와 $q$ 는 서로소인",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 303,
+                "y": 313,
+                "width": 193,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "자연수이다.)",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 299,
+                "width": 52,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문30）집합 $X=\\{1,2,3,4,5\\}$와 함수 $f:X\\to X$ 에 대하여 함수 $f$ 의 치역을 $A$, 합성함수 $f$◦$f$ 의 치역을 $B$라 할 때, 다음 조건을 만족시키는 함수 $f$ 의 개수를 구하시오.",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 164,
+                "width": 268,
+                "height": 37
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ $n(A)\\le 3$\n㈏ $n(A)=n(B)$\n㈐ 집합 $X$의 모든 원소 $x$에 대하여 $f(x)\\ne x$이다.\n",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 304.636,
+                "y": 114.47499999999998,
+                "width": 260.61999999999995,
+                "height": 44.47100000000002
+              }
+            },
+            {
+              "type": "image",
+              "text": "image_005.png",
+              "pageNumber": 4
+            },
+            {
+              "type": "image",
+              "text": "image_006.png",
+              "pageNumber": 4
+            },
+            {
+              "type": "heading",
+              "text": "\n미적분\n",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 29.553125000000005,
+                "y": 754.38375,
+                "width": 198.38425,
+                "height": 19.909312499999942
+              }
+            },
+            {
+              "type": "heading",
+              "text": "문23） $\\lim _{x\\to 0}\\frac{4^{x}-2^{x}}{x}$ 의 값은?",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 26,
+                "y": 727,
+                "width": 105,
+                "height": 11
+              }
+            }
+          ]
+        },
+        {
+          "idx": "14",
+          "needle": "문6",
+          "baselineBlocks": [
+            {
+              "type": "paragraph",
+              "text": "④\t⑤",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 26,
+                "y": 86,
+                "width": 89,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 750,
+                "width": 258,
+                "height": 23
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 735,
+                "width": 184,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{5\\sqrt{2}}{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 397,
+                "y": 721,
+                "width": 22,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $2\\sqrt{2}$\t②\t③ $3\\sqrt{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 714,
+                "width": 193,
+                "height": 11
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{7\\sqrt{2}}{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 317,
+                "y": 694,
+                "width": 22,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "④\t⑤ $4\\sqrt{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 688,
+                "width": 113,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$(x<2)$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 510,
+                "y": 587,
+                "width": 28,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문7）두 함수 $f(x)=x^{2}-4x,g(x)=\\{^{-}-^{x}_{x}^{2}2^{+}+^{2}_{6}^{x}_{x}-_{8}(x\\ge 2)$의",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 577,
+                "width": 248,
+                "height": 22
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "그래프로 둘러싸인 부분의 넓이는?",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 561,
+                "width": 143,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{40}{3}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 317,
+                "y": 547,
+                "width": 12,
+                "height": 9
+              }
+            }
+          ],
+          "candidateBlocks": [
+            {
+              "type": "paragraph",
+              "text": "④\t⑤",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 26,
+                "y": 86,
+                "width": 89,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각 $P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 735,
+                "width": 258,
+                "height": 38
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{5\\sqrt{2}}{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 397,
+                "y": 721,
+                "width": 22,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $2\\sqrt{2}$\t②\t③ $3\\sqrt{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 714,
+                "width": 193,
+                "height": 11
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{7\\sqrt{2}}{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 317,
+                "y": 694,
+                "width": 22,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "④\t⑤ $4\\sqrt{2}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 688,
+                "width": 113,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$(x<2)$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 510,
+                "y": 587,
+                "width": 28,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문7）두 함수 $f(x)=x^{2}-4x,g(x)=\\{^{-}-^{x}_{x}^{2}2^{+}+^{2}_{6}^{x}_{x}-_{8}(x\\ge 2)$의",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 577,
+                "width": 248,
+                "height": 22
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "그래프로 둘러싸인 부분의 넓이는?",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 561,
+                "width": 143,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{40}{3}$",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 317,
+                "y": 547,
+                "width": 12,
+                "height": 9
+              }
+            },
+            {
+              "type": "list",
+              "text": "①",
+              "pageNumber": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 541,
+                "width": 9,
+                "height": 9
+              }
+            }
+          ]
+        },
+        {
+          "idx": "15",
+          "needle": "문22",
+          "baselineBlocks": [
+            {
+              "type": "paragraph",
+              "text": "$x$에 대한 방정식 $f(x)=t$ 의 서로 다른 실근의 개수를 $g(t)$ 라 할 때, 함수 $g(t)$의 최댓값이 $4$가 되도록 하는 모든 자연수 $n$의 값의 합을 구하시오.",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 698,
+                "width": 268,
+                "height": 36
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때,",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 576,
+                "width": 244,
+                "height": 23
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$f(4)$의 값을 구하시오.",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 303,
+                "y": 562,
+                "width": 93,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 304.636,
+                "y": 487.147,
+                "width": 260.61999999999995,
+                "height": 69.64400000000006
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n확률과 통계\n",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 29.553125000000005,
+                "y": 754.38375,
+                "width": 198.38425,
+                "height": 19.909312499999942
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문23）다항식 $(x^{3}+3)^{5}$의 전개식에서 $x^{9}$의 계수는?",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 734,
+                "width": 205,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $30$\t② $60$\t③ $90$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 720,
+                "width": 183,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "④ $120$\t⑤ $150$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 707,
+                "width": 108,
+                "height": 9
+              }
+            },
+            {
+              "type": "heading",
+              "text": "문24）숫자 $1,2,3,4,5$ 중에서 중복을 허락하여 $4$개를 택해",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 612,
+                "width": 250,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "일렬로 나열하여 만들 수 있는 네 자리의 자연수 중 $4000$ 이상인 홀수의 개수는?",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 585,
+                "width": 268,
+                "height": 23
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $125$\t② $150$\t③ $175$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 571,
+                "width": 188,
+                "height": 9
+              }
+            }
+          ],
+          "candidateBlocks": [
+            {
+              "type": "paragraph",
+              "text": "$x$에 대한 방정식 $f(x)=t$ 의 서로 다른 실근의 개수를 $g(t)$ 라 할 때, 함수 $g(t)$의 최댓값이 $4$가 되도록 하는 모든 자연수 $n$의 값의 합을 구하시오.",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 698,
+                "width": 268,
+                "height": 36
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때, $f(4)$의 값을 구하시오.",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 562,
+                "width": 244,
+                "height": 37
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n",
+              "pageNumber": 3,
+              "bbox": {
+                "page": 3,
+                "x": 304.636,
+                "y": 487.147,
+                "width": 260.61999999999995,
+                "height": 69.64400000000006
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n확률과 통계\n",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 29.553125000000005,
+                "y": 754.38375,
+                "width": 198.38425,
+                "height": 19.909312499999942
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문23）다항식 $(x^{3}+3)^{5}$의 전개식에서 $x^{9}$의 계수는?",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 734,
+                "width": 205,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $30$\t② $60$\t③ $90$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 720,
+                "width": 183,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "④ $120$\t⑤ $150$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 707,
+                "width": 108,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문24）숫자 $1,2,3,4,5$ 중에서 중복을 허락하여 $4$개를 택해 일렬로 나열하여 만들 수 있는 네 자리의 자연수 중 $4000$ 이상인 홀수의 개수는?",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 585,
+                "width": 268,
+                "height": 36
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $125$\t② $150$\t③ $175$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 571,
+                "width": 188,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "④ $200$\t⑤ $225$",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 558,
+                "width": 108,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "문25）흰색 마스크 $5$개, 검은색 마스크 $9$개가 들어 있는 상자가 있다. 이 상자에서 임의로 $3$개의 마스크를 동시에 꺼낼 때, 꺼낸 $3$개의 마스크 중에서 적어도 한 개가 흰색 마스크일 확률은?",
+              "pageNumber": 4,
+              "bbox": {
+                "page": 4,
+                "x": 26,
+                "y": 423,
+                "width": 260,
+                "height": 49
+              }
+            }
+          ]
+        }
+      ],
+      "finalFindings": {
+        "label": "diagnostic20only",
+        "freshBaselineMatchesSavedRows": true,
+        "freshCandidateMatchesSavedRows": true,
+        "gtPlainIdenticalAll20": true,
+        "parseErrors": [
+          0,
+          0
+        ],
+        "sourceCause": {
+          "source": "src/pdf/endnotes.ts",
+          "function": "relocateEndnotes",
+          "evidence": "Existing policy inserts endnote groups immediately after the block containing the unique reference; a longer paragraph moves the insertion point after its restored continuation. PDF literal normalized key sequence changes as a result, not merely line-unit anchor counts.",
+          "caller": "src/pdf/parser.ts:outBlocks = relocateEndnotes(outBlocks), before Markdown; returned blocks retains earlier original block array"
+        },
+        "roleProof": "Examples join consecutive question text at the same x302 on one physical page. No cross-panel/cross-column join in these examples; math condition/choice blocks stay separate. GT for Q6/Q29 has complete question then note; GT for Q22 places note after first source paragraph and before f(4) second source paragraph.",
+        "recommendation": "Keep paragraph continuity on this evidence; do not suppress it merely to recover scalar order. Report actual per-document losses and existing endnote-placement policy. This is not stale baseline; complete corpus aggregate hides small changes.",
+        "limits": "Representative role/geometry examples plus exact metric unit counts are confirmed; no claim that every changed LIS member in these documents is attributed to the representative examples. No extra parse/render/tests/build after candidate20; no source/GT/evaluator/population/exclusion changes.",
+        "excerpts": [
+          {
+            "id": "12",
+            "pair": "rhwp/3-09월_교육_통합_2022",
+            "changes": {
+              "precision": {
+                "baseline": 0.97462,
+                "candidate": 0.97451
+              },
+              "order": {
+                "baseline": 0.88356,
+                "candidate": 0.87671
+              }
+            },
+            "baselinePDFMarkdown": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가\n\n문29） 175\n\n네 장의 카드를 꺼내는 경우의 수는 $6^{4}$\n\n네 수를 각각 $X_{1}$, $X_{2}$, $X_{3}$, $X_{4}$라 하면\n\n$X_{1}+X_{2}+X_{3}+X_{4}=11$\n\n$1\\le X_{i}\\le 6(i=1,2,3,4)$이므로\n\n음이 아닌 정수 $x_{i}$ 에 대하여\n\n$X_{i}=x_{i}+1$로 놓으면\n\n$x_{1}+x_{2}+x_{3}+x_{4}=7$\n\n방정식 $x_{1}+x_{2}+x_{3}+x_{4}=7$을 만족시키는 음이 아닌 정수 $x_{1}x_{2}$, , $x_{3}$, $x_{4}$의 모든 순서쌍 $(x1,x2,x3,x4)$의 개수는 $_{4}H_{7}=_{10}C_{7}=_{10}C_{3}=120$\n\n이때 $7$, $00$, , $0$으로 이루어진 음이 아닌 정수 $x_{1}$, $x_{2}$, $x_{3}$, $x_{4}$의 순서쌍 $4$개와 $6100$, , , 으로 이루어진 음이 아닌 정수 $x_{1}x_{2}x_{3}$, , , $x_{4}$의 순서쌍 $12$개는 제외해야 한다.\n\n즉, 조건을 만족시키는 $X_{1}$, $X_{2}$, $X_{3}$, $X_{4}$의 모든 순서쌍\n\n### $(X1,X2,X3,X4)$의 개수는\n\n$120-(4+12)=104$\n\n따라서 구하는 확률은\n\n$\\frac{104}{6^{4}}=\\frac{13}{162}$\n\n$p=162q=13$, 이므로\n\n$p+q=162+13=175$\n\n[다른 풀이]\n\n카드 한 장을 꺼낼 확률은 $\\frac{1}{6}$\n\n네 수의 합이 $11$인 경우를 다음과 같이 나누어 생각한다.\n\n(ⅰ) 세 수가 같은 경우\n\n$(3,3,3,2)$, $(2,2,2,5)$\n\n의 $2$가지 경우이므로 이 경우 구하는 확률은\n\n$2\\times \\frac{4}{3}\\times (\\frac{1}{6})^{4}=8\\times (\\frac{1}{6})^{4}$\n\n(ⅱ) 두 수가 같은 경우\n\n$(4,4,2,1)$, $(3,3,4,1)$, $(2,2,6,1)$, $(2,2,4,3)$ , $(1,1,6,3)$, $(1,1,5,4)$\n\n의 $6$가지 경우이므로 이 경우 구하는 확률은\n\n$6\\times \\frac{4}{2}\\times (\\frac{1}{6})^{4}=72\\times (\\frac{1}{6})^{4}$\n\n(ⅲ) 네 수가 모두 다른 경우\n\n$(5,3,2,1)$의 $1$가지 경우이므로\n\n이 경우 구하는 확률은\n\n$4\\times (\\frac{1}{6})^{4}=24\\times (\\frac{1}{6})^{4}$\n\n(ⅰ), (ⅱ), (ⅲ)에서\n\n$P(X=\\frac{11}{4})=(8+72+24)\\times (\\frac{1}{6})^{4}=\\frac{104}{6^{4}}=\\frac{13}{162}$\n\n따라서 $p=162$, $q=13$이므로\n\n$p+q=162+13=175$\n\n들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의\n\n평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.\n\n$p+q$ 의 값을 구하시오. (단, $p$와 $q$ 는 서로소인\n\n자연수이다.)\n\n문30）집합 $X=\\{1,2,3,4,5\\}$와 함수 $f:X\\to X$ 에 대하여 함수 $f$ 의 치역을 $A$, 합성함수 $f$◦$f$ 의 치역을 $B$라 할 때, 다음 조건을 만족시키는 함수 $f$ 의 개수를 구하시오.\n\n문30） 260\n\n조건 (다)에서 함수 $f$는 상수함수일 수 없으므로\n\n$n(A)=2$ 또는 $n(A)=3$\n\n(ⅰ) $n(A)=2$인 경우\n\n집합 $A$를 정하는 경우의 수는 $_{5}C_{2}=10$\n\n$A=\\{1,2\\}$인 경우를 생각하면\n\n조건 (다)에서 $f(1)=2$, $f(2)=1$\n\n$f(3)$ , $f(4)$, $f(5)$의 값은 $1,2$ 중 하나이므로\n\n$f(3)$ , $f(4)$, $f(5)$의 값을 정하는 경우의 수는\n\n$_{2}\\prod _{3}=2^{3}=8$\n\n즉, $n(A)=2$인 경우 함수 $f$의 개수는\n\n$10\\times 8=80$\n\n(ⅱ) $n(A)=3$인 경우\n\n집합 $A$를 정하는 경우의 수는 $_{5}C_{3}=10$\n\n$A=\\{1,2,3\\}$인 경우를 생각하면 조건 (다)에서\n\n순서쌍 $(f(1),f(2),f(3))$은 $(2",
+            "candidatePDFMarkdown": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가 들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의\n\n문29） 175\n\n네 장의 카드를 꺼내는 경우의 수는 $6^{4}$\n\n네 수를 각각 $X_{1}$, $X_{2}$, $X_{3}$, $X_{4}$라 하면\n\n$X_{1}+X_{2}+X_{3}+X_{4}=11$\n\n$1\\le X_{i}\\le 6(i=1,2,3,4)$이므로\n\n음이 아닌 정수 $x_{i}$ 에 대하여\n\n$X_{i}=x_{i}+1$로 놓으면\n\n$x_{1}+x_{2}+x_{3}+x_{4}=7$\n\n방정식 $x_{1}+x_{2}+x_{3}+x_{4}=7$을 만족시키는 음이 아닌 정수 $x_{1}x_{2}$, , $x_{3}$, $x_{4}$의 모든 순서쌍 $(x1,x2,x3,x4)$의 개수는 $_{4}H_{7}=_{10}C_{7}=_{10}C_{3}=120$\n\n이때 $7$, $00$, , $0$으로 이루어진 음이 아닌 정수 $x_{1}$, $x_{2}$, $x_{3}$, $x_{4}$의 순서쌍 $4$개와 $6100$, , , 으로 이루어진 음이 아닌 정수 $x_{1}x_{2}x_{3}$, , , $x_{4}$의 순서쌍 $12$개는 제외해야 한다.\n\n즉, 조건을 만족시키는 $X_{1}$, $X_{2}$, $X_{3}$, $X_{4}$의 모든 순서쌍\n\n### $(X1,X2,X3,X4)$의 개수는\n\n$120-(4+12)=104$\n\n따라서 구하는 확률은\n\n$\\frac{104}{6^{4}}=\\frac{13}{162}$\n\n$p=162q=13$, 이므로\n\n$p+q=162+13=175$\n\n[다른 풀이]\n\n카드 한 장을 꺼낼 확률은 $\\frac{1}{6}$\n\n네 수의 합이 $11$인 경우를 다음과 같이 나누어 생각한다.\n\n(ⅰ) 세 수가 같은 경우\n\n$(3,3,3,2)$, $(2,2,2,5)$\n\n의 $2$가지 경우이므로 이 경우 구하는 확률은\n\n$2\\times \\frac{4}{3}\\times (\\frac{1}{6})^{4}=8\\times (\\frac{1}{6})^{4}$\n\n(ⅱ) 두 수가 같은 경우\n\n$(4,4,2,1)$, $(3,3,4,1)$, $(2,2,6,1)$, $(2,2,4,3)$ , $(1,1,6,3)$, $(1,1,5,4)$\n\n의 $6$가지 경우이므로 이 경우 구하는 확률은\n\n$6\\times \\frac{4}{2}\\times (\\frac{1}{6})^{4}=72\\times (\\frac{1}{6})^{4}$\n\n(ⅲ) 네 수가 모두 다른 경우\n\n$(5,3,2,1)$의 $1$가지 경우이므로\n\n이 경우 구하는 확률은\n\n$4\\times (\\frac{1}{6})^{4}=24\\times (\\frac{1}{6})^{4}$\n\n(ⅰ), (ⅱ), (ⅲ)에서\n\n$P(X=\\frac{11}{4})=(8+72+24)\\times (\\frac{1}{6})^{4}=\\frac{104}{6^{4}}=\\frac{13}{162}$\n\n따라서 $p=162$, $q=13$이므로\n\n$p+q=162+13=175$\n\n평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.\n\n$p+q$ 의 값을 구하시오. (단, $p$와 $q$ 는 서로소인\n\n자연수이다.)\n\n문30）집합 $X=\\{1,2,3,4,5\\}$와 함수 $f:X\\to X$ 에 대하여 함수 $f$ 의 치역을 $A$, 합성함수 $f$◦$f$ 의 치역을 $B$라 할 때, 다음 조건을 만족시키는 함수 $f$ 의 개수를 구하시오.\n\n문30） 260\n\n조건 (다)에서 함수 $f$는 상수함수일 수 없으므로\n\n$n(A)=2$ 또는 $n(A)=3$\n\n(ⅰ) $n(A)=2$인 경우\n\n집합 $A$를 정하는 경우의 수는 $_{5}C_{2}=10$\n\n$A=\\{1,2\\}$인 경우를 생각하면\n\n조건 (다)에서 $f(1)=2$, $f(2)=1$\n\n$f(3)$ , $f(4)$, $f(5)$의 값은 $1,2$ 중 하나이므로\n\n$f(3)$ , $f(4)$, $f(5)$의 값을 정하는 경우의 수는\n\n$_{2}\\prod _{3}=2^{3}=8$\n\n즉, $n(A)=2$인 경우 함수 $f$의 개수는\n\n$10\\times 8=80$\n\n(ⅱ) $n(A)=3$인 경우\n\n집합 $A$를 정하는 경우의 수는 $_{5}C_{3}=10$\n\n$A=\\{1,2,3\\}$인 경우를 생각하면 조건 (다)에서\n\n순서쌍 $(f(1),f(2),f(3))$은 $(2,",
+            "GTMarkdown": "문29） $1$ 부터 $6$ 까지의 자연수가 하나씩 적힌 $6$ 장의 카드가 들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$ 번 반복하여 확인한 네 개의 수의 평균을 $\\overline{ X }$ 라 할 때, $rm P \\left ( \\overline{ X } = \\frac{ 11 } { 4 } \\right ) = it \\frac{ q } { p }$ 이다. $p+q$ 의 값을 구하시오. (단, $p$ 와 $q$ 는 서로소인 자연수이다.) (주: 문29） 175 네 장의 카드를 꺼내는 경우의 수는 $6 ^ { 4 }$ 네 수를 각각 $X _ { 1 }$ , $X _ { 2 }$ , $X _ { 3 }$ , $X _ { 4 }$ 라 하면 $X _ { 1 } +X _ { 2 } +X _ { 3 } +X _ { 4 } =11$ $1 \\leq X _ { i } \\leq 6$ $\\left ( i=1,~2,~3,~4 \\right )$ 이므로 음이 아닌 정수 $x _ { i }$ 에 대하여 $X _ { i } =x _ { i } +1$ 로 놓으면 $x _ { 1 } +x _ { 2 } +x _ { 3 } +x _ { 4 } =7$ 방정식 $x _ { 1 } +x _ { 2 } +x _ { 3 } +x _ { 4 } =7$ 을 만족시키는 음이 아닌 정수 $x _ { 1 }$ , $x _ { 2 }$ , $x _ { 3 }$ , $x _ { 4 }$ 의 모든 순서쌍 $\\left ( x _ { 1 } ,~x _ { 2 } ,~x _ { 3 } ,~x _ { 4 } \\right )$ 의 개수는 ${ } _ { 4 } { rmH } _ { 7 } = _ { 10 } { rmC } _ { 7 } = _ { 10 } { rmC } _ { 3 } =120$ 이때 $7$ , $0$ , $0$ , $0$ 으로 이루어진 음이 아닌 정수 $x _ { 1 }$ , $x _ { 2 }$ , $x _ { 3 }$ , $x _ { 4 }$ 의 순서쌍 $4$ 개와 $6$ , $1$ , $0$ , $0$ 으로 이루어진 음이 아닌 정수 $x _ { 1 }$ , $x _ { 2 }$ , $x _ { 3 }$ , $x _ { 4 }$ 의 순서쌍 $12$ 개는 제외해야 한다. 즉, 조건을 만족시키는 $X _ { 1 }$ , $X _ { 2 }$ , $X _ { 3 }$ , $X _ { 4 }$ 의 모든 순서쌍 $\\left ( X _ { 1 } ,~X _ { 2 } ,~X _ { 3 } ,~X _ { 4 } \\right )$ 의 개수는 $120- \\left ( 4+12 \\right ) =104$ 따라서 구하는 확률은 $\\frac{ 104 } { 6 ^ { 4 } } = \\frac{ 13 } { 162 }$ $p=162$ , $q=13$ 이므로 $p+q=162+13=175$ [다른 풀이] 카드 한 장을 꺼낼 확률은 $\\frac{ 1 } { 6 }$ 네 수의 합이 $11$ 인 경우를 다음과 같이 나누어 생각한다. (ⅰ) 세 수가 같은 경우\n $\\left ( 3,~3,~3,~2 \\right )$ , $\\left ( 2,~2,~2,~5 \\right )$ \n의 $2$ 가지 경우이므로 이 경우 구하는 확률은\n $2times \\frac{ 4! } { 3! } \\times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 } =8times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 }$ (ⅱ) 두 수가 같은 경우\n $\\left ( 4,~4,~2,~1 \\right )$ , $\\left ( 3,~3,~4,~1 \\right )$ , $\\left ( 2,~2,~6,~1 \\right )$ , $\\left ( 2,~2,~4,~3 \\right )$ , $\\left ( 1,~1,~6,~3 \\right )$ , $\\left ( 1,~1,~5,~4 \\right )$ \n의 $6$ 가지 경우이므로 이 경우 구하는 확률은 \n $6times \\frac{ 4! } { 2! } \\times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 } =72times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 }$ (ⅲ) 네 수가 모두 다른 경우\n $\\left ( 5,~3,~2,~1 \\right )$ 의 $1$ 가지 경우이므로\n이 경우 구하는 확률은\n $4!times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 } =24times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 }$ (ⅰ), (ⅱ), (ⅲ)에서 $rm P it \\left ( \\overline{ X } = \\frac{ 11 } { 4 } \\right )$ $= \\left ( 8+72+24 \\right ) \\times \\left ( \\frac{ 1 } { 6 } \\right ) ^ { 4 }$ $= \\frac{ 104 } { 6 ^ { 4 } }$ $= \\frac{ 13 } { 162 }$ 따"
+          },
+          {
+            "id": "14",
+            "pair": "rhwp/3-10월_교육_통합_2022",
+            "changes": {
+              "recall": {
+                "baseline": 0.99181,
+                "candidate": 0.99169
+              },
+              "order": {
+                "baseline": 0.80909,
+                "candidate": 0.8
+              }
+            },
+            "baselinePDFMarkdown": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각\n\n문6） ③\n\n$f(x)=x^{3}-2x^{2}+2x+a$에서 $f(x)=3x^{2}-4x+2$′ $f(1)=a+1,f(1)=1$′ 이므로\n\n곡선 위의 점 $(1,f(1))$에서의 접선의 방정식은 $y=(x-1)+a+1,$ 즉 $y=x+a$\n\n두 점 $P,Q$ 의 좌표는 각각 $(-a,0),(0,a)$이다.\n\n$PQ=6$에서 $\\sqrt{a^{2}+a^{2}}_{=6,a}2_{=18}$\n\n$a>0$이므로 $a=3\\sqrt{2}$\n\n$P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?\n\n$\\frac{5\\sqrt{2}}{2}$\n\n① $2\\sqrt{2}$\t②\t③ $3\\sqrt{2}$\n\n$\\frac{7\\sqrt{2}}{2}$\n\n④\t⑤ $4\\sqrt{2}$\n\n$(x<2)$\n\n문7）두 함수 $f(x)=x^{2}-4x,g(x)=\\{^{-}-^{x}_{x}^{2}2^{+}+^{2}_{6}^{x}_{x}-_{8}(x\\ge 2)$의\n\n문7） ①\n\n두 함수 $y=f(x),y=g(x)$ 의 그래프로 둘러싸인 부분에서\n\n$0\\le x\\le 2$인 부분과 $2\\le x\\le 4$인 부분의 넓이가 같으므로 구하는 넓이를 $S$ 라 하면\n\n$S=\\int _{0}\\{g(x)-f(x)\\}dx$$4$\n\n$=2\\int _{0}(-2x^{2}+6x)dx$$2$\n\n$=2_{}-\\frac{2}{3}x3+3x2_{}^{2}_{0}=\\frac{40}{3}$\n\n그래프로 둘러싸인 부분의 넓이는?\n\n$\\frac{40}{3}$\n\n- ①\n- ② $14$\n$\\frac{44}{3}$\n\n- ③\n$\\frac{46}{3}$\n\n- ④\n- ⑤ $16$\n\n## 문8）첫째항이 $20$인 수열 $\\{an\\}$이 모든 자연수 $n$에 대하여\n\n문8） ②\n\n(ⅰ) $1\\le n\\le 10$인 경우\n\n$a_{1}=20,a_{n+1}=a_{n}-2$이므로 $a_{n}=-2n+22$\n\n$_{n}\\sum _{=1}an=_{n}\\sum _{=1}(-2n+22)=110$$10$ $10$\n\n(ⅱ) $11\\le n\\le 30$인 경우\n\n$a_{10}=2$이므로 $an=\\{^{0}_{-2}^{(}_{(}^{n}_{n}$이이 홀짝수수인인 경경우우$)$$)$\n\n$_{n}\\sum _{=11}an=(-2)\\times 10=-20$$30$\n\n(ⅰ), (ⅱ)에서 $_{n}\\sum _{=1}an=110+(-20)=90$$30$\n\n$a_{n+1}=|a_{n}|-2$를 만족시킬 때, $_{n}\\sum _{=1}an$$30$ 의 값은?\n\n① $88$\t② $90$\t③ $92$\n\n④ $94$\t⑤ $96$\n\n문9）최고차항의 계수가 $1$인 다항함수 $f(x)$가 모든 실수 $x$에\n\n문9） ③\n\n주어진 등식의 양변에 $x=0$을 대입하면 $f(0)=0$\n\n다항함수 $f(x)$의 차수를 $n$이라 하자.\n\n(ⅰ) $n\\le 1$일 때, 주어진 등식의 좌변의 차수는 $1$ 이하이고, 우변의 차수는 $2$이므로 등식이 성립하지 않는다.\n\n(ⅱ) $n=2$일 때, 주어진 등식의 좌변이 이차항의 계수는 $-1$이고, 우변의 이차항의 계수는 $2$이므로 등식이 성립하지 않는다. (ⅲ) $n\\ge 3$일 때, 주어진 등식의 좌변의 $n$차항의 계수가 $n-3$이고 우변의 차수는 $2$이므로 등식이 성립하기 위해서는 $n=3$이어야 한다.\n\n(ⅰ), (ⅱ), (ⅲ)에서 $f(x)$는 삼차함수이므로 $f(x)=x^{3}+ax^{2}+bx$ ($a,b$는 상수)라 하면\n\n$f(x)=3x^{2}+2ax+b$′\t이고\n\n$xf(x)-3f(x)=x(3x^{2}+2ax+b)-3(x^{3}+ax^{2}+bx)$′\n\n$=-ax^{2}-2bx$\n\n주어진 등식이 모든 실수 $x$에 대하여 성립하므로 $-a=2,-2b=-8$\n\n에서 $a=-2,b=4$이고 $f(x)=x^{3}-2x^{2}+4x$\n\n따라서 $f(1)=1-2+4=3$\n\n대하여 $xf(x)-3f(x)=2x^{2}-8x$′\t를 만족시킬 때, $f(1)$의 값은?\n\n① $1$\t② $2$\t③ $3$\n\n④ $4$\t⑤ $5$\n\n일 때,\n\n![image](image_001.png)\n\n![image](image_002.png)\n\n![image](image_003.png)\n\n<table>\n<tr><th rowspan=\"2\"></th><th colspan=\"4\"></th></tr>\n<",
+            "candidatePDFMarkdown": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각 $P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?\n\n문6） ③\n\n$f(x)=x^{3}-2x^{2}+2x+a$에서 $f(x)=3x^{2}-4x+2$′ $f(1)=a+1,f(1)=1$′ 이므로\n\n곡선 위의 점 $(1,f(1))$에서의 접선의 방정식은 $y=(x-1)+a+1,$ 즉 $y=x+a$\n\n두 점 $P,Q$ 의 좌표는 각각 $(-a,0),(0,a)$이다.\n\n$PQ=6$에서 $\\sqrt{a^{2}+a^{2}}_{=6,a}2_{=18}$\n\n$a>0$이므로 $a=3\\sqrt{2}$\n\n$\\frac{5\\sqrt{2}}{2}$\n\n① $2\\sqrt{2}$\t②\t③ $3\\sqrt{2}$\n\n$\\frac{7\\sqrt{2}}{2}$\n\n④\t⑤ $4\\sqrt{2}$\n\n$(x<2)$\n\n문7）두 함수 $f(x)=x^{2}-4x,g(x)=\\{^{-}-^{x}_{x}^{2}2^{+}+^{2}_{6}^{x}_{x}-_{8}(x\\ge 2)$의\n\n문7） ①\n\n두 함수 $y=f(x),y=g(x)$ 의 그래프로 둘러싸인 부분에서 $0\\le x\\le 2$인 부분과 $2\\le x\\le 4$인 부분의 넓이가 같으므로 구하는 넓이를 $S$ 라 하면\n\n$S=\\int _{0}\\{g(x)-f(x)\\}dx$$4$\n\n$=2\\int _{0}(-2x^{2}+6x)dx$$2$\n\n$=2_{}-\\frac{2}{3}x3+3x2_{}^{2}_{0}=\\frac{40}{3}$\n\n그래프로 둘러싸인 부분의 넓이는?\n\n$\\frac{40}{3}$\n\n- ①\n- ② $14$\n$\\frac{44}{3}$\n\n- ③\n$\\frac{46}{3}$\n\n- ④\n- ⑤ $16$\n\n## 문8）첫째항이 $20$인 수열 $\\{an\\}$이 모든 자연수 $n$에 대하여\n\n문8） ②\n\n(ⅰ) $1\\le n\\le 10$인 경우\n\n$a_{1}=20,a_{n+1}=a_{n}-2$이므로 $a_{n}=-2n+22$\n\n$_{n}\\sum _{=1}an=_{n}\\sum _{=1}(-2n+22)=110$$10$ $10$\n\n(ⅱ) $11\\le n\\le 30$인 경우\n\n$a_{10}=2$이므로 $an=\\{^{0}_{-2}^{(}_{(}^{n}_{n}$이이 홀짝수수인인 경경우우$)$$)$\n\n$_{n}\\sum _{=11}an=(-2)\\times 10=-20$$30$\n\n(ⅰ), (ⅱ)에서 $_{n}\\sum _{=1}an=110+(-20)=90$$30$\n\n$a_{n+1}=|a_{n}|-2$를 만족시킬 때, $_{n}\\sum _{=1}an$$30$ 의 값은?\n\n① $88$\t② $90$\t③ $92$\n\n④ $94$\t⑤ $96$\n\n문9）최고차항의 계수가 $1$인 다항함수 $f(x)$가 모든 실수 $x$에\n\n문9） ③\n\n주어진 등식의 양변에 $x=0$을 대입하면 $f(0)=0$\n\n다항함수 $f(x)$의 차수를 $n$이라 하자.\n\n(ⅰ) $n\\le 1$일 때, 주어진 등식의 좌변의 차수는 $1$ 이하이고, 우변의 차수는 $2$이므로 등식이 성립하지 않는다.\n\n(ⅱ) $n=2$일 때, 주어진 등식의 좌변이 이차항의 계수는 $-1$이고, 우변의 이차항의 계수는 $2$이므로 등식이 성립하지 않는다. (ⅲ) $n\\ge 3$일 때, 주어진 등식의 좌변의 $n$차항의 계수가 $n-3$이고 우변의 차수는 $2$이므로 등식이 성립하기 위해서는 $n=3$이어야 한다.\n\n(ⅰ), (ⅱ), (ⅲ)에서 $f(x)$는 삼차함수이므로 $f(x)=x^{3}+ax^{2}+bx$ ($a,b$는 상수)라 하면\n\n$f(x)=3x^{2}+2ax+b$′\t이고\n\n$xf(x)-3f(x)=x(3x^{2}+2ax+b)-3(x^{3}+ax^{2}+bx)$′\n\n$=-ax^{2}-2bx$\n\n주어진 등식이 모든 실수 $x$에 대하여 성립하므로 $-a=2,-2b=-8$\n\n에서 $a=-2,b=4$이고 $f(x)=x^{3}-2x^{2}+4x$\n\n따라서 $f(1)=1-2+4=3$\n\n대하여 $xf(x)-3f(x)=2x^{2}-8x$′\t를 만족시킬 때, $f(1)$의 값은?\n\n① $1$\t② $2$\t③ $3$\n\n④ $4$\t⑤ $5$\n\n일 때,\n\n![image](image_001.png)\n\n![image](image_002.png)\n\n![image](image_003.png)\n\n<table>\n<tr><th rowspan=\"2\"></th><th colspan=\"4\"></th></tr>\n<tr",
+            "GTMarkdown": "문6）함수 $f(x)=x ^ { 3 } -2x ^ { 2 } +2x+a$ 에 대하여 곡선 $y=f(x)$ 위의 점 $(1,~f(1))$ 에서의 접선이 $x$ 축, $y$ 축과 만나는 점을 각각 $rm P,~Q$ 라 하자. $\\overline{ rm PQ it } =6$ 일 때, 양수 $a$ 의 값은? (주: 문6） ③ $f \\left ( x \\right ) =x ^ { 3 } -2x ^ { 2 } +2x+a$ 에서 $f ' \\left ( x \\right ) =3x ^ { 2 } -4x+2$ $f \\left ( 1 \\right ) =a+1,~f ' \\left ( 1 \\right ) =1$ 이므로 곡선 위의 점 $\\left ( 1,~f \\left ( 1 \\right ) \\right )$ 에서의 접선의 방정식은 $y= \\left ( x-1 \\right ) +a+1,~$ 즉 $y=x+a$ 두 점 $rmP,~Q$ 의 좌표는 각각 $\\left ( -a, 0 \\right ) ,~ \\left ( 0, a \\right )$ 이다. $\\overline{ rm PQ } =6$ 에서 $\\sqrt { a ^ { 2 } +a ^ { 2 } } =6, a ^ { 2 } =18$ $a>0$ 이므로 $a=3 \\sqrt { 2 }$)\n\n① $2 \\sqrt { 2 }$ ② $\\frac{ 5 \\sqrt { 2 } } { 2 }$ ③ $3 \\sqrt { 2 }$\n\n④ $\\frac{ 7 \\sqrt { 2 } } { 2 }$ ⑤ $4 \\sqrt { 2 }$\n\n문7）두 함수 $f(x)=x ^ { 2 } -4x,$ $g(x)= \\begin{cases} -x ^ { 2 } +2x & (x<2) \\\\ -x ^ { 2 } +6x-8 & (x \\geq 2) \\end{cases}$ 의 그래프로 둘러싸인 부분의 넓이는? (주: 문7） ① 두 함수 $y=f \\left ( x \\right ) , y=g \\left ( x \\right )$ 의 그래프로 둘러싸인 부분에서 $0 \\leq x \\leq 2$ 인 부분과 $2 \\leq x \\leq 4$ 인 부분의 넓이가 같으므로 구하는 넓이를 $S$ 라 하면 $S$ $= \\int _ { 0 } ^ { 4 } { \\left \\{ g \\left ( x \\right ) -f \\left ( x \\right ) \\right \\} dx }$ \n $=2 \\int _ { 0 } ^ { 2 } { \\left ( -2x ^ { 2 } +6x \\right ) dx }$ \n $=2 \\left [ - \\frac{ 2 } { 3 } x ^ { 3 } +3x ^ { 2 } \\right ] _ { 0 } ^ { 2 }$ $= \\frac{ 40 } { 3 }$)\n\n① $\\frac{ 40 } { 3 }$\n\n\n![image](image_002.png)\n\n② $14$\n\n③ $\\frac{ 44 } { 3 }$\n\n④ $\\frac{ 46 } { 3 }$\n\n⑤ $16$\n\n문8）첫째항이 $20$ 인 수열 $\\left \\{ a _ { n } \\right \\}$ 이 모든 자연수 $n$ 에 대하여 (주: 문8） ② (ⅰ) $1 \\leq n \\leq 10$ 인 경우\n $a _ { 1 } =20,~a _ { n+1 } =a _ { n } -2$ 이므로 $a _ { n } = it -2n+22$ \n $\\sum _ { n = 1 } ^ { 10 } a _ { n } = \\sum _ { n = 1 } ^ { 10 } \\left ( -2n+22 \\right ) =110$ (ⅱ) $11 \\leq n \\leq 30$ 인 경우\n $a _ { 10 } =2$ 이므로 $a _ { n } = \\begin{cases} 0 & (n이 홀수인 경우) \\\\ -2 & (n이 짝수인 경우) \\end{cases}$ \n $\\sum _ { n = 11 } ^ { 30 } a _ { n } = \\left ( it -2 \\right ) \\times 10= it -20$ (ⅰ), (ⅱ)에서 $\\sum _ { n = 1 } ^ { 30 } a _ { n } =110+ \\left ( -20 \\right ) =90$)\n\n$a _ { n+1 } =| a _ { n } |-2$ 를 만족시킬 때, $\\sum _ { n=1 } ^ { 30 } a _ { n }$ 의 값은?\n\n① $88$ ② $90$ ③ $92$\n\n④ $94$ ⑤ $96$\n\n문9）최고차항의 계수가 $1$ 인 다항함수 $f(x)$ 가 모든 실수 $x$ 에 대하여 $xf ' (x)-3f(x)=2x ^ { 2 } -8x$ 를 만족시킬 때, $f(1)$ 의 값은? (주: 문9） ③ 주어진 등식의 양변에 $x=0$ 을 대입하면 $f \\left ( 0 \\right ) =0$ 다항함수 $f \\left ( x \\right )$ 의 차수를 $n$ 이라 하자. (ⅰ) $n \\leq 1$ 일 때, 주어진 등식의 좌변의 차수는 $1$ 이하이고, 우변의 차수는 $2$ 이므로 등식이 성립하지 않는다. (ⅱ) $n=2$ 일 때, 주어진 등식의 좌변이 이차항의 계수는 $-1$ 이고, 우변의 이차항의 계수는 $2$ 이므로 등식이 성립하지 않는다. (ⅲ) $n \\geq 3$ 일 때"
+          },
+          {
+            "id": "15",
+            "pair": "rhwp/3-11월_실전_통합_2022",
+            "changes": {
+              "precision": {
+                "baseline": 0.97578,
+                "candidate": 0.97589
+              },
+              "order": {
+                "baseline": 0.88298,
+                "candidate": 0.89362
+              }
+            },
+            "baselinePDFMarkdown": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때,\n\n문22） 22\\_11\\_실전 22) 13\n\n$\\frac{f(x)-f(1)}{x-1}=f(g(x))$\n\n주어진 (가) 조건을 정리하면\t′ 이다.\n\n즉, $(1,f(1))$, $(x,f(x))$ 의 기울기(평균변화율)가 $x$좌표가 $g(x)$인 점에서의 접선의 기울기(순간변화율)와 같다.\n\n이 때, $g(x)$의 최솟값이 $\\frac{5}{2}$ 이므로 아래 그림과 같이 $x=1$에서\n\n오른쪽 반대편(변곡점 너머)으로 그린 접선의 접점이 $x=\\frac{5}{2}$ 라 할\n\n수 있다.\n\n이제 (다) 조건과 삼차 함수의 비율 관계 또는 근과 계수의\n\n관계를 이용하여 식을 구하자. 근과 계수의 관계를 활용해보면,\n\n$f(x)$와 접선의 세 근의 합이 $1+\\frac{5}{2}+\\frac{5}{2}=6$이고 $f(0)=-3$이므로\n\n변곡점은 $x=2$, $f(x)=x^{3}-6x^{2}+ax-3$이다.\n\n마지막으로 $f(x)$가 다항함수이고, $g(x)$도 연속함수이므로\n\n$\\lim \\frac{f(x)-f(1)}{x-1}=f(1)=f(g(1))$′ ′ 이다.\n\n$x\\to 1$\n\n$g(1)\\ne 1$이기에 $g(1)=3$이고($x=2$에 대칭), 따라서 $f(3)=6$이다. 위 식에 대입하면 $f(x)=x^{3}-6x^{2}+12x-3$\n\n$\\therefore$ $f(4)=13$\n\n$f(4)$의 값을 구하시오.\n\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n\n확률과 통계\n\n문23）다항식 $(x^{3}+3)^{5}$의 전개식에서 $x^{9}$의 계수는?\n\n문23） 22\\_11\\_실전 23) ③ 다항식 $(x^{3}+3)^{5}$의 일반항은\n\n$_{5}C_{r}(x^{3})^{r}\\cdot 3^{5-r}=_{5}C_{r}3^{5-r}x^{3r}$\n\n이므로 $x^{9}$의 계수는 $r=3$일 때이다. 따라서 $x^{9}$의 계수는 $_{5}C_{3}\\times 3^{2}=10\\times 9=90$\n\n이다.\n\n① $30$\t② $60$\t③ $90$\n\n④ $120$\t⑤ $150$\n\n## 문24）숫자 $1,2,3,4,5$ 중에서 중복을 허락하여 $4$개를 택해\n\n문24） 22\\_11\\_실전 24) ②\n\n(ⅰ) 천의 자리의 숫자가 $4$인 경우\n\n홀수가 되기 위해서는 일의 자리에 오는 수가 $1$, $35$, 의 세 가지 경우이다.\n\n또한 십의 자리와 백의 자리에 오는 경우의 수는\n\n$_{5}\\prod _{2}=5^{2}=25$이므로 $3\\times 25=75$이다.\n\n(ⅱ) 천의 자리의 숫자가 $5$인 경우\n\n(ⅰ)의 경우와 마찬가지로 $75$가지이다.\n\n따라서 중복을 허락하여 만들 수 있는 $4000$이상인 홀수의 개수는 $150$개다.\n\n일렬로 나열하여 만들 수 있는 네 자리의 자연수 중 $4000$ 이상인 홀수의 개수는?\n\n① $125$\t② $150$\t③ $175$\n\n④ $200$\t⑤ $225$\n\n문25）흰색 마스크 $5$개, 검은색 마스크 $9$개가 들어 있는 상자가 있다. 이 상자에서 임의로 $3$개의 마스크를 동시에 꺼낼 때, 꺼낸 $3$개의 마스크 중에서 적어도 한 개가 흰색 마스크일 확률은?\n\n문25） 22\\_11\\_실전 25) ⑤\n\n전체에서 모두 검은색 마스크일 확률을 빼면\n\n$1-\\frac{_{9}C_{3}}{_{14}C_{3}}=1-\\frac{9\\times 8\\times 7}{14\\times 13\\times 12}$\n\n$=1-\\frac{3}{13}=\\frac{10}{13}$\n\n①\t② $\\frac{17}{26}$\t③\n$\\frac{8}{13}$\t$\\frac{9}{13}$\n④ $\\frac{19}{26}$\t⑤ $\\frac{10}{13}$\n\n문26）주머니에 $1$이 적힌 흰 공 $1$개, $2$가 적힌 흰 공 $1$개, $1$이 적힌 검은 공 $1$개, $2$가 적힌 검은 공 $3$개가 들어 있다. 이 주머니에서 임의로 $3$개의 공을 동시에 꺼내는 시행을 한다.\n\n문26） 22\\_11\\_실전 26) ③\n\n전체 경우의 수는 주머니 속 $6$개의 공 중에서 $3$개를 꺼내는 경우이므로 $_{6}C_{3}$이다. 이때 사건 $A$는 흰 공 $2$개 중 $1$개를 꺼내고, 검은 공 $4$개 중 $2$개를 ",
+            "candidatePDFMarkdown": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때, $f(4)$의 값을 구하시오.\n\n문22） 22\\_11\\_실전 22) 13\n\n$\\frac{f(x)-f(1)}{x-1}=f(g(x))$\n\n주어진 (가) 조건을 정리하면\t′ 이다.\n\n즉, $(1,f(1))$, $(x,f(x))$ 의 기울기(평균변화율)가 $x$좌표가 $g(x)$인 점에서의 접선의 기울기(순간변화율)와 같다.\n\n이 때, $g(x)$의 최솟값이 $\\frac{5}{2}$ 이므로 아래 그림과 같이 $x=1$에서\n\n오른쪽 반대편(변곡점 너머)으로 그린 접선의 접점이 $x=\\frac{5}{2}$ 라 할\n\n수 있다.\n\n이제 (다) 조건과 삼차 함수의 비율 관계 또는 근과 계수의 관계를 이용하여 식을 구하자. 근과 계수의 관계를 활용해보면,\n\n$f(x)$와 접선의 세 근의 합이 $1+\\frac{5}{2}+\\frac{5}{2}=6$이고 $f(0)=-3$이므로\n\n변곡점은 $x=2$, $f(x)=x^{3}-6x^{2}+ax-3$이다.\n\n마지막으로 $f(x)$가 다항함수이고, $g(x)$도 연속함수이므로\n\n$\\lim \\frac{f(x)-f(1)}{x-1}=f(1)=f(g(1))$′ ′ 이다.\n\n$x\\to 1$\n\n$g(1)\\ne 1$이기에 $g(1)=3$이고($x=2$에 대칭), 따라서 $f(3)=6$이다. 위 식에 대입하면 $f(x)=x^{3}-6x^{2}+12x-3$\n\n$\\therefore$ $f(4)=13$\n\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n\n확률과 통계\n\n문23）다항식 $(x^{3}+3)^{5}$의 전개식에서 $x^{9}$의 계수는?\n\n문23） 22\\_11\\_실전 23) ③ 다항식 $(x^{3}+3)^{5}$의 일반항은\n\n$_{5}C_{r}(x^{3})^{r}\\cdot 3^{5-r}=_{5}C_{r}3^{5-r}x^{3r}$\n\n이므로 $x^{9}$의 계수는 $r=3$일 때이다. 따라서 $x^{9}$의 계수는 $_{5}C_{3}\\times 3^{2}=10\\times 9=90$\n\n이다.\n\n① $30$\t② $60$\t③ $90$\n\n④ $120$\t⑤ $150$\n\n문24）숫자 $1,2,3,4,5$ 중에서 중복을 허락하여 $4$개를 택해 일렬로 나열하여 만들 수 있는 네 자리의 자연수 중 $4000$ 이상인 홀수의 개수는?\n\n문24） 22\\_11\\_실전 24) ②\n\n(ⅰ) 천의 자리의 숫자가 $4$인 경우\n\n홀수가 되기 위해서는 일의 자리에 오는 수가 $1$, $35$, 의 세 가지 경우이다.\n\n또한 십의 자리와 백의 자리에 오는 경우의 수는\n\n$_{5}\\prod _{2}=5^{2}=25$이므로 $3\\times 25=75$이다.\n\n(ⅱ) 천의 자리의 숫자가 $5$인 경우\n\n(ⅰ)의 경우와 마찬가지로 $75$가지이다.\n\n따라서 중복을 허락하여 만들 수 있는 $4000$이상인 홀수의 개수는 $150$개다.\n\n① $125$\t② $150$\t③ $175$\n\n④ $200$\t⑤ $225$\n\n문25）흰색 마스크 $5$개, 검은색 마스크 $9$개가 들어 있는 상자가 있다. 이 상자에서 임의로 $3$개의 마스크를 동시에 꺼낼 때, 꺼낸 $3$개의 마스크 중에서 적어도 한 개가 흰색 마스크일 확률은?\n\n문25） 22\\_11\\_실전 25) ⑤\n\n전체에서 모두 검은색 마스크일 확률을 빼면\n\n$1-\\frac{_{9}C_{3}}{_{14}C_{3}}=1-\\frac{9\\times 8\\times 7}{14\\times 13\\times 12}$\n\n$=1-\\frac{3}{13}=\\frac{10}{13}$\n\n①\t② $\\frac{17}{26}$\t③\n$\\frac{8}{13}$\t$\\frac{9}{13}$\n④ $\\frac{19}{26}$\t⑤ $\\frac{10}{13}$\n\n문26）주머니에 $1$이 적힌 흰 공 $1$개, $2$가 적힌 흰 공 $1$개, $1$이 적힌 검은 공 $1$개, $2$가 적힌 검은 공 $3$개가 들어 있다. 이 주머니에서 임의로 $3$개의 공을 동시에 꺼내는 시행을 한다.\n\n문26） 22\\_11\\_실전 26) ③\n\n전체 경우의 수는 주머니 속 $6$개의 공 중에서 $3$개를 꺼내는 경우이므로 $_{6}C_{3}$이다. 이때 사건 $A$는 흰 공 $2$개 중 $1$개를 꺼내고, 검은 공 $4$개 중 $2$개를 꺼내면 되므",
+            "GTMarkdown": "문22）최고차항의 계수가 $1$ 인 삼차함수 $f(x)$ 와 실수 전체의 집합에서 연속인 함수 $g(x)$ 가 다음 조건을 만족시킬 때, (주: 문22） 22\\_11\\_실전 22) 13 주어진 (가) 조건을 정리하면 $\\frac{ f \\left ( x \\right ) -f \\left ( 1 \\right ) } { x-1 } =f ' \\left ( g \\left ( x \\right ) \\right )$ 이다. 즉, $\\left ( 1,~f \\left ( 1 \\right ) \\right )$ , $\\left ( x,~f \\left ( x \\right ) \\right )$ 의 기울기(평균변화율)가 $x$ 좌표가 $g \\left ( x \\right )$ 인 점에서의 접선의 기울기(순간변화율)와 같다. 이 때, $g \\left ( x \\right )$ 의 최솟값이 $\\frac{ 5 } { 2 }$ 이므로 아래 그림과 같이 $x=1$ 에서 오른쪽 반대편(변곡점 너머)으로 그린 접선의 접점이 $x= \\frac{ 5 } { 2 }$ 라 할 수 있다. 이제 (다) 조건과 삼차 함수의 비율 관계 또는 근과 계수의 관계를 이용하여 식을 구하자. 근과 계수의 관계를 활용해보면, $f \\left ( x \\right )$ 와 접선의 세 근의 합이 $1+ \\frac{ 5 } { 2 } + \\frac{ 5 } { 2 } =6$ 이고 $f \\left ( 0 \\right ) = -3$ 이므로 변곡점은 $x=2$ , $f \\left ( x \\right ) =x ^ { 3 } -6x ^ { 2 } +ax-3$ 이다. 마지막으로 $f \\left ( x \\right )$ 가 다항함수이고, $g \\left ( x \\right )$ 도 연속함수이므로 $\\lim _ { x { rarrow } 1 } \\frac{ f \\left ( x \\right ) -f \\left ( 1 \\right ) } { x-1 } =f ' \\left ( 1 \\right ) =f ' \\left ( g \\left ( 1 \\right ) \\right )$ 이다. $g \\left ( 1 \\right ) { ne } 1$ 이기에 $g \\left ( 1 \\right ) =3$ 이고( $x=2$ 에 대칭), 따라서 $f \\left ( 3 \\right ) =6$ 이다. 위 식에 대입하면 $f \\left ( x \\right ) =x ^ { 3 } -6x ^ { 2 } +12x-3$ $therefore~~f \\left ( 4 \\right ) =13$)\n\n$f(4)$ 의 값을 구하시오.\n\n㈎ 모든 실수 $x$ 에 대하여 \n $f(x)=f(1)+(x-1)f ' (g(x))$ 이다.\n\n㈏ 함수 $g(x)$ 의 최솟값은 $\\frac{ 5 } { 2 }$ 이다.\n\n㈐ $f(0)= -3$ , $f(g(1))=6$\n\n확률과 통계\n\n문23）다항식 $(x ^ { 3 } +3) ^ { 5 }$ 의 전개식에서 $x^9$ 의 계수는? (주: 문23） 22\\_11\\_실전 23) ③ 다항식 $\\left ( x^3 +3 \\right ) ^5$ 의 일반항은 $it _ { 5 } rm C it rm _ { it r rm } \\left ( it x ^ { 3 } \\right ) ^ { r } CDOT3 ^ { 5-r } = it _ { 5 } rm C it rm _ { it r rm } it 3 ^ { 5-r } it x^3r$ 이므로 $x ^ { 9 }$ 의 계수는 $r=3$ 일 때이다. 따라서 $x ^ { 9 }$ 의 계수는 $it _ { 5 } rm C it rm _ { it 3 rm } TIMES3 ^ { 2 } =10 TIMES9=90$ 이다.)\n\n① $30$ ② $60$ ③ $90$\n\n④ $120$ ⑤ $150$\n\n문24）숫자 $1, 2, 3, 4, 5$ 중에서 중복을 허락하여 $4$ 개를 택해 \n일렬로 나열하여 만들 수 있는 네 자리의 자연수 중 $4000$ 이상인 홀수의 개수는? (주: 문24） 22\\_11\\_실전 24) ② (ⅰ) 천의 자리의 숫자가 $4$ 인 경우\n홀수가 되기 위해서는 일의 자리에 오는 수가 $1$ , $3$ , $5$ 의 세 가지 경우이다. \n또한 십의 자리와 백의 자리에 오는 경우의 수는\n $it _ { 5 } rm \\prod it _ { it 2 } =5^2 =25$ 이므로 $3 TIMES25=75$ 이다. (ⅱ) 천의 자리의 숫자가 $5$ 인 경우\n(ⅰ)의 경우와 마찬가지로 $75$ 가지이다. 따라서 중복을 허락하여 만들 수 있는 $4000$ 이상인 홀수의 개수는 $150$ 개다.)\n\n① $125$ ② $150$ ③ $175$\n\n④ $200$ ⑤ $225$\n\n문25）흰색 마스크 $5$ 개, 검은색 마스크 $9$ 개가 들어 있는 상자가 \n있다. 이 상자에서 임의로 $3$ 개의 마스크를 동시에 꺼낼 때, \n꺼낸 $3$ 개의 마스크 중에서 적어도 한 개가 흰색 마스크일 \n확률은? (주: 문25） 22\\_11\\_실전 25) ⑤ 전체에서 모두 검은색 마스크일 확률을 빼면 $1- \\frac{ { } _ { 9 } { rmC } _ { 3 } } { { } _ { 14 } { rmC"
+          }
+        ]
+      },
+      "educationMetricCause": [
+        {
+          "idx": "12",
+          "gtPlainIdentical": true,
+          "pdfNormalizedKeyIdentical": false,
+          "pdfNormalizedKeyChars": [
+            8794,
+            8794
+          ],
+          "unitCounts": [
+            544,
+            535
+          ],
+          "rec": {
+            "before": 8333,
+            "after": 8333,
+            "total": 8476,
+            "missBefore": [
+              "수능모의고사/",
+              "/////",
+              "/+//-//+",
+              "//극대//극소/",
+              "의",
+              ")",
+              ")",
+              ")",
+              "㉢",
+              "일때",
+              ",즉",
+              "문",
+              ")",
+              "///////",
+              "///////",
+              "//극소//극대//극소/",
+              "/////",
+              "/////",
+              "//극소//극대/",
+              ")",
+              ")",
+              "에서",
+              ")",
+              ")",
+              ")",
+              "므로",
+              "㉡",
+              ",",
+              "즉,",
+              "따라서",
+              "즉,이",
+              "은",
+              ")",
+              "므로",
+              "㉠,㉡에",
+              ",",
+              "이",
+              ")",
+              "에서이",
+              "문",
+              ")"
+            ],
+            "missAfter": [
+              "수능모의고사/",
+              "/////",
+              "/+//-//+",
+              "//극대//극소/",
+              "의",
+              ")",
+              ")",
+              ")",
+              "㉢",
+              "일때",
+              ",즉",
+              "문",
+              ")",
+              "///////",
+              "///////",
+              "//극소//극대//극소/",
+              "/////",
+              "/////",
+              "//극소//극대/",
+              ")",
+              ")",
+              "에서",
+              ")",
+              ")",
+              ")",
+              "므로",
+              "㉡",
+              ",",
+              "즉,",
+              "따라서",
+              "즉,이",
+              "은",
+              ")",
+              "므로",
+              "㉠,㉡에",
+              ",",
+              "이",
+              ")",
+              "에서이",
+              "문",
+              ")"
+            ]
+          },
+          "precision": {
+            "before": 8027,
+            "after": 8027,
+            "totalBefore": 8236,
+            "totalAfter": 8237
+          },
+          "order": {
+            "lisBefore": 129,
+            "lisAfter": 128,
+            "nBefore": 146,
+            "nAfter": 146
+          }
+        },
+        {
+          "idx": "14",
+          "gtPlainIdentical": true,
+          "pdfNormalizedKeyIdentical": false,
+          "pdfNormalizedKeyChars": [
+            8280,
+            8280
+          ],
+          "unitCounts": [
+            492,
+            484
+          ],
+          "rec": {
+            "before": 7755,
+            "after": 7754,
+            "total": 7819,
+            "missBefore": [
+              "수능모의고사/",
+              ")",
+              "이고",
+              ")",
+              ")",
+              ")",
+              "㈎에서",
+              ")",
+              "다.",
+              "이고",
+              ")",
+              ",",
+              ")",
+              ")",
+              "문",
+              ")",
+              "?",
+              "는",
+              ")",
+              "에서",
+              ")",
+              "의개",
+              "㈎일때,",
+              ")",
+              "수가인",
+              "에서,또,",
+              "문",
+              "은?",
+              "의값이",
+              "의값",
+              "문"
+            ],
+            "missAfter": [
+              "수능모의고사/",
+              ")",
+              "이고",
+              ")",
+              ")",
+              ")",
+              "㈎에서",
+              ")",
+              "다.",
+              "이고",
+              ")",
+              ",",
+              ")",
+              ")",
+              "문",
+              ")",
+              "는",
+              ")",
+              "에서",
+              ")",
+              "의개",
+              "㈎일때,",
+              ")",
+              "수가인",
+              "에서,또,",
+              "문",
+              "?",
+              "은?",
+              "의값이",
+              "의값",
+              "문"
+            ]
+          },
+          "precision": {
+            "before": 7562,
+            "after": 7562,
+            "totalBefore": 7847,
+            "totalAfter": 7847
+          },
+          "order": {
+            "lisBefore": 89,
+            "lisAfter": 88,
+            "nBefore": 110,
+            "nAfter": 110
+          }
+        },
+        {
+          "idx": "15",
+          "gtPlainIdentical": true,
+          "pdfNormalizedKeyIdentical": false,
+          "pdfNormalizedKeyChars": [
+            9743,
+            9743
+          ],
+          "unitCounts": [
+            588,
+            575
+          ],
+          "rec": {
+            "before": 9285,
+            "after": 9285,
+            "total": 9410,
+            "missBefore": [
+              "大學修學能力考查/",
+              "에서",
+              ")",
+              "은?문",
+              ")",
+              ")",
+              "①",
+              ")",
+              ")",
+              ")",
+              "/////",
+              "/////",
+              "/////",
+              "/////",
+              ")",
+              "이고",
+              "/////",
+              "/////",
+              "/////",
+              "㈎",
+              "㈏",
+              "(",
+              "문22",
+              ")",
+              ",일때,",
+              ")",
+              "또는",
+              "이고,이면",
+              "이고,이면",
+              ")",
+              ")",
+              "에서",
+              "4)",
+              ")",
+              "2",
+              "문29）",
+              "다.",
+              "30）",
+              ")"
+            ],
+            "missAfter": [
+              "大學修學能力考查/",
+              "에서",
+              ")",
+              "은?문",
+              ")",
+              ")",
+              "①",
+              ")",
+              ")",
+              ")",
+              "/////",
+              "/////",
+              "/////",
+              "/////",
+              ")",
+              "이고",
+              "/////",
+              "/////",
+              "/////",
+              "㈎",
+              "㈏",
+              "(",
+              "문22",
+              ")",
+              ",일때,",
+              ")",
+              "또는",
+              "이고,이면",
+              "이고,이면",
+              ")",
+              ")",
+              "에서",
+              "4)",
+              ")",
+              "2",
+              "문29）",
+              "다.",
+              "30）",
+              ")"
+            ]
+          },
+          "precision": {
+            "before": 9184,
+            "after": 9188,
+            "totalBefore": 9412,
+            "totalAfter": 9415
+          },
+          "order": {
+            "lisBefore": 166,
+            "lisAfter": 168,
+            "nBefore": 188,
+            "nAfter": 188
+          }
+        }
+      ],
+      "educationRoleAndGtEvidence": [
+        {
+          "idx": "12",
+          "needle": "문29",
+          "mode": "GT",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문29） $1$ 부터 $6$ 까지의 자연수가 하나씩 적힌 $6$ 장의 카드가 들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$ 번 반복하여 확인한 네 개의 수의 평균을 $\\overline{ X }$ 라 할 때, $rm P \\left ( \\overline{ X } = \\frac{ 11 } { 4 } \\right ) = it \\frac{ q } { p }$ 이다. $p+q$ 의 값을 구하시오. (단, $p$ 와 $q$ 는 서로소인 자연수이다.)",
+              "footnoteText": "문29） 175 네 장의 카드를 꺼내는 경우의 수는 $6 ^ { 4 }$ 네 수를 각각 $X _ { 1 }$ , $X _ { 2 }$ , $X _ { 3 }$ , $X _ { 4 }$ 라 하면 $X _ { 1 } +X _ { 2 } ",
+              "page": 8
+            },
+            {
+              "type": "image",
+              "text": "image_005.png",
+              "page": 8
+            },
+            {
+              "type": "paragraph",
+              "text": "문30）집합 $rm X= \\left \\{ 1,~2,~3,~4,~5 \\right \\}$ 와 함수 $f : rm X \\rightarrow X$ 에 대하여 함수 $f$ 의 치역을 $rm A$ , 합성함수 $f ◦f$ 의 치역을 $rm B$ 라 할 때, 다음 조건을 만족시키는 함수 $f$ 의 개수를 구하시오.",
+              "footnoteText": "문30） 260 조건 (다)에서 함수 $f$ 는 상수함수일 수 없으므로 $n \\left ( A \\right ) =2$ 또는 $n \\left ( A \\right ) =3$ (ⅰ) $n \\left ( A \\right ) =2$ 인 경우\n",
+              "page": 8
+            }
+          ]
+        },
+        {
+          "idx": "12",
+          "needle": "문29",
+          "mode": "baseline",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 392,
+                "width": 236,
+                "height": 9
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 352,
+                "width": 263,
+                "height": 36
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 329,
+                "width": 172,
+                "height": 21
+              }
+            }
+          ]
+        },
+        {
+          "idx": "12",
+          "needle": "문29",
+          "mode": "candidate",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문29）$1$부터 $6$까지의 자연수가 하나씩 적힌 $6$장의 카드가 들어있는 주머니가 있다. 이 주머니에서 임의로 한 장의 카드를 꺼내어 카드에 적힌 수를 확인한 후 다시 넣는 시행을 한다. 이 시행을 $4$번 반복하여 확인한 네 개의 수의",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 352,
+                "width": 263,
+                "height": 49
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "평균을 $X$ 라 할 때, $P(X=\\frac{11}{4})=\\frac{q}{p}$이다.",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 302,
+                "y": 329,
+                "width": 172,
+                "height": 21
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$p+q$ 의 값을 구하시오. (단, $p$와 $q$ 는 서로소인",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 303,
+                "y": 313,
+                "width": 193,
+                "height": 9
+              }
+            }
+          ]
+        },
+        {
+          "idx": "14",
+          "needle": "문6",
+          "mode": "GT",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문6）함수 $f(x)=x ^ { 3 } -2x ^ { 2 } +2x+a$ 에 대하여 곡선 $y=f(x)$ 위의 점 $(1,~f(1))$ 에서의 접선이 $x$ 축, $y$ 축과 만나는 점을 각각 $rm P,~Q$ 라 하자. $\\overline{ rm PQ it } =6$ 일 때, 양수 $a$ 의 값은?",
+              "footnoteText": "문6） ③ $f \\left ( x \\right ) =x ^ { 3 } -2x ^ { 2 } +2x+a$ 에서 $f ' \\left ( x \\right ) =3x ^ { 2 } -4x+2$ $f \\left ( 1 \\right ) =a+1",
+              "page": 2
+            },
+            {
+              "type": "paragraph",
+              "text": "① $2 \\sqrt { 2 }$ ② $\\frac{ 5 \\sqrt { 2 } } { 2 }$ ③ $3 \\sqrt { 2 }$",
+              "page": 2
+            },
+            {
+              "type": "paragraph",
+              "text": "④ $\\frac{ 7 \\sqrt { 2 } } { 2 }$ ⑤ $4 \\sqrt { 2 }$",
+              "page": 2
+            }
+          ]
+        },
+        {
+          "idx": "14",
+          "needle": "문6",
+          "mode": "baseline",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 750,
+                "width": 258,
+                "height": 23
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 735,
+                "width": 184,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{5\\sqrt{2}}{2}$",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 397,
+                "y": 721,
+                "width": 22,
+                "height": 10
+              }
+            }
+          ]
+        },
+        {
+          "idx": "14",
+          "needle": "문6",
+          "mode": "candidate",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문6）함수 $f(x)=x^{3}-2x^{2}+2x+a$에 대하여 곡선 $y=f(x)$ 위의 점 $(1,f(1))$에서의 접선이 $x$축, $y$축과 만나는 점을 각각 $P,Q$ 라 하자. $PQ=6$일 때, 양수 $a$의 값은?",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 735,
+                "width": 258,
+                "height": 38
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$\\frac{5\\sqrt{2}}{2}$",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 397,
+                "y": 721,
+                "width": 22,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "① $2\\sqrt{2}$\t②\t③ $3\\sqrt{2}$",
+              "page": 1,
+              "bbox": {
+                "page": 1,
+                "x": 302,
+                "y": 714,
+                "width": 193,
+                "height": 11
+              }
+            }
+          ]
+        },
+        {
+          "idx": "15",
+          "needle": "문22",
+          "mode": "GT",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문22）최고차항의 계수가 $1$ 인 삼차함수 $f(x)$ 와 실수 전체의 집합에서 연속인 함수 $g(x)$ 가 다음 조건을 만족시킬 때,",
+              "footnoteText": "문22） 22_11_실전 22) 13 주어진 (가) 조건을 정리하면 $\\frac{ f \\left ( x \\right ) -f \\left ( 1 \\right ) } { x-1 } =f ' \\left ( g \\left ( x \\right",
+              "page": 6
+            },
+            {
+              "type": "paragraph",
+              "text": "$f(4)$ 의 값을 구하시오.",
+              "page": 6
+            },
+            {
+              "type": "paragraph",
+              "text": "㈎ 모든 실수 $x$ 에 대하여 \n $f(x)=f(1)+(x-1)f ' (g(x))$ 이다.",
+              "page": 6
+            }
+          ]
+        },
+        {
+          "idx": "15",
+          "needle": "문22",
+          "mode": "baseline",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때,",
+              "page": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 576,
+                "width": 244,
+                "height": 23
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "$f(4)$의 값을 구하시오.",
+              "page": 3,
+              "bbox": {
+                "page": 3,
+                "x": 303,
+                "y": 562,
+                "width": 93,
+                "height": 10
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n",
+              "page": 3,
+              "bbox": {
+                "page": 3,
+                "x": 304.636,
+                "y": 487.147,
+                "width": 260.61999999999995,
+                "height": 69.64400000000006
+              }
+            }
+          ]
+        },
+        {
+          "idx": "15",
+          "needle": "문22",
+          "mode": "candidate",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "문22）최고차항의 계수가 $1$인 삼차함수 $f(x)$와 실수 전체의 집합에서 연속인 함수 $g(x)$가 다음 조건을 만족시킬 때, $f(4)$의 값을 구하시오.",
+              "page": 3,
+              "bbox": {
+                "page": 3,
+                "x": 302,
+                "y": 562,
+                "width": 244,
+                "height": 37
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n㈎ 모든 실수 $x$에 대하여\n$f(x)=f(1)+(x-1)f(g(x))$′ 이다.\n㈏ 함수 $g(x)$의 최솟값은 $\\frac{5}{2}$이다.\n㈐ $f(0)=-3$, $f(g(1))=6$\n",
+              "page": 3,
+              "bbox": {
+                "page": 3,
+                "x": 304.636,
+                "y": 487.147,
+                "width": 260.61999999999995,
+                "height": 69.64400000000006
+              }
+            },
+            {
+              "type": "paragraph",
+              "text": "\n확률과 통계\n",
+              "page": 4,
+              "bbox": {
+                "page": 4,
+                "x": 29.553125000000005,
+                "y": 754.38375,
+                "width": 198.38425,
+                "height": 19.909312499999942
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "unitTests": {
+    "tests": 2888,
+    "suites": 826,
+    "passed": 2888,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typecheck": {
+    "pass": true
+  },
+  "freshIndependentReview": {
+    "status": "source-review-pass",
+    "scope": "Fresh agent read-only review of final source/tests/documentation",
+    "sourceHashesMatch": true,
+    "sourceBlockersFound": false,
+    "independentlyReproduced": [
+      "Native slide kicker regression Red→Green",
+      "141 original-role and evaluator tree/score comparison",
+      "Tall-glyph cursor and nested XY proof repros"
+    ],
+    "pending": []
+  },
+  "limits": [
+    "All metrics are not 99 or 100.",
+    "ODL MHS_s decreases on 141; table metrics unchanged.",
+    "HWPX speed attempt removed after slower main inputs; no HWPX/writer/renderer changes.",
+    "HWPX original exact remains 9849/9865; remaining 16 GT defects retained.",
+    "Hancom GUI visual oracle not run; prior explicit user deployment override retained.",
+    "Raster ODL200 rowspan needs final composite local boundary proof.",
+    "Forced OCR strict CER and table accuracy require follow-up.",
+    "Post-publication original audit confirms a native independent TOC-row merge regression; tracked for source fix in 4.17.6. OCR strings unchanged, strict CER increase retained."
+  ],
+  "finalGates": {
+    "allPass": true,
+    "normalPublishExitCode": 0,
+    "normalPublishLogSHA256": "c804941bef951327871185e08d9f03238f9bde8b7ca801ef85c2f5b610b50af7",
+    "population": {
+      "value": "hwpx 2286/pdf 1911/hwp쌍 1120",
+      "threshold": "≥ 2286/1911/1120",
+      "pass": true
+    },
+    "hwpx": {
+      "docs": 2286,
+      "refChars": 5548157,
+      "tableCount": 9865,
+      "exactCount": 9849,
+      "nestedTables": 559,
+      "gates": {
+        "recallMicro": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "recallDoc": {
+          "value": 1,
+          "threshold": 1,
+          "failDocs": 0,
+          "pass": true
+        },
+        "missRun": {
+          "failDocs": 0,
+          "threshold": "<20자",
+          "pass": true
+        },
+        "phantom": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "blacklist": {
+          "failDocs": 0,
+          "pass": true
+        },
+        "tableExact": {
+          "value": 0.998378,
+          "threshold": 0.9963,
+          "pass": true
+        },
+        "cellF1": {
+          "value": 0.998581,
+          "threshold": 0.9976,
+          "pass": true
+        },
+        "contentNED": {
+          "value": 0.999953,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "cellExact": {
+          "value": 0.999982,
+          "threshold": 0.9995,
+          "pass": true
+        },
+        "orderAvg": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "orderDoc": {
+          "failDocs": 0,
+          "threshold": 1,
+          "pass": true
+        },
+        "eqPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "fnPresence": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "headerPolicy": {
+          "violations": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "hwp5": {
+      "pairs": 1120,
+      "ok": 1120,
+      "avgCrossNED": 0,
+      "avgHwpxToHwp": 1,
+      "tables": {
+        "ref": 4244,
+        "exact": 4244
+      },
+      "gates": {
+        "pairSimilarity": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairTableExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellF1": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCellExact": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairContentNED": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairCoverage": {
+          "value": 1,
+          "threshold": 1,
+          "pass": true
+        },
+        "pairErrors": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      },
+      "pass": true
+    },
+    "pdfTable": {
+      "pairs": 708,
+      "refTables": 2331,
+      "reordered": 5,
+      "matchedRate": 0.998284,
+      "exactRate": 0.979408,
+      "cellF1": 0.990863,
+      "cellExactRate": 0.985981,
+      "contentNED": 0.982072,
+      "parseErrors": 0,
+      "nested": {
+        "pairs": 29,
+        "refTables": 101,
+        "reordered": 0,
+        "matchedRate": 1,
+        "exactRate": 0.930693,
+        "cellF1": 0.99802,
+        "cellExactRate": 0.981723,
+        "contentNED": 0.990894
+      }
+    },
+    "pdfText": {
+      "pairs": 744,
+      "refChars": 2857775,
+      "recall": 0.99829,
+      "precision": 0.99581,
+      "order": 0.99145,
+      "spaceF1": 0.98809,
+      "parseErrors": 0,
+      "excluded": 22
+    },
+    "roundtrip": {
+      "pass": true,
+      "corpusDocs": 75,
+      "aggregate": {
+        "fwdCovMicro": 1,
+        "bwdCovMicro": 1,
+        "tables": {
+          "ref": 68,
+          "exact": 68,
+          "cellTotal": 1897,
+          "cellExact": 1897,
+          "cellExactRate": 1
+        }
+      }
+    },
+    "annex": {
+      "hwp": {
+        "docs": 272,
+        "recall": 1,
+        "phantom": 0.00001,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 346,
+        "tableExact": 1,
+        "cellF1": 1,
+        "eqRef": 11,
+        "eqHit": 11
+      },
+      "pdf": {
+        "docs": 272,
+        "recall": 0.99965,
+        "phantom": 0.00053,
+        "order": 1,
+        "tables": 346,
+        "tableExactCount": 336,
+        "tableExact": 0.9711,
+        "cellF1": 0.99564,
+        "eqRef": 11,
+        "eqHit": 7
+      }
+    },
+    "formats": {
+      "pass": true,
+      "population": "docx36/xlsx28/xls15/hml9/largeSheets8"
+    },
+    "fuzz": {
+      "runs": 23700,
+      "incidents": 0,
+      "pass": true,
+      "elapsedMs": 910591,
+      "gates": {
+        "crash": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "hang": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "noCode": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "slow": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        },
+        "genInvalid": {
+          "value": 0,
+          "threshold": 0,
+          "pass": true
+        }
+      }
+    },
+    "reflow": {
+      "cases": 59,
+      "consistency": 1,
+      "pass": true
+    },
+    "redact": {
+      "cases": 313,
+      "referenceSpans": 284,
+      "negativeCases": 102,
+      "pass": true
+    },
+    "ocr": {
+      "before": {
+        "generatedAt": "2026-09-30T22:05:43.612Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09589,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 1.03,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "after": {
+        "generatedAt": "2026-10-01T00:08:35.497Z",
+        "docs": 53,
+        "skipped": 3,
+        "pages": 102,
+        "skippedPages": [
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 5,
+            "inlineGlyphImages": 10,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "eval-perf-2024.pdf",
+            "page": 4,
+            "inlineGlyphImages": 9,
+            "reason": "텍스트층이 글줄 안 글자를 그림으로 찍음(정답 불완전)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 1,
+            "glyphCoverage": 0.088,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          },
+          {
+            "doc": "nanet-seoul-minutes.pdf",
+            "page": 2,
+            "glyphCoverage": 0.071,
+            "reason": "래스터에 텍스트층 글자가 그려지지 않음(글꼴 미렌더)"
+          }
+        ],
+        "cerMicro": 0.05188,
+        "cerMedian": 0.0216,
+        "charRecallMicro": 0.99001,
+        "charPrecisionMicro": 0.99355,
+        "charF1": 0.99178,
+        "hangulRecallMicro": 0.99363,
+        "cerMicroStrict": 0.09665,
+        "cerMedianStrict": 0.0719,
+        "secPerPage": 0.98,
+        "tables": {
+          "refTables": 67,
+          "matched": 52,
+          "exact": 22,
+          "matchedRate": 0.7761,
+          "exactRate": 0.3284,
+          "cellF1Mean": 0.5465,
+          "skippedRefTables": 37
+        },
+        "note": "정답=같은 PDF의 클린 텍스트층, 입력=216dpi 렌더 강제 OCR — 실스캔 노이즈/스큐 미반영(상한치). cer=v2 fair 정규화, cerStrict=v1"
+      },
+      "pass": true,
+      "changedStrictDocuments": [
+        {
+          "before": {
+            "doc": "khs-budget-2014.pdf",
+            "pages": [
+              5,
+              6
+            ],
+            "gtChars": 594,
+            "dist": 2,
+            "cer": 0.0034,
+            "cerStrict": 0.1401,
+            "charRecall": 0.9966,
+            "charPrecision": 1,
+            "hangulRecall": 1,
+            "secPerPage": 0.73,
+            "tbl": null
+          },
+          "after": {
+            "doc": "khs-budget-2014.pdf",
+            "pages": [
+              5,
+              6
+            ],
+            "gtChars": 594,
+            "dist": 2,
+            "cer": 0.0034,
+            "cerStrict": 0.2294,
+            "charRecall": 0.9966,
+            "charPrecision": 1,
+            "hangulRecall": 1,
+            "secPerPage": 0.73,
+            "tbl": null
+          }
+        }
+      ]
+    }
+  },
+  "releaseEvidence": {
+    "record": "release-4.17.5.json",
+    "sourceCommit": "d6bd3566c7915b7976c6fac8e3ad65ced0891444",
+    "registryVersion": "4.17.5",
+    "distFilesExact": 136,
+    "githubRelease": "https://github.com/chrisryugj/kordoc/releases/tag/v4.17.5",
+    "githubGitlabTagIdentical": true
+  },
+  "forcedOcrNativeTocAudit": {
+    "schemaVersion": 1,
+    "document": "khs-budget-2014.pdf",
+    "pages": [
+      5,
+      6
+    ],
+    "versions": {
+      "baseline": "4.17.4",
+      "candidate": "4.17.5"
+    },
+    "execution": {
+      "command": "node bench/ocr-accuracy.mjs --doc=khs-budget-2014 --dump=./captures",
+      "sequential": true,
+      "build": false,
+      "primaryOutputOverwritten": false,
+      "productionModified": false,
+      "gtModified": false,
+      "evaluatorModified": false,
+      "populationModified": false
+    },
+    "files": {
+      "pdf": {
+        "path": "/Users/mong-e/workspace/kordoc/bench/corpus/pdf/khs-budget-2014.pdf",
+        "sha256": "690627cbae6baed93f786b644246e20e4c641fb997d68b874a257581c3cd787d"
+      },
+      "scorer": {
+        "path": "/Users/mong-e/workspace/kordoc/bench/ocr-accuracy.mjs",
+        "sha256": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60"
+      },
+      "library": {
+        "path": "/Users/mong-e/workspace/kordoc/bench/ocr-lib.mjs",
+        "sha256": "afe830108bcb96e7586c296877684090b9fb3801f901ed18107a79f99f5c9d24"
+      },
+      "goldenPages": {
+        "path": "/Users/mong-e/workspace/kordoc/bench/ocr-pages.json",
+        "sha256": "20ebf00f4da6cabcc390940246a96314658f3af177e1842938b7525361cb9532"
+      },
+      "baselineDist": {
+        "path": "/tmp/kordoc-score-performance-baseline-20261001/dist/index.js",
+        "sha256": "6a57e172c7b4c62cdfea5f98ea74b8289fdea1cd7ed3c656dc9c5a5c20e3d8d3"
+      },
+      "candidateDist": {
+        "path": "/Users/mong-e/workspace/kordoc/dist/index.js",
+        "sha256": "3970369a211435995f52892842aa94b5b67e79e021cbdcebcb2bb510a799f991"
+      }
+    },
+    "unchangedCopiedInputs": {
+      "ocr-accuracy.mjs": {
+        "primary": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60",
+        "baseline": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60",
+        "candidate": "314b71d3651bbbf009f35ce99201a31f2f5f864dfe5e7699b2f8e015286efd60"
+      },
+      "ocr-lib.mjs": {
+        "primary": "afe830108bcb96e7586c296877684090b9fb3801f901ed18107a79f99f5c9d24",
+        "baseline": "afe830108bcb96e7586c296877684090b9fb3801f901ed18107a79f99f5c9d24",
+        "candidate": "afe830108bcb96e7586c296877684090b9fb3801f901ed18107a79f99f5c9d24"
+      },
+      "ocr-pages.json": {
+        "primary": "20ebf00f4da6cabcc390940246a96314658f3af177e1842938b7525361cb9532",
+        "baseline": "20ebf00f4da6cabcc390940246a96314658f3af177e1842938b7525361cb9532",
+        "candidate": "20ebf00f4da6cabcc390940246a96314658f3af177e1842938b7525361cb9532"
+      }
+    },
+    "outputs": {
+      "baseline": "/tmp/kordoc-ocr-khs-repro-20261001/baseline/bench/out/ocr-accuracy.json",
+      "candidate": "/tmp/kordoc-ocr-khs-repro-20261001/candidate/bench/out/ocr-accuracy.json",
+      "baselineCapture": "/tmp/kordoc-ocr-khs-repro-20261001/baseline/captures/khs-budget-2014.pdf.json",
+      "candidateCapture": "/tmp/kordoc-ocr-khs-repro-20261001/candidate/captures/khs-budget-2014.pdf.json",
+      "baselineText": "/tmp/kordoc-ocr-khs-repro-20261001/baseline/text-dump.json",
+      "candidateText": "/tmp/kordoc-ocr-khs-repro-20261001/candidate/text-dump.json",
+      "originalGlyphs": "/tmp/kordoc-ocr-khs-repro-20261001/original-glyphs.json",
+      "originalImages": [
+        "/tmp/kordoc-ocr-khs-repro-20261001/original-p5.png",
+        "/tmp/kordoc-ocr-khs-repro-20261001/original-p6.png"
+      ]
+    },
+    "originalGate": {
+      "aggregateStrictCer": {
+        "baseline": 0.09589,
+        "candidate": 0.09665
+      },
+      "document": {
+        "baseline": {
+          "gtLength": 564,
+          "ocrLength": 634,
+          "strictDistance": 79,
+          "strictCer": 0.1400709219858156,
+          "fairLength": 594,
+          "fairDistance": 2,
+          "fairCer": 0.003367003367003367
+        },
+        "candidate": {
+          "gtLength": 523,
+          "ocrLength": 634,
+          "strictDistance": 120,
+          "strictCer": 0.2294455066921606,
+          "fairLength": 594,
+          "fairDistance": 2,
+          "fairCer": 0.003367003367003367
+        }
+      },
+      "gateIsAuthoritative": true
+    },
+    "ocrTextEquality": {
+      "rawV1": {
+        "baseline": "3f782a45367efe4b1020b7d842be7e41c8eff217a8116ac4ce36dbcc7ea16994",
+        "candidate": "3f782a45367efe4b1020b7d842be7e41c8eff217a8116ac4ce36dbcc7ea16994",
+        "equal": true
+      },
+      "strict": {
+        "baseline": "65ae2287813de86c812dfba39dcfa5c32989a68612ad57b0ca72473bc67e35f3",
+        "candidate": "65ae2287813de86c812dfba39dcfa5c32989a68612ad57b0ca72473bc67e35f3",
+        "equal": true
+      },
+      "rawFair": {
+        "baseline": "3f782a45367efe4b1020b7d842be7e41c8eff217a8116ac4ce36dbcc7ea16994",
+        "candidate": "3f782a45367efe4b1020b7d842be7e41c8eff217a8116ac4ce36dbcc7ea16994",
+        "equal": true
+      },
+      "fair": {
+        "baseline": "7005a263aa693719541e7519084cfac9682df27d6bd66f5eaad8bf68b4d967a3",
+        "candidate": "7005a263aa693719541e7519084cfac9682df27d6bd66f5eaad8bf68b4d967a3",
+        "equal": true
+      }
+    },
+    "ocrBlocksByteIdentical": false,
+    "nativeFairTextEqual": true,
+    "diagnosticFixedBaselineGt": {
+      "auxiliaryOnly": true,
+      "replacesGate": false,
+      "strictDistance": 79,
+      "strictCer": 0.1400709219858156,
+      "fairDistance": 2,
+      "fairCer": 0.003367003367003367
+    },
+    "derivedGtCause": {
+      "code": {
+        "collector": "/Users/mong-e/workspace/kordoc/bench/ocr-lib.mjs:51",
+        "callsite": "/Users/mong-e/workspace/kordoc/bench/ocr-accuracy.mjs:184"
+      },
+      "description": "Legacy v1 flat collector omits children. Native layout changes moved an additional 41 normalized characters into children. PDF, golden page list and scorer bytes are fixed; derived v1 GT is not fixed.",
+      "additionalOmitted": [
+        {
+          "text": "가. 세입 예산 현황 총괄표 \t15",
+          "normalized": "가.세입예산현황총괄표15",
+          "length": 13
+        },
+        {
+          "text": "【광역지역발전 특별회계】 \t85",
+          "normalized": "【광역지역발전특별회계】85",
+          "length": 14
+        },
+        {
+          "text": "가. 수입 예산 현황 총괄표 \t115",
+          "normalized": "가.수입예산현황총괄표115",
+          "length": 14
+        }
+      ],
+      "additionalOmittedLength": 41,
+      "baselineLists": [
+        {
+          "text": "가. 세입 예산 현황 총괄표 \t15",
+          "children": [
+            {
+              "type": "list",
+              "text": "나. 세출 예산 현황 총괄표 \t19",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 92,
+                "y": 509,
+                "width": 432,
+                "height": 14
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            }
+          ]
+        },
+        {
+          "text": "가. 수입 예산 현황 총괄표 \t115",
+          "children": [
+            {
+              "type": "list",
+              "text": "나. 지출 예산 현황 총괄표 \t119",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 92,
+                "y": 134,
+                "width": 433,
+                "height": 14
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            }
+          ]
+        }
+      ],
+      "candidateLists": [
+        {
+          "text": "2. 세입·세출 예산 현황 총괄표 \t11 【일반회계】 \t13",
+          "children": [
+            {
+              "type": "list",
+              "text": "가. 세입 예산 현황 총괄표 \t15",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 92,
+                "y": 540,
+                "width": 432,
+                "height": 14
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            },
+            {
+              "type": "list",
+              "text": "나. 세출 예산 현황 총괄표 \t19 【광역지역발전 특별회계】 \t85",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 78,
+                "y": 478,
+                "width": 446,
+                "height": 45
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            }
+          ]
+        },
+        {
+          "text": "2. 수입·지출 예산 현황 총괄표 \t111 【문화재보호기금】 \t113",
+          "children": [
+            {
+              "type": "list",
+              "text": "가. 수입 예산 현황 총괄표 \t115",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 92,
+                "y": 165,
+                "width": 433,
+                "height": 14
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            },
+            {
+              "type": "list",
+              "text": "나. 지출 예산 현황 총괄표 \t119",
+              "pageNumber": 5,
+              "bbox": {
+                "page": 5,
+                "x": 92,
+                "y": 134,
+                "width": 433,
+                "height": 14
+              },
+              "style": {
+                "fontSize": 14,
+                "fontName": "g_d3_f4"
+              },
+              "listType": "unordered"
+            }
+          ]
+        }
+      ]
+    },
+    "geometry": {
+      "page": 5,
+      "pageBox": [
+        0,
+        0,
+        595.22,
+        842
+      ],
+      "fontSizeApprox": 14,
+      "rowPitchApprox": 30.78,
+      "rightPageNumberEdgeApprox": 524.4,
+      "independentAccountHeading": {
+        "text": "【광역지역발전 특별회계】",
+        "sourceLabel": {
+          "x": 77.88,
+          "y": 478.2803
+        },
+        "sourcePageNumber": {
+          "text": "85",
+          "x": 510.48,
+          "y": 478.2803
+        },
+        "precedingNa": {
+          "x": 91.86,
+          "y": 509.0603,
+          "pageNumber": "19"
+        },
+        "candidateMergedBbox": {
+          "x": 78,
+          "y": 478,
+          "width": 446,
+          "height": 45
+        }
+      },
+      "assessment": "Ga/Na nesting beneath a numbered parent can be valid. Independent account headings have their own bold bracket label, dot leader and page number, and must not be absorbed into the preceding Na child. Candidate native hierarchy is therefore not wholly validated against the original. No OCR text deterioration is established."
+    },
+    "sourceMechanism": {
+      "lineWrapSourceUnchangedBetweenBuilds": true,
+      "changedPaths": [
+        "/Users/mong-e/workspace/kordoc/src/pdf/xy-cut.ts",
+        "/Users/mong-e/workspace/kordoc/src/pdf/paragraph-lines.ts"
+      ],
+      "locations": {
+        "wrapBands": "/Users/mong-e/workspace/kordoc/src/pdf/xy-cut.ts:230",
+        "joins": "/Users/mong-e/workspace/kordoc/src/pdf/xy-cut.ts:239",
+        "inheritedJoin": "/Users/mong-e/workspace/kordoc/src/pdf/paragraph-lines.ts:50"
+      },
+      "description": "New wrapped-line bands preserve bodyLineJoins decisions across XY cuts and paragraph leaf subdivision. Full-width TOC labels plus right-aligned page numbers can meet the prose width/relative-pitch criteria; distinct TOC account headings are then joined. Subsequent Korean list nesting moves more text to children."
+    },
+    "nextMinimalRepro": {
+      "anonymous": true,
+      "input": "Four same-size 14pt TOC rows at 31pt pitch; each has a left label, a dot-leader gap and a right-aligned independent numeric page reference. Include a numbered parent, bracketed account heading, Ga/Na items, and the next bracketed account heading. Use coordinates rather than filename, document ID or known text.",
+      "redAssertion": "Independent account heading with its own leader/page reference remains a separate record and is not concatenated into the previous list child.",
+      "recommendedFixArea": "A conservative repeated TOC-record geometry boundary in wrap-band/paragraph line joining; do not alter the benchmark collector or flatten legitimate list hierarchy just to restore strict CER.",
+      "negativeCases": [
+        "Large-pitch justified Korean prose wrapped across an XY leaf must continue joining.",
+        "Single numeric suffix without repeated aligned page-reference column must not activate a TOC exception.",
+        "Wrapped TOC label without its own second page reference must remain one record.",
+        "Normal nested Ga/Na lists must retain their intended hierarchy."
+      ]
+    },
+    "interpretation": "Report original aggregate strict CER 9.589% to 9.665% unchanged. This regression is driven by native-derived v1 GT omission, not an increase in the OCR comparison string. Fixed-baseline GT diagnostics are supplemental only. A separate native TOC row-boundary issue is visually established; no production fix was made in this audit."
+  }
+}

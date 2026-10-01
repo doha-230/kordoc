@@ -215,7 +215,8 @@ export interface ParseOptions {
   pages?: number[] | string
   /** 이미지 기반 PDF OCR (선택).
    *  - 지정 안 함(기본): 내장 모델이 이미 캐시에 있으면(`kordoc models` 로 받았거나 앞서 `ocr: true` 로 받은 경우) 텍스트층이
-   *    없는 쪽(스캔·글자를 곡선으로 그린 쪽)만 자동 인식한다. 모델이 없으면 다운로드하지 않고 종전처럼 NEEDS_OCR 경고만.
+   *    없는 쪽(스캔·글자를 곡선으로 그린 쪽)과 글 없는 큰 그림(쪽 면적 5% 넘는) 속 글을 자동 인식한다. 모델이 없으면 다운로드하지
+   *    않고 NEEDS_OCR·SKIPPED_IMAGE 경고만.
    *  - `false`: 끈다.
    *  - `true`: 내장 엔진(PP-OCRv5 korean, ~18MB 자동 다운로드)으로 OCR 필요 판정
    *    페이지만 인식 (스캔 페이지·글꼴 매핑 깨진 페이지). 정상 페이지는 파싱 결과 유지.
@@ -226,8 +227,14 @@ export interface ParseOptions {
   onProgress?: (current: number, total: number) => void
   /** PDF 머리글/바닥글 자동 제거 */
   removeHeaderFooter?: boolean
+  /**
+   * 위·아래첨자를 인라인 HTML `<sup>`·`<sub>` 로 표기 — 평문으로 펴면 "10⁴ m²" 가 "104 m2", "x_i" 가 "xi" 로 값이 바뀐다.
+   * 기본: HWPX·HWP·DOCX 켬(글자 모양에 적힌 첨자), PDF 끔(글자 크기·기준선으로 추정 — 논문·수식 문서는 true 권장.
+   * 공개 벤치 ODL 정답이 첨자를 평문으로 적어 기본값을 두지 않는다). false 면 모든 형식에서 평문. OCR 로 읽은 글은 늘 평문
+   */
+  scriptTags?: boolean
   /** 평문 Markdown — 그림 자리 표시·링크 URL·밑줄(`<u>`)·굵게(`**`) 표기를 빼고 글만 (제목·목록·표 구조는 유지).
-   *  이미지 바이트를 따로 저장하지 않는 색인·RAG 용. 기본 false. `blocks` IR 은 그대로 */
+   *  첨자 `<sup>`·`<sub>` 는 값이 남게 `10^4`·`H_2O` 로 편다. 이미지 바이트를 따로 저장하지 않는 색인·RAG 용. 기본 false. `blocks` IR 은 그대로 */
   plain?: boolean
   /** 모든 표를 HTML 로 — 파이프 표도 HTML 표로 옮기고, 표마다 태그를 한 줄씩 들여써 낸다(BeautifulSoup prettify 모양, 첫 행 `<th>`).
    *  HTML 표만 다루는 소비자·채점기용. 기본 false(병합·중첩 없는 표는 GFM 파이프 표) */
@@ -236,6 +243,10 @@ export interface ParseOptions {
    *  기본 false: 마크다운 가독성을 위해 후행 빈 열을 트림.
    *  양식 인식 경로(parse_form·fill)는 내부적으로 항상 켠다. */
   keepTrailingEmptyCols?: boolean
+  /** 테두리가 안 보이는 틀 표 처리 (v4.17.0). 기본 `"visual"`: 보이는 대로 — 선이 없는 틀은 글로 풀고 선이 보이는 부분만 표로,
+   *  칸으로 조립한 분수는 `$\frac{…}{…}$` 수식으로. `"keep"`: 종전대로 원본 표 구조 그대로(왕복 패치·양식 채우기처럼
+   *  원본 표 서수가 필요한 경로). HWPX·HWP5·PDF */
+  layoutTables?: "visual" | "keep"
   /** 구조 파싱 뒤 표를 의미표/레이아웃/불확실로 분류해 `IRTable.classification` 에 붙인다 (#76).
    *  기본 false — 기본 parse 출력 불변. 중첩표·셀 blocks·캡션 blocks 까지 재귀, 원문 순서는 바꾸지 않는다. */
   classifyTables?: boolean
@@ -292,7 +303,8 @@ export interface ParseOptions {
    * `images` 는 비고, 블록의 `imageData` 도 떼며, HWP5 `inlineImages` 도 무시한다.
    * 그림 자리 표시(`![image](…)`)는 마크다운·블록에 그대로 남아 위치는 알 수 있다.
    * PDF 는 PNG 인코딩을 건너뛴다. 거르는 기준은 같되 메모리 보호용 128MB 누적 상한은 걸리지
-   * 않아, 그 상한 뒤의 그림도 자리 표시가 남는다.
+   * 않아, 그 상한 뒤의 그림도 자리 표시가 남는다. DOCX 는 그림 파트(`word/media`·`word/embeddings`)를
+   * 풀지 않고 ZIP 비압축 상한(100MB)에도 세지 않는다 (#108).
    *
    * 검색 색인처럼 글자만 필요한 호출자용이다. 그림이 많은 문서는 base64 로 불어난 이미지가
    * JSON 출력의 대부분을 차지했다 (PDF 실측 200MB → 9.5MB, CPU 시간 30% 감소). 본문 글자와

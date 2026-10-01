@@ -16,6 +16,7 @@
 
 import JSZip from "jszip"
 import { blocksToMarkdown } from "../table/builder.js"
+import { unframeLayoutTables } from "../table/layout-frames.js"
 import type { DocumentMetadata, InternalParseResult, IRBlock, OutlineItem, ParseOptions, ParseWarning } from "../types.js"
 import { KordocError, precheckZipSize } from "../utils.js"
 // 테스트 호환성 re-export
@@ -172,17 +173,20 @@ export async function parseHwpxDocument(buffer: ArrayBuffer, options?: ParseOpti
   applyPageText(blocks, shared)
 
   // 이미지 블록에서 ZIP 바이너리 추출 — 전체 파싱 시 본문 미참조 BinData(꼬리말 그림·imgBrush 배경)도 스윕
-  const images = await extractImagesFromZip(zip, blocks, decompressed, warnings, !options?.pages)
+  const images = await extractImagesFromZip(zip, blocks, decompressed, warnings, !options?.pages, shared.track.deletedImageRefs)
+
+  // 보이지 않는 틀 표 풀기 (v4.17.0) — 헤딩 감지 전에: 틀에서 나온 문단도 제목 후보
+  const shown = options?.layoutTables === "keep" ? blocks : unframeLayoutTables(blocks, !!options?.keepTrailingEmptyCols)
 
   // 스타일 기반 헤딩 감지
-  detectHwpxHeadings(blocks, styleMap)
+  detectHwpxHeadings(shown, styleMap)
 
   // outline 구축
-  const outline: OutlineItem[] = blocks
+  const outline: OutlineItem[] = shown
     .filter(b => b.type === "heading" && b.level && b.text)
     .map(b => ({ level: b.level!, text: b.text!, pageNumber: b.pageNumber }))
 
-  const markdown = blocksToMarkdown(blocks)
-  return { markdown, blocks, metadata, outline: outline.length > 0 ? outline : undefined, warnings: warnings.length > 0 ? warnings : undefined, images: images.length > 0 ? images : undefined }
+  const markdown = blocksToMarkdown(shown)
+  return { markdown, blocks: shown, metadata, outline: outline.length > 0 ? outline : undefined, warnings: warnings.length > 0 ? warnings : undefined, images: images.length > 0 ? images : undefined }
 }
 

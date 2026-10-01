@@ -10,11 +10,14 @@
  * text-clean(마크다운 정리), formula-ocr(수식).
  */
 
+import { stripScriptTags } from "../script-tags.js"
 import type { InternalParseResult, IRBlock, DocumentMetadata, ExtractedImage, ParseOptions, ParseWarning, OutlineItem } from "../types.js"
 import { KordocError } from "../utils.js"
 import { parsePageRange, hasRequestedPagesAfter } from "../page-range.js"
 import { blocksToPages } from "../page-markdown.js"
 import { blocksToMarkdown, escapeLiteralDollar } from "../table/builder.js"
+import { unframeLayoutTables, CONTENT_CELLS } from "../table/layout-frames.js"
+import { CLIP_TABLES, IMAGE_CELLS } from "./table-meta.js"
 import { extractImageRegions, extractLines } from "./line-detector.js"
 import { mergeOcrImageRegions, type ImageRegion } from "./ocr-region-merge.js"
 import { createPdfImageState, extractPageImages, injectPageImageBlocks } from "./image-extract.js"
@@ -31,7 +34,7 @@ import { wrapEquationRuns } from "./equation-runs.js"
 import { remapControlGlyphs, restoreNamedGlyphs } from "./glyph-names.js"
 import { occludedTextItems } from "./occluded-text.js"
 import { joinVerticalColumns } from "./vertical-text.js"
-import { restoreTrackedSpacing } from "./tracked-text.js"
+import { restoreTrackedSpacing, markSyntheticSpaces } from "./tracked-text.js"
 import { relocateEndnotes } from "./endnotes.js"
 import { dropTabLeaderDots } from "./tab-leaders.js"
 import { orderTwoUpPage } from "./two-up.js"
@@ -51,6 +54,21 @@ import { ocrModelsCached } from "../ocr/models.js"
 import { splitContactTables } from "./contact-table.js"
 
 // 기존 공개 API 경로 유지 — 이동된 함수의 re-export
+
+/**
+ * 그림 영역 OCR 대상 — `ocr: true` 는 글 없는 그림 후보 전부(쪽 면적 2%+·머리 띠 로고), 기본값의 자동 OCR 은 쪽 면적 5% 넘는 큰
+ * 그림만 읽는다(작은 아이콘·로고는 잡음 글이 되기 쉽고 쪽당 시간을 키운다). 큰 그림이 없는 쪽은 뺀다
+ */
+export function ocrImageRegions(regions: Map<number, ImageRegion[]>, large: Set<ImageRegion>, all: boolean): Map<number, ImageRegion[]> {
+  if (all) return regions
+  const out = new Map<number, ImageRegion[]>()
+  for (const [p, rs] of regions) {
+    const big = rs.filter(r => large.has(r))
+    if (big.length) out.set(p, big)
+  }
+  return out
+}
+
 export { mergeCrossPageTables }
 export { cleanPdfText }
 export { detectTableCaptions, detectKoreanListBlocks, removeHeaderFooterBlocks }
@@ -108,7 +126,7 @@ async function loadPdfWithTimeout(buffer: ArrayBuffer) {
 export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptions): Promise<InternalParseResult> {
   // pdfjs receives a copy; both OCR paths can reuse the caller's original bytes.
   const formulaBuffer: ArrayBuffer | null = options?.formulaOcr ? buffer : null
-  // ocr 을 지정하지 않으면(false 아님) 텍스트층 없는 쪽만 자동 OCR — 내장 모델이 이미 캐시에 있을 때만(다운로드하지 않는다)
+  // ocr 을 지정하지 않으면(false 아님) 텍스트층 없는 쪽과 큰 그림 속 글을 자동 OCR — 내장 모델이 이미 캐시에 있을 때만(다운로드하지 않는다)
   const autoOcr = options?.ocr === undefined && await ocrModelsCached()
   const ocrBuffer: ArrayBuffer | null = options?.ocr || autoOcr ? buffer : null
   const doc = await loadPdfWithTimeout(buffer)
@@ -146,6 +164,8 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
     // 텍스트 없는 큰 이미지 영역: page → count
     const skippedImagePages = new Map<number, number>()
     const uncoveredImageRegions = new Map<number, ImageRegion[]>()
+    // 그 가운데 쪽 면적 5% 넘는 큰 그림 — 기본값(자동 OCR)은 이것만 읽는다 (ocrImageRegions)
+    const largeImageRegions = new Set<ImageRegion>()
     // 이미지 XObject 바이트 추출 상태 (문서 단위 중복 억제·상한).
     // image 블록은 페이지 경계 표 병합(mergeCrossPageTables)의 인접성을 깨지 않도록
     // 페이지별로 모아뒀다가 병합 후 주입한다.
@@ -186,6 +206,8 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
         restoreNamedGlyphs(rawItems, rawOps.fnArray, rawOps.argsArray, differencesOf, n => fontObj(n)?.name)
         // 자간 벌린 글("E M A I L") — 글리프 흐름의 진짜 공백으로 낱말 경계를 되살린다
         restoreTrackedSpacing(rawItems, rawOps.fnArray, rawOps.argsArray)
+        // pdfjs 가 글자 틈으로 만든 공백 아이템 표시 — 균등배분 판정이 진짜 공백 글리프에서만 끊도록
+        markSyntheticSpaces(rawItems, rawOps.fnArray, rawOps.argsArray)
         // 뒤에 칠한 불투명 사각형에 가려진 글(쪽 배경 아래 깔린 머리글 등)은 보이지 않는다
         const occluded = occludedTextItems(rawItems, rawOps.fnArray, rawOps.argsArray)
         const items = normalizeItems(occluded.size ? rawItems.filter(it => !occluded.has(it)) : rawItems)
@@ -273,6 +295,7 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
                 const regions = uncoveredImageRegions.get(i) ?? []
                 regions.push(r)
                 uncoveredImageRegions.set(i, regions)
+                if (large) largeImageRegions.add(r)
               }
             }
           }
@@ -343,6 +366,8 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
     //       그 외=품질 신호가 OCR 을 권하는 페이지만 (깨진 텍스트층 포함 — F1,
     //       혼합 문서의 스캔 페이지 포함 — F2). 정상 페이지 파싱 결과는 유지 (F3).
     const ocrDone = new Set<number>()
+    // 그림 영역 OCR — ocr: true 는 후보 전부, 자동 OCR(기본값)은 큰 그림만
+    const ocrRegions = options?.ocr === true || autoOcr ? ocrImageRegions(uncoveredImageRegions, largeImageRegions, options?.ocr === true) : new Map<number, ImageRegion[]>()
     if (ocrBuffer) {
       const inScope = (p: number) => !pageFilter || pageFilter.has(p)
       const targets = new Set<number>()
@@ -357,16 +382,18 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
           if (autoOcr && pq.ocrReason !== "low_text" && pq.ocrReason !== "vector_text") continue
           targets.add(pq.page)
         }
-        if (options?.ocr === true) for (const p of uncoveredImageRegions.keys()) targets.add(p)
+        for (const p of ocrRegions.keys()) targets.add(p)
       }
       if (targets.size > 0) {
         try {
           const { runPdfOcr } = await import("../ocr/pdf-ocr.js")
           const mode = typeof options?.ocr === "function" ? options.ocr : ("builtin" as const)
           // 텍스트층이 멀쩡한 쪽은 그림 영역만 읽는다 (쪽 전체를 갈아 끼우는 쪽 — 스캔·깨진 텍스트층 — 은 쪽 전체)
-          const regionPages = new Map([...uncoveredImageRegions].filter(([p]) =>
+          const regionPages = new Map([...ocrRegions].filter(([p]) =>
             options?.ocr !== "force" && !isImageBased && !pageQuality.find(q => q.page === p)?.needsOcr))
           const ocrPageBlocks = await runPdfOcr(ocrBuffer, targets, mode, warnings, options?.onProgress, options?.tables !== false, vectorPageOps, regionPages)
+          // OCR 글은 첨자를 가르지 않는다 — 검출 박스 높이·위치로는 기준선을 믿을 수 없다(scriptTags 를 켜도)
+          for (const obs of ocrPageBlocks.values()) stripScriptTags({ blocks: obs })
           if (ocrPageBlocks.size > 0) {
             const replacePages = new Set<number>()
             for (const [p, obs] of ocrPageBlocks) {
@@ -376,7 +403,7 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
                 ocrDone.add(p)
                 continue
               }
-              const regions = uncoveredImageRegions.get(p)
+              const regions = ocrRegions.get(p)
               if (!regions || mergeOcrImageRegions(blocks, p, regions, obs) === 0) continue
               ocrDone.add(p)
               // The extracted image remains in result.images; its Markdown placeholder
@@ -444,7 +471,7 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
 
     // 머리글/바닥글 필터링 (기본 ON — 명시적 false일 때만 비활성화)
     if (options?.removeHeaderFooter !== false && parsedPageCount >= 3) {
-      const removed = removeHeaderFooterBlocks(blocks, pageHeights, warnings)
+      const removed = removeHeaderFooterBlocks(blocks, pageHeights, warnings, noteMarks)
       // 필터링된 블록 제거 (뒤에서부터 삭제)
       for (let ri = removed.length - 1; ri >= 0; ri--) {
         blocks.splice(removed[ri], 1)
@@ -457,7 +484,12 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
     // 쪽을 넘는 칸의 1칸 조각을 앞 쪽 표 그 칸에 붙인 뒤(행으로 갈리지 않게) 페이지 걸친 표 병합 —
     // 머리글/바닥글 제거 후 인접해진 표를 하나로 (ODL TableBorderProcessor.checkNeighborTables 포팅)
     mergeContinuedCells(blocks, pageHeights)
-    mergeCrossPageTables(blocks, pageHeights)
+    mergeCrossPageTables(blocks, pageHeights, wrapLexicon)
+    // 괘선 상자 머리말·꼬리말(표 블록) — 쪽 넘김 표 병합 뒤라야 상자가 갈라 두던 이웃 쪽 표를 잇지 않는다 (block-detect.ts)
+    if (options?.removeHeaderFooter !== false && parsedPageCount >= 3) {
+      const boxes = removeHeaderFooterBlocks(blocks, pageHeights, warnings, noteMarks, true)
+      for (let ri = boxes.length - 1; ri >= 0; ri--) blocks.splice(boxes[ri], 1)
+    }
     // 칸 클립 없는 PDF 의 보도자료 연락처 표 4열 → HWPX 서식 6열 (contact-table.ts)
     splitContactTables(blocks)
     // 후행 빈 열 정리 — HWP 계열 표 빌더와 같은 규칙 (병합 뒤: 쪽마다 같은 열 구조일 때 이어 붙인 다음)
@@ -527,6 +559,34 @@ export async function parsePdfDocument(buffer: ArrayBuffer, options?: ParseOptio
       return b.bbox.y > h * 0.1 && b.bbox.y + b.bbox.height < h * 0.9
     })
     joinLatinCellWraps(outBlocks)
+    // 보이지 않는 틀 표 풀기 (v4.17.0, table/layout-frames) — 표 잇기(쪽 넘김·칸 이어짐)가 끝나 칸마다 보이는 변(cell-edges)이 제자리에
+    // 있고 쪽번호 거르기(bbox 없는 문단을 버린다)도 지난 뒤. 새로 짠 표에는 PDF 표 곁정보(table-meta)가 없지만 여기서부터는 그 곁정보를
+    // 보는 단계가 없다. 결과 blocks(쪽 넘김 잇기 뒤 원 목록)에도 같은 풀이를 쓴다 — 표 블록마다 한 번만 푼다(푸는 동안 칸을 제자리 고친다).
+    // 클립 격자 풀기는 한컴 PDF 만 — 다른 제작기 클립 표는 테두리 없는 머리 행이 글로 풀려 표가 깨진다
+    // (ODL 064 "PORT | SHIPCALLS" 머리 행: 한컴 원본 그림이 아니라 이 규칙의 정답이 없다)
+    if (options?.layoutTables !== "keep") {
+      const hancom = await isHancomPdf(doc)
+      const shown = new Map<IRBlock, IRBlock[]>()
+      // 그림 칸(IMAGE_CELLS)은 글이 비어도 내용이 있다 — 빈 여백 행으로 접히지 않게 (칸 안 표까지)
+      const markContent = (bs: IRBlock[] | undefined): void => {
+        for (const b of bs ?? []) if (b.table) for (const row of b.table.cells) for (const c of row) {
+          if (IMAGE_CELLS.has(c)) CONTENT_CELLS.add(c)
+          markContent(c.blocks)
+        }
+      }
+      const visual = (bs: IRBlock[]): IRBlock[] => bs.flatMap(b => {
+        if (b.type !== "table") return [b]
+        // 다른 제작기의 클립 머리행은 보존한다. 선 격자 밖에서 합성한 단위행은 제작기와 관계없이 문단이다.
+        if (!hancom && b.table && CLIP_TABLES.has(b.table)) return [b]
+        let v = shown.get(b)
+        if (!v) { markContent([b]); shown.set(b, v = unframeLayoutTables([b], !!options?.keepTrailingEmptyCols)) }
+        return v
+      })
+      outBlocks = visual(outBlocks)
+      const kept = visual(blocks)
+      blocks.length = 0
+      for (const b of kept) blocks.push(b) // 큰 문서(수십만 블록)는 펼침 인자 상한을 넘는다
+    }
 
     // blocksToMarkdown로 통일 — 헤딩 마크다운 반영 (HWP5/HWPX와 일관성)
     const finishMarkdown = (bs: IRBlock[]): string => mergeLinkRuns(cleanPdfText(blocksToMarkdown(bs), { keepLoneNumbers: true }))
@@ -568,6 +628,17 @@ async function extractPdfMetadata(doc: { getMetadata(): Promise<unknown> }, meta
     if (typeof info.ModDate === "string") metadata.modifiedAt = parsePdfDate(info.ModDate)
   } catch {
     // best-effort
+  }
+}
+
+/** 한컴 PDF — Producer "Hancom PDF 1.3.0.xxx" 또는 Creator "Hwp 2018·2020 …" (법령 별표 273건 271건·표 정답 세트 한컴 산출물 실측).
+ *  정보 사전을 못 읽거나 다른 제작기면 아니다 */
+async function isHancomPdf(doc: { getMetadata(): Promise<unknown> }): Promise<boolean> {
+  try {
+    const info = (await doc.getMetadata() as { info?: Record<string, unknown> } | null)?.info
+    return [info?.Producer, info?.Creator].some(v => typeof v === "string" && /^\s*(?:hancom\b|hwp\b)/i.test(v))
+  } catch {
+    return false
   }
 }
 

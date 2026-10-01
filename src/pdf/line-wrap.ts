@@ -78,6 +78,14 @@ export class WrapLexicon {
     return this.isWord(left + right) && !this.pairs.has(left + " " + right)
   }
 
+  /** 두 글자+두 글자 증거만 — 한 글자 쌍으로 물러서지 않는다 (표 칸 조각처럼 줄 꺾임이 아닌 자리에 쓸 때) */
+  evidence2(left: string, right: string): "" | " " | null {
+    const n = left.length
+    if (n < 2 || right.length < 2) return null
+    const k1 = pairKey(left.charCodeAt(n - 2), left.charCodeAt(n - 1)), k2 = pairKey(right.charCodeAt(0), right.charCodeAt(1))
+    return decideCounts(this.joined2.get(k1)?.get(k2) ?? 0, this.spaced2.get(k1)?.get(k2) ?? 0)
+  }
+
   /** 꺾인 자리 증거: "" 붙음 · " " 띄움 · null 모름 (두 글자 증거가 갈리거나 없으면 한 글자) */
   evidence(left: string, right: string): "" | " " | null {
     const n = left.length
@@ -98,6 +106,9 @@ const decideCounts = (joined: number, spaced: number): "" | " " | null => (joine
 const hasBatchim = (c: string): boolean => { const k = c.charCodeAt(0) - 0xac00; return k >= 0 && k < 11172 && k % 28 !== 0 }
 /** 한자·가나·CJK 문장부호·전각 꼴 */
 const CJK = /[\u3000-\u303F\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF00-\uFFEF]/
+/** 중·일문 글자 사이 꺾임은 공백 없는 경계다. 한글이 섞인 국한문 어절은 제외한다. */
+const unspacedCjkBoundary = (prev: string, next: string): boolean =>
+  CJK.test(prev.trimEnd().slice(-1)) && CJK.test(next.trimStart().charAt(0)) && !/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(prev + next)
 const CLOSE_TAIL = /[’”」』)\]〉》>]+$/
 const TAIL = "[.,)」』’”]*"
 /** 어절 첫머리에 오지 않는 조사·어미 — 다음 줄 첫 어절이 이것뿐이면 앞 어절의 꼬리다 ("다." 는 줄을 넘어온 문장 끝) */
@@ -183,7 +194,7 @@ export function wrapJoiner(prevText: string, nextText: string, lex?: WrapLexicon
   const a = prev[prev.length - 1], b = next[0]
   if (!a || !b || /[,;:!?]/.test(a) || (DATE_DAY_END.test(prev) && b !== "(")) return " "
   // 중·일문은 띄어쓰기가 없다 — 한글 없는 두 줄의 한자·가나·전각 문장부호끼리 꺾임은 붙인다(kpipa 계약서 중문 "代⏎理中介商")
-  if (CJK.test(a) && CJK.test(b) && !/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(prev + next)) return ""
+  if (unspacedCjkBoundary(prev, next)) return ""
   // 앞 줄 끝 어절 — 뒤에서 공백까지 거꾸로 (칸에서 이어 붙인 긴 글에 /\S+$/ 를 돌리면 어절 길이 제곱이 든다)
   let s = prev.length
   while (s > 0 && !/\s/.test(prev[s - 1])) s--
@@ -254,6 +265,8 @@ export interface WrapLine { text: string; left: number; right: number; y: number
 
 /** 여백 밖에 매달리는 줄 끝 전각 구두점 */
 const HANGING = /[，。、：；！？）」』】〕》〉．]\s*$/
+/** 다단계 번호 머리 — "5.1 채취용기", "7.1.1.2 장기 가동중단" (공백까지 있어야 "1.5L"·"3.5kg" 과 갈린다) */
+const MULTI_LEVEL_NUMBER = /^\d{1,2}(?:\.\d{1,3})+\.?\s/
 /** 찬 줄: 묶음 오른끝에 글자 크기 0.25배 안 — 양쪽 정렬 본문은 꺾인 줄이 오른끝까지 찬다 */
 const BODY_FULL_TOL = 0.25
 /** 꺾인 줄 최소 폭(글자 크기 배) — 좁은 줄(가운데 정렬 제목·서명란)은 묶음에서 가장 넓어 오른끝에 닿아도 꺾임이 아니다
@@ -273,6 +286,11 @@ const BODY_MAX_PITCH_ABS_EM = 3.5
  * 글자 크기·새 항목 머리가 아닐 때 (hwpx↔pdf 417쌍 본문: 이 조건의 이웃 줄 15,653곳 중 원문 문단 경계 297곳 = 1.9%)
  */
 export function bodyLineJoins(lines: WrapLine[], lex?: WrapLexicon): string[] {
+  // 표시 태그는 글자 폭·줄 끝 구두점·번호 판정의 글자가 아니다. 원래 줄은 보존하고 판정용 글만 한 번 정리한다.
+  lines = lines.map(l => {
+    const text = l.text.replace(MARKUP, "")
+    return text === l.text ? l : { ...l, text }
+  })
   let right = -Infinity
   for (const l of lines) if (l.right > right) right = l.right
   // 여백 밖에 매단 줄 끝 구두점(LibreOffice 동아시아 조판 "，" "。")은 오른끝을 한 글자 남짓 끌어올린다 — 매단 줄을 뺀 오른끝도
@@ -281,6 +299,21 @@ export function bodyLineJoins(lines: WrapLine[], lex?: WrapLexicon): string[] {
   for (const l of lines) if (!HANGING.test(l.text) && l.right > inner) inner = l.right
   const full = (l: WrapLine) => right - l.right < BODY_FULL_TOL * l.fontSize ||
     (right - inner <= 1.2 * l.fontSize && inner - l.right < BODY_FULL_TOL * l.fontSize)
+  // 왼쪽 정렬(Word 등)은 어절 단위로 넘겨 꺾인 줄 끝이 들쭉날쭉하다 — 다음 줄 첫 어절이 이 줄 끝 남은 자리에 못 들어갔으면 꺾임.
+  // 글자 폭은 다음 줄 평균으로 어림한다
+  const nextWordNoRoom = (a: WrapLine, b: WrapLine) => {
+    const w = b.text.trim().match(/^\S+/)?.[0]
+    const n = [...b.text.trim()].length
+    if (!w || n === 0) return false
+    const em = (b.right - b.left) / n
+    // 중·일문은 단어 사이 공백이 없고 글자 사이에서도 꺾인다 — 다음 줄 전체를 한 어절로 재면 짧은 문단도 잇게 된다
+    const advance = unspacedCjkBoundary(a.text, b.text) ? 1 : [...w].length + 1
+    return right - a.right < advance * em
+  }
+  // 찬 줄 또는 실제 꺾임 후보에서 찬 줄이 절반 이상이면 양쪽 정렬이다. 덜 찬 마지막 줄과 다음 어절이 넉넉히
+  // 들어가는 짧은 끝줄은 정렬 근거가 아니다 — 이를 분모에 넣으면 두 줄 문단 + 한 줄 문단만으로도 왼쪽 정렬로 뒤집힌다
+  const candidates = lines.filter((l, i) => full(l) || (i + 1 < lines.length && nextWordNoRoom(l, lines[i + 1])))
+  const ragged = candidates.filter(full).length * 2 < candidates.length
   const pitch = (k: number) => lines[k].y - lines[k + 1].y
   const sameSize = (k: number) => Math.abs(lines[k + 1].fontSize - lines[k].fontSize) <= 0.15 * lines[k].fontSize
   // 줄쌍 간격 가운데 가장 좁은 둘 — i 번째 쌍 자신을 뺀 최솟값을 O(1) 로 (같은 글자 크기 쌍만)
@@ -298,13 +331,16 @@ export function bodyLineJoins(lines: WrapLine[], lex?: WrapLexicon): string[] {
     const fs = a.fontSize
     const others = i === i1 ? p2 : p1 // 다른 쌍이 없으면 Infinity — 상대 기준 없이 2em
     const maxPitch = Number.isFinite(others) ? Math.min(BODY_MAX_PITCH_ABS_EM * fs, Math.max(BODY_MAX_PITCH_EM * fs, others * BODY_PITCH_REL)) : BODY_MAX_PITCH_EM * fs
+    // 다단계 번호("5.1 ", "7.1.2 ")로 여는 줄은 새 조항이다 — ITEM_HEAD 는 한 단계 번호만 본다
+    const wordWrap = ragged && !full(a) && nextWordNoRoom(a, b) && !MULTI_LEVEL_NUMBER.test(b.text.trimStart())
     const wraps = fs > 0
-      && full(a)
+      && (full(a) || wordWrap)
       && a.right - a.left >= BODY_MIN_WIDTH_EM * fs
       && a.y - b.y > 0 && a.y - b.y < maxPitch
       && Math.abs(b.fontSize - fs) <= 0.15 * fs
       && !startsNewItem(a.text, b.text)
-    out.push(wraps ? wrapJoiner(a.text, b.text, lex) : "\n")
+    // 어절 단위 줄넘김은 띄우되 중·일문의 글자 단위 꺾임에는 공백을 넣지 않는다
+    out.push(!wraps ? "\n" : wordWrap ? (unspacedCjkBoundary(a.text, b.text) ? "" : " ") : wrapJoiner(a.text, b.text, lex))
   }
   return out
 }

@@ -1,0 +1,120 @@
+{
+  "platform": "darwin",
+  "head": "13e165005e93e755791055d4ba6191809c1f4b0a",
+  "cases": [
+    {
+      "kind": "forced-ocr-native-interruption",
+      "scenario": "SIGINT",
+      "activeNative": {
+        "pid": 24727,
+        "phase": "native-start",
+        "calls": 1,
+        "time": 1790819739241,
+        "descriptor": {
+          "writable": false,
+          "enumerable": false,
+          "configurable": false
+        }
+      },
+      "workerPids": [
+        24727,
+        24728
+      ],
+      "code": 130,
+      "signal": null,
+      "cleanup_ms": 139,
+      "survivors": [],
+      "outputSettled": true,
+      "elapsed_ms": 1463,
+      "activeSummedRssBytes": 1382825984,
+      "activeSummedRssGiB": 1.2878570556640625,
+      "cleanupMeasurementIncludesSettleDelayMs": 100
+    },
+    {
+      "kind": "forced-ocr-native-interruption",
+      "scenario": "SIGTERM",
+      "activeNative": {
+        "pid": 24843,
+        "phase": "native-start",
+        "calls": 1,
+        "time": 1790819740559,
+        "descriptor": {
+          "writable": false,
+          "enumerable": false,
+          "configurable": false
+        }
+      },
+      "workerPids": [
+        24843,
+        24844
+      ],
+      "code": 143,
+      "signal": null,
+      "cleanup_ms": 139,
+      "survivors": [],
+      "outputSettled": true,
+      "elapsed_ms": 1297,
+      "activeSummedRssBytes": 1302134784,
+      "activeSummedRssGiB": 1.21270751953125,
+      "cleanupMeasurementIncludesSettleDelayMs": 100
+    },
+    {
+      "kind": "forced-ocr-native-interruption",
+      "scenario": "SIGKILL",
+      "activeNative": {
+        "pid": 24965,
+        "phase": "native-start",
+        "calls": 1,
+        "time": 1790819741868,
+        "descriptor": {
+          "writable": false,
+          "enumerable": false,
+          "configurable": false
+        }
+      },
+      "workerPids": [
+        24965,
+        24966
+      ],
+      "code": null,
+      "signal": "SIGKILL",
+      "cleanup_ms": 249,
+      "survivors": [],
+      "outputSettled": true,
+      "elapsed_ms": 1416,
+      "activeSummedRssBytes": 1309507584,
+      "activeSummedRssGiB": 1.219573974609375,
+      "cleanupMeasurementIncludesSettleDelayMs": 100
+    },
+    {
+      "kind": "forced-ocr-native-interruption",
+      "scenario": "worker-crash",
+      "activeNative": {
+        "pid": 25112,
+        "phase": "native-start",
+        "calls": 1,
+        "time": 1790819743346,
+        "descriptor": {
+          "writable": false,
+          "enumerable": false,
+          "configurable": false
+        }
+      },
+      "workerPids": [
+        25112,
+        25113
+      ],
+      "code": 1,
+      "signal": null,
+      "cleanup_ms": 156,
+      "survivors": [],
+      "outputSettled": true,
+      "elapsed_ms": 1376,
+      "activeSummedRssBytes": 1308966912,
+      "activeSummedRssGiB": 1.2190704345703125,
+      "cleanupMeasurementIncludesSettleDelayMs": 100
+    }
+  ],
+  "reportSHA256": "1f4cb7bf79cb090ed66bd4ee67d56651db7a7f84112c561fe7d5b7a865a0ce33",
+  "notes": "Actual forced OCR: two booted workers and at least one active native ONNX invocation observed before interruption; instrumentation outside production source; sampled summed RSS; raw results retained. outputSettled compares directory listings across a 100 ms interval, not file-write activity."
+}
