@@ -30,6 +30,18 @@ function running(pid: number): boolean {
   } catch { return false }
 }
 
+function workerPids(parentPid: number): number[] {
+  let children: string
+  try {
+    children = readFileSync(`/proc/${parentPid}/task/${parentPid}/children`, "utf8")
+  } catch {
+    // Some Linux containers expose /proc/<pid> but omit task/<tid>/children.
+    children = spawnSync("ps", ["-o", "pid=", "--ppid", String(parentPid)], { encoding: "utf8" }).stdout ?? ""
+  }
+  return children.trim().split(/\s+/).filter(Boolean).map(Number)
+    .filter(pid => { try { return readFileSync(`/proc/${pid}/cmdline`, "utf8").includes("__convert-worker") } catch { return false } })
+}
+
 for (const signal of ["SIGINT", "SIGKILL"] as const) {
   test(`active parallel batch terminates its workers after parent ${signal}`, { skip: process.platform !== "linux", timeout: 20000 }, async () => {
     const dir = await mkdtemp(join(tmpdir(), "kordoc-active-batch-"))
@@ -49,10 +61,7 @@ for (const signal of ["SIGINT", "SIGKILL"] as const) {
       const deadline = Date.now() + 12000
       let completed = 0
       while (Date.now() < deadline) {
-        try {
-          pids = readFileSync(`/proc/${child.pid}/task/${child.pid}/children`, "utf8").trim().split(/\s+/).filter(Boolean).map(Number)
-            .filter(pid => { try { return readFileSync(`/proc/${pid}/cmdline`, "utf8").includes("__convert-worker") } catch { return false } })
-        } catch { /* child starting or already exited */ }
+        pids = workerPids(child.pid!)
         completed = readdirSync(out).filter(name => name.endsWith(".md")).length
         if (completed > 0 && completed < files.length && pids.length === 2) break
         if (child.exitCode !== null || child.signalCode !== null) break

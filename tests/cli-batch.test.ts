@@ -13,6 +13,17 @@ const run = (args: string[]) => spawnSync(process.execPath, ["--import", "tsx", 
   encoding: "utf8", timeout: 60000,
 })
 
+function workerPids(parentPid: number): number[] {
+  let children: string
+  try {
+    children = readFileSync(`/proc/${parentPid}/task/${parentPid}/children`, "utf8")
+  } catch {
+    children = spawnSync("ps", ["-o", "pid=", "--ppid", String(parentPid)], { encoding: "utf8" }).stdout ?? ""
+  }
+  return children.trim().split(/\s+/).filter(Boolean).map(Number)
+    .filter(pid => { try { return readFileSync(`/proc/${pid}/cmdline`, "utf8").includes("__convert-worker") } catch { return false } })
+}
+
 test("parallel batch preserves sequential markdown, JSON and chunks, including image files", async () => {
   const dir = mkdtempSync(join(tmpdir(), "kordoc-batch-"))
   try {
@@ -84,9 +95,7 @@ for (const scenario of ["worker crash", "parent interruption"]) {
     try {
       const deadline = Date.now() + 8000
       while (Date.now() < deadline && pids.length < 2) {
-        try {
-          pids = readFileSync(`/proc/${child.pid}/task/${child.pid}/children`, "utf8").trim().split(/\s+/).filter(Boolean).map(Number)
-        } catch { /* process starting or exited */ }
+        pids = workerPids(child.pid!)
         await delay()
       }
       assert.equal(pids.length, 2, stderr)

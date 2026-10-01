@@ -31,6 +31,7 @@ PPTX(PowerPoint) 파싱을 추가하고, 폐쇄망 Windows 반입용 **포터블
 
 - **`c:chart` 제목을 못 읽던 것**: `parseChart` 가 `Document` 를 받는데 직속 자식 탐색을 문서 노드에서 시작해 루트 요소(`c:chartSpace`)를 건너뛰었다 — 루트에서 `c:chart` 를 찾도록 고쳤다.
 - **노트·차트·SmartArt 파트를 그림으로 내보내던 것**: 미링크 미디어 폴백이 관계 종류를 보지 않아 `notesSlide`·`chart`·`diagramData` 를 `image_00N.xml` 로 내보냈다 — `image` 관계만 보게 고쳤다.
+- **Linux 컨테이너 배치 종료 검증**: `/proc/<pid>/task/<pid>/children` 이 없는 환경에서는 `ps --ppid` 로 작업자 PID를 찾아, 같은 종료·정리 동작을 검증한다.
 
 ## [4.18.0] - 2026-10-01
 
