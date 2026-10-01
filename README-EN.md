@@ -143,7 +143,7 @@ HwpForge focuses on generation and editing; its Markdown uses pipe tables only, 
 
 ---
 
-## What's New in v4.17.0
+## What's New in v4.18.1
 
 **PPTX (PowerPoint) is now parsed.** Slides are read in `sldIdLst` order: `a:p` text becomes paragraphs and lists (title placeholders become `##`), tables keep their merges (`gridSpan`/`rowSpan` plus `hMerge`/`vMerge` continuation cells), and charts are read from their **cached** series names, categories and values (`c:tx`/`c:cat`/`c:val`) into a category × series table — the numbers survive without the source workbook or PowerPoint. SmartArt (`dgm:data`) becomes an ordered list of node texts and speaker notes are appended per slide under `## 발표자 노트` (Speaker notes). Slide images are exported to `images` (with the original part path as `source`) and, with `ocr: true`, read by the **same built-in engine** as image input (PP-OCRv5, including raster table reconstruction); the model is used automatically when already cached and never downloaded otherwise (`ocr: false` turns it off). Reading order follows the shape tree, so tables interleaved with text stay in place. `pages`/`pageCount` are slide-based and `--pages 2-4` narrows the parse.
 

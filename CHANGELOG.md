@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.18.1] - 2026-10-01
+
+PPTX 파싱과 폐쇄망 Windows 패키징을 공개 배포한다. 이 포크의 4.17.0 코드에 들어간 슬라이드 글·표·차트·SmartArt·그림 OCR·발표자 노트 지원과 OCR 엔진·모델 동봉 ZIP/MSI를 포함한다. Windows CI에서 ZIP과 MSI를 생성하고, MSI 무인 설치 후 실행기와 OCR 모델 상태를 확인했다.
+
 ## [4.17.0] - 2026-10-01
 
 PPTX(PowerPoint) 파싱을 추가하고, 폐쇄망 Windows 반입용 **포터블 ZIP·MSI** 산출물 경로를 만들었다. #80 이 "PPTX 는 지원하지 않는 형식"으로 고정했던 동작은 이 버전에서 끝난다 — `parse()` 가 PPTX 를 파싱한다(원본 서식을 직접 고치는 `fill_form` hwpx-preserve·`patch_document` 는 종전대로 `감지된 포맷: pptx` 로 거부).
