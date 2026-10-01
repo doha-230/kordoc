@@ -38,7 +38,7 @@ node scripts/pack-offline.mjs --with-ocr --with-models
 
 ### Windows — 포터블 ZIP 과 MSI
 
-Windows 반입은 압축 형식만 다르고 내용은 같은 두 산출물을 쓴다. 어느 쪽이든 **압축을 풀거나
+Windows 반입에는 포터블 ZIP 과 MSI 중 하나를 쓴다. 어느 쪽이든 **압축을 풀거나
 설치한 뒤 그 자리에서 바로 실행**되며 npm 레지스트리를 찾지 않는다.
 
 ```powershell
@@ -52,7 +52,7 @@ node scripts/build-msi.mjs --target win32-x64 --with-ocr --with-models
 #    → dist-offline/kordoc-<버전>-win-x64.msi
 ```
 
-두 스크립트는 **같은 staging 트리**를 쓰므로 ZIP 과 MSI 의 내용이 갈라지지 않는다.
+두 스크립트는 같은 staging 로직을 쓴다. OCR 엔진·모델 포함 여부는 각 명령의 옵션으로 정한다.
 
 | | 포터블 ZIP | MSI |
 |---|---|---|
